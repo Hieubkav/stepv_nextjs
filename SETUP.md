@@ -49,6 +49,12 @@ git push origin master
 2. Đảm bảo GitHub Pages đã enable
 3. Kiểm tra permissions trong Settings > Actions
 
+### Lỗi thường gặp đã sửa:
+- ✅ **".nojekyll file not found"**: Đã sửa trong workflow
+- ✅ **TypeScript errors**: Đã sửa interface và imports
+- ✅ **Next.js config warnings**: Đã cập nhật cấu hình
+- ✅ **Image optimization warnings**: Đã thay `<img>` bằng `<Image>`
+
 ### Nếu website không hiển thị:
 1. Đợi 5-10 phút sau khi deploy
 2. Kiểm tra URL: `https://hieubkav.github.io/stepv_nextjs`
