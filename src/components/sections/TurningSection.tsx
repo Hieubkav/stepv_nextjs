@@ -147,7 +147,7 @@ const TurningSection = ({
                       alt={logo.alt}
                       width={120}
                       height={60}
-                      className="max-w-full max-h-16 w-auto h-auto object-contain opacity-90 hover:opacity-100 transition-all duration-300 hover:scale-105 filter brightness-0 invert"
+                      className="max-w-full max-h-16 w-auto h-auto object-contain opacity-90 hover:opacity-100 transition-all duration-300 hover:scale-105"
                       title={logo.client_name}
                     />
                   </div>
