@@ -136,7 +136,7 @@ const HeroSection = ({
 
             <button
               onClick={handleBookConsultation}
-              className="group flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-green-600 hover:bg-green-500 rounded-full text-white font-medium uppercase tracking-wide transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-green-500/25 text-sm md:text-base w-full sm:w-auto max-w-xs"
+              className="group flex items-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-yellow-600 hover:bg-yellow-500 rounded-full text-white font-medium uppercase tracking-wide transition-all duration-300 hover:scale-105 shadow-xl hover:shadow-yellow-500/25 text-sm md:text-base w-full sm:w-auto max-w-xs"
             >
               <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

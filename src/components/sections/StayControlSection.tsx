@@ -5,6 +5,7 @@ interface Feature {
   description: string;
   icon_svg: string;
   width: string;
+  row: number;
 }
 
 interface StayControlSectionProps {
@@ -16,41 +17,49 @@ interface StayControlSectionProps {
 }
 
 const StayControlSection = ({
-  title = 'Stay in Control with Your Client Dashboard',
-  description = 'We\'ve made it easy for you to stay connected and in control!',
+  title = 'Kiểm Soát Hoàn Toàn với Bảng Điều Khiển Khách Hàng',
+  description = 'Chúng tôi đã giúp bạn dễ dàng kết nối và kiểm soát mọi thứ!',
   features = [
     {
-      title: 'Access All Your Files',
-      description: 'Easily download your project files, deliverables, and revisions at any time, all in one secure location',
+      title: 'Truy Cập Tất Cả File Của Bạn',
+      description: 'Dễ dàng tải xuống các file dự án, sản phẩm bàn giao và phiên bản sửa đổi bất cứ lúc nào, tất cả trong một vị trí bảo mật',
       icon_svg: 'M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z',
-      width: '40%'
+      width: '40%',
+      row: 1
     },
     {
-      title: 'Track Your Project\'s Progress',
-      description: 'Stay updated with real-time progress tracking, milestones, and deadlines, so you always know what\'s happening',
+      title: 'Theo Dõi Tiến Độ Dự Án',
+      description: 'Cập nhật theo thời gian thực về tiến độ, cột mốc và thời hạn, để bạn luôn biết điều gì đang diễn ra',
       icon_svg: 'M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z',
-      width: '60%'
+      width: '60%',
+      row: 1
+    },
+    {
+      title: 'Giao Tiếp Dễ Dàng',
+      description: 'Sử dụng bảng điều khiển để gửi phản hồi, đặt câu hỏi hoặc liên lạc với đội ngũ của chúng tôi—không cần chuỗi email dài dằng dặc',
+      icon_svg: 'M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M6,9V7H18V9H6M14,11V13H6V11H14M16,15V13H18V15H16Z',
+      width: '60%',
+      row: 2
+    },
+    {
+      title: 'Tổ Chức Tốt Cho Dự Án Tương Lai',
+      description: 'Bảng điều khiển của bạn hoạt động như một kho lưu trữ dài hạn, để bạn có thể xem lại các dự án cũ hoặc bắt đầu dự án mới mà không mất bất kỳ thông tin nào',
+      icon_svg: 'M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19M16.5,16L13.5,12.5L11,15.5L8.5,12.5L5.5,16H16.5Z',
+      width: '40%',
+      row: 2
     }
   ],
   backgroundColor = 'bg-black',
   layout = 'grid-2x2'
 }: StayControlSectionProps) => {
 
-  // Divide features into rows for grid-2x2 layout
+  // Group features by row
   const featureRows = [];
-  if (layout === 'grid-2x2') {
-    for (let i = 0; i < features.length; i += 2) {
-      featureRows.push(features.slice(i, i + 2));
-    }
-  } else if (layout === 'single-column') {
-    // All features in 1 column
-    featureRows.push(features.map(feature => ({ ...feature, width: '100%' })));
-  } else {
-    // Custom layout - keep original widths
-    for (let i = 0; i < features.length; i += 2) {
-      featureRows.push(features.slice(i, i + 2));
-    }
-  }
+  const row1Features = features.filter(f => f.row === 1);
+  const row2Features = features.filter(f => f.row === 2);
+  
+  if (row1Features.length > 0) featureRows.push(row1Features);
+  if (row2Features.length > 0) featureRows.push(row2Features);
 
   // Convert width percentages to Tailwind classes
   const getWidthClass = (width: string) => {
@@ -87,34 +96,44 @@ const StayControlSection = ({
           {/* Feature Cards */}
           <div className="w-full flex flex-col gap-5 mt-10 mb-[10%]" style={{ perspective: '1200px' }}>
             
-            {featureRows.map((featureRow, rowIndex) => (
-              <div key={rowIndex} className="flex flex-col md:flex-row gap-5">
-                {featureRow.map((feature, featureIndex) => (
-                  <div 
-                    key={featureIndex}
-                    className={`${getWidthClass(feature.width)} flex flex-col gap-5 p-6 rounded-[25px] border-[0.8px] border-gray-700 bg-black shadow-2xl transition-all duration-300 hover:shadow-3xl hover:border-white/30`}
-                    style={{ 
-                      transform: 'matrix3d(0.998, -0.001, 0.061, 0, 0, 0.999, 0.019, 0, -0.061, -0.019, 0.997, 0, 0, 0, 0, 1)',
-                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-                    }}
-                  >
-                    <div className="flex items-start gap-4">
-                      <svg className="w-7 h-7 text-white flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d={feature.icon_svg} />
-                      </svg>
-                      <div className="flex-1">
-                        <h3 className="text-white font-semibold text-lg mb-2">
-                          {feature.title}
-                        </h3>
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                          {feature.description}
-                        </p>
+            {featureRows.map((featureRow, rowIndex) => {
+              const isFirstRow = rowIndex === 0;
+              const gradientDirection = isFirstRow 
+                ? 'linear-gradient(to bottom, #000000 0%, #333333 100%)' 
+                : 'linear-gradient(to bottom, #333333 0%, #000000 100%)';
+              
+              return (
+                <div key={rowIndex} className="flex flex-col md:flex-row gap-5">
+                  {featureRow.map((feature, featureIndex) => (
+                    <div 
+                      key={featureIndex}
+                      className={`${getWidthClass(feature.width)} flex flex-col justify-start p-8 rounded-[25px] transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl`}
+                      style={{ 
+                        background: gradientDirection,
+                        transform: 'matrix3d(0.998, -0.001, 0.061, 0, 0, 0.999, 0.019, 0, -0.061, -0.019, 0.997, 0, 0, 0, 0, 1)',
+                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)'
+                      }}
+                    >
+                      <div className="flex flex-col gap-6">
+                        <div className="flex justify-start">
+                          <svg className="w-7 h-7" fill="#FFD700" viewBox="0 0 24 24">
+                            <path d={feature.icon_svg} />
+                          </svg>
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold text-[28px] leading-tight mb-4 uppercase">
+                            {feature.title}
+                          </h3>
+                          <p className="text-[#d2d2d2] font-light text-[20px] leading-relaxed" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                            {feature.description}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ))}
+                  ))}
+                </div>
+              );
+            })}
 
           </div>
         </div>
@@ -149,15 +168,23 @@ const StayControlSection = ({
           .md\\:flex-row {
             flex-direction: column !important;
           }
+
+          .text-\\[28px\\] {
+            font-size: 24px !important;
+          }
+
+          .text-\\[20px\\] {
+            font-size: 18px !important;
+          }
         }
 
-        /* Card hover effects */
-        .hover\\:shadow-3xl:hover {
-          box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.4);
+        /* Enhanced 3D effects */
+        .hover\\:scale-\\[1\\.02\\]:hover {
+          transform: matrix3d(1.018, -0.001, 0.062, 0, 0, 1.019, 0.019, 0, -0.062, -0.019, 1.017, 0, 0, 0, 0, 1);
         }
 
-        .hover\\:border-white\\/30:hover {
-          border-color: rgba(255, 255, 255, 0.3);
+        .hover\\:shadow-2xl:hover {
+          box-shadow: 0 35px 70px -12px rgba(0, 0, 0, 0.6);
         }
 
         /* 3D perspective effect */
@@ -172,7 +199,21 @@ const StayControlSection = ({
 
         /* Smooth transitions */
         .transition-all {
-          will-change: transform, box-shadow, border-color;
+          will-change: transform, box-shadow, scale;
+        }
+
+        /* Neon green accent color */
+        .text-neon-green {
+          color: #d0ff71;
+        }
+
+        /* Enhanced gradient backgrounds */
+        .gradient-row-1 {
+          background: linear-gradient(to bottom, #000000 0%, #333333 100%);
+        }
+
+        .gradient-row-2 {
+          background: linear-gradient(to bottom, #333333 0%, #000000 100%);
         }
       `}</style>
     </div>

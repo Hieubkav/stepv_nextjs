@@ -244,7 +244,7 @@ const ContactFormSection = ({
 
                 {/* Status Messages */}
                 {submitStatus === 'success' && (
-                  <div className="p-4 bg-green-500/20 border border-green-500 rounded-lg text-green-400 text-center">
+                  <div className="p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg text-yellow-400 text-center">
                     Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
                   </div>
                 )}
