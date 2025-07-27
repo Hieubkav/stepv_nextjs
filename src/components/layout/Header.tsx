@@ -19,12 +19,12 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const menuItems: MenuItem[] = [
-    { label: 'HOMEPAGE', href: '/', isActive: true },
-    { label: 'CONTACT', href: '#contact' },
-    { label: 'PROJECTS', href: '#projects' },
-    { label: 'ABOUT US', href: '#about' },
-    { label: 'JOBS', href: '#jobs' },
-    { label: 'MORE', href: '#more' }
+    { label: 'TRANG CHỦ', href: '/', isActive: true },
+    { label: 'LIÊN HỆ', href: '#contact' },
+    { label: 'DỰ ÁN', href: '#projects' },
+    { label: 'VỀ CHÚNG TÔI', href: '#about' },
+    { label: 'TUYỂN DỤNG', href: '#jobs' },
+    { label: 'THÊM', href: '#more' }
   ];
 
   // Scroll effect
@@ -135,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               }}
               className="hidden lg:inline-block uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
             >
-              Contact Us
+              Liên Hệ
             </Link>
             <button
               onClick={handleMobileMenuToggle}
@@ -224,7 +224,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
               }}
               className="hidden lg:inline-block uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
             >
-              Contact Us
+              Liên Hệ
             </Link>
             <button
               onClick={handleMobileMenuToggle}
@@ -305,7 +305,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 }}
                 className="block w-full text-center uppercase text-sm font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
               >
-                Contact Us
+                Liên Hệ
               </Link>
             </div>
 
