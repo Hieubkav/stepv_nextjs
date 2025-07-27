@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   },
 
   // Set base path for GitHub Pages (will be set by environment variable)
-  basePath: process.env.NODE_ENV === 'production' ? '/stepvNextJS' : '',
+  basePath: process.env.NODE_ENV === 'production' ? '/stepv_nextjs' : '',
 
   // Ensure trailing slash for GitHub Pages
   trailingSlash: true,

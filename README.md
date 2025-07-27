@@ -1,6 +1,8 @@
-# StepV NextJS
+# Step V Studio - Creative Video Production & Design
 
-Website tĩnh được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui, được cấu hình để deploy tự động lên GitHub Pages.
+Website chuyên nghiệp cho Step V Studio - chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp. Được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui, tự động deploy lên GitHub Pages.
+
+🌐 **Live Demo:** [https://hieubkav.github.io/stepv_nextjs](https://hieubkav.github.io/stepv_nextjs)
 
 ## 🚀 Công nghệ sử dụng
 
@@ -61,16 +63,20 @@ npm run lint
 
 ## 🚀 Deployment lên GitHub Pages
 
-### Tự động (Khuyến nghị)
-1. Push code lên GitHub repository
-2. Vào **Settings** > **Pages**
-3. Chọn **Source**: GitHub Actions
-4. Workflow sẽ tự động chạy khi push lên branch `main`
+### Tự động (Đã cấu hình sẵn)
+Repository này đã được cấu hình để tự động deploy khi:
+1. **Push code lên branch `master`** - Workflow sẽ tự động chạy
+2. **Manual trigger** - Có thể chạy thủ công từ Actions tab
 
-### Thủ công
+### Cấu hình GitHub Pages (Chỉ cần làm 1 lần)
+1. Vào repository **Settings** > **Pages**
+2. Chọn **Source**: GitHub Actions
+3. Workflow sẽ tự động chạy và deploy tại: `https://hieubkav.github.io/stepv_nextjs`
+
+### Build thủ công (nếu cần)
 ```bash
 npm run build
-# Upload thư mục `out` lên GitHub Pages
+# Thư mục `out` sẽ chứa static files
 ```
 
 ## 📦 Thêm Shadcn/ui components
@@ -101,19 +107,30 @@ Cập nhật `src/utils/constants.ts` để thay đổi site config.
 
 ## 📝 Lưu ý quan trọng
 
-1. **GitHub Pages URL**: Cập nhật `basePath` trong `next.config.ts` theo tên repository
-2. **Static Export**: Dự án được cấu hình cho static export, không hỗ trợ server-side features
-3. **Image Optimization**: Đã disable để tương thích với static hosting
-4. **Turbopack**: Được enable cho development để tăng tốc độ build
+1. **Repository URL**: `https://github.com/Hieubkav/stepv_nextjs`
+2. **Live URL**: `https://hieubkav.github.io/stepv_nextjs`
+3. **Base Path**: Đã cấu hình `/stepv_nextjs` cho GitHub Pages
+4. **Static Export**: Dự án được cấu hình cho static export, không hỗ trợ server-side features
+5. **Image Optimization**: Đã disable để tương thích với static hosting
+6. **Auto Deploy**: Mỗi lần push lên `master` branch sẽ tự động deploy
 
-## 🔧 Cấu hình GitHub Actions
+## 🔧 GitHub Actions Workflow
 
-File workflow tại `.github/workflows/deploy.yml` sẽ:
-1. Checkout code
-2. Setup Node.js
-3. Install dependencies
-4. Build project
-5. Deploy lên GitHub Pages
+File `.github/workflows/deploy.yml` đã được cấu hình để:
+1. **Trigger**: Tự động chạy khi push lên branch `master`
+2. **Build**: Setup Node.js, install dependencies, build project
+3. **Deploy**: Tự động deploy lên GitHub Pages
+4. **Cache**: Tối ưu hóa build time với cache
+
+### Cách sử dụng:
+```bash
+# Commit và push code
+git add .
+git commit -m "Update website"
+git push origin master
+
+# Workflow sẽ tự động chạy và deploy!
+```
 
 ## 📚 Tài liệu tham khảo
 

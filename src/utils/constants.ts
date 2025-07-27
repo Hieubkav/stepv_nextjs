@@ -1,13 +1,13 @@
 // Application constants
 
 export const SITE_CONFIG = {
-  name: 'StepV NextJS',
-  description: 'Website tĩnh được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui',
-  url: process.env.NODE_ENV === 'production' 
-    ? 'https://yourusername.github.io/stepvNextJS' 
+  name: 'Step V Studio',
+  description: 'Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp - Step V Studio',
+  url: process.env.NODE_ENV === 'production'
+    ? 'https://hieubkav.github.io/stepv_nextjs'
     : 'http://localhost:3000',
-  author: 'StepV Team',
-  keywords: 'NextJS, TypeScript, Tailwind CSS, Shadcn/ui, Static Site',
+  author: 'Step V Studio',
+  keywords: '3D Animation, Product Visualization, Perfume, Beauty, 3D Rendering, Visual Effects, Creative Video Production, Design',
 };
 
 export const NAVIGATION_ITEMS = [
