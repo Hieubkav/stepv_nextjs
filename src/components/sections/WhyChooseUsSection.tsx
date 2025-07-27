@@ -16,11 +16,7 @@ const WhyChooseUsSection = ({
   videoId = 'GXppDZ0k2IM',
   videoPlaceholder = 'https://stepv.studio/wp-content/uploads/2025/03/BTSO-1-2.png'
 }: WhyChooseUsSectionProps) => {
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-
-  const handlePlayVideo = () => {
-    setIsVideoPlaying(true);
-  };
+  // Không cần state cho video playing vì video sẽ tự động phát như background
 
   const features = [
     {
@@ -61,52 +57,60 @@ const WhyChooseUsSection = ({
 
         {/* Main Content */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Image */}
-          <div className="relative">
-            {!isVideoPlaying ? (
-              // Image Placeholder
-              <div className="relative overflow-hidden rounded-3xl bg-gray-800 min-h-[600px]">
-                <div
-                  className="relative w-full h-full cursor-pointer group"
-                  onClick={handlePlayVideo}
-                >
-                  <Image
-                    src={videoPlaceholder}
-                    alt="Perfume Product Showcase"
-                    fill
-                    className="object-cover transition-all duration-500 group-hover:scale-105"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&h=600&fit=crop&crop=center';
+          {/* Left Video Background Card */}
+          <div className="relative w-full">
+            {/* Lớp Cơ sở (Container chính) - Khối hình chữ nhật bo góc với ảnh nền */}
+            <div
+              className="relative overflow-hidden min-h-[600px] bg-cover bg-center bg-no-repeat"
+              style={{
+                borderRadius: '25px',
+                backgroundImage: `url(${videoPlaceholder})`,
+                width: '100%'
+              }}
+            >
+              {/* Lớp Phủ Video (Overlay) - Phủ chính xác lên toàn bộ container */}
+              <div
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{
+                  borderRadius: '25px'
+                }}
+              >
+                {/* Lớp Video (YouTube Embed) - Video được căn giữa và lấp đầy */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div
+                    className="relative"
+                    style={{
+                      width: '120%',
+                      height: '120%',
+                      transform: 'translate(-50%, -50%)',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%'
                     }}
-                  />
-
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-300"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
-                    </div>
+                  >
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}?controls=0&rel=0&playsinline=1&autoplay=1&mute=1&loop=1&playlist=${videoId}`}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      title="Background Video"
+                      className="w-full h-full object-cover"
+                      style={{
+                        pointerEvents: 'none'
+                      }}
+                    />
                   </div>
                 </div>
               </div>
-            ) : (
-              // Video Container with proper aspect ratio
-              <div className="relative overflow-hidden rounded-3xl bg-gray-800">
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=1&rel=0&playsinline=1`}
-                    frameBorder="0"
-                    allowFullScreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    title="Why Choose Us Video"
-                    className="absolute inset-0 w-full h-full"
-                  />
+
+              {/* Lớp nội dung có thể tương tác (nếu cần) */}
+              <div className="relative z-10 p-8 h-full flex flex-col justify-end pointer-events-auto">
+                {/* Có thể thêm nội dung text hoặc button ở đây */}
+                <div className="bg-black/30 backdrop-blur-sm rounded-2xl p-6 text-white">
+                  <h3 className="text-2xl font-bold mb-2">CHUYÊN MÔN 3D CAO CẤP</h3>
+                  <p className="text-sm opacity-90">Khám phá quy trình sản xuất video 3D chuyên nghiệp của chúng tôi</p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Right Features */}
@@ -134,14 +138,46 @@ const WhyChooseUsSection = ({
 
       {/* Custom Styles */}
       <style jsx>{`
-        /* Smooth hover animations */
-        .group {
-          will-change: transform;
+        /* Video Background Card Styles */
+        .video-background-card {
+          position: relative;
+          overflow: hidden;
+          border-radius: 25px;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
         }
 
-        /* Custom hover effects */
-        .group:hover img {
-          filter: brightness(1.1) contrast(1.05);
+        /* Video overlay để đảm bảo video không tràn ra ngoài góc bo tròn */
+        .video-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          overflow: hidden;
+          border-radius: 25px;
+          pointer-events: none;
+        }
+
+        /* Video container để căn giữa và scale video */
+        .video-container {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 120%;
+          height: 120%;
+          min-width: 120%;
+          min-height: 120%;
+        }
+
+        /* Đảm bảo iframe video lấp đầy container */
+        .video-container iframe {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          pointer-events: none;
         }
 
         /* Feature cards animation */
@@ -180,6 +216,16 @@ const WhyChooseUsSection = ({
           color: #fbbf24;
         }
 
+        /* Content overlay hover effects */
+        .content-overlay {
+          transition: all 0.3s ease;
+        }
+
+        .video-background-card:hover .content-overlay {
+          backdrop-filter: blur(8px);
+          background-color: rgba(0, 0, 0, 0.4);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 1024px) {
           .min-h-\\[600px\\] {
@@ -189,11 +235,16 @@ const WhyChooseUsSection = ({
           .text-6xl {
             font-size: 3rem;
           }
+
+          .video-container {
+            width: 130%;
+            height: 130%;
+          }
         }
 
         @media (max-width: 768px) {
           .min-h-\\[600px\\] {
-            min-height: 300px;
+            min-height: 350px;
           }
 
           .text-5xl {
@@ -203,6 +254,17 @@ const WhyChooseUsSection = ({
           .lg\\:w-3\\/5 {
             width: 100%;
           }
+
+          .video-container {
+            width: 140%;
+            height: 140%;
+          }
+        }
+
+        /* Đảm bảo video không có controls và autoplay */
+        iframe[src*="youtube"] {
+          border: none;
+          outline: none;
         }
       `}</style>
     </section>
