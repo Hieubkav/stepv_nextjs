@@ -1,8 +1,8 @@
 # Step V Studio - Creative Video Production & Design
 
-Website chuyên nghiệp cho Step V Studio - chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp. Được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui, tự động deploy lên GitHub Pages.
+Website chuyên nghiệp cho Step V Studio - chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp. Được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui, tự động deploy lên Vercel.
 
-🌐 **Live Demo:** [https://hieubkav.github.io/stepv_nextjs](https://hieubkav.github.io/stepv_nextjs)
+🌐 **Live Demo:** [https://stepv-nextjs.vercel.app](https://stepv-nextjs.vercel.app)
 
 ## 🚀 Công nghệ sử dụng
 
@@ -10,8 +10,7 @@ Website chuyên nghiệp cho Step V Studio - chuyên gia hình ảnh 3D cho thư
 - **TypeScript** - Type-safe JavaScript
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Shadcn/ui** - Beautiful và customizable components
-- **GitHub Actions** - Auto-deployment workflow
-- **GitHub Pages** - Static hosting
+- **Vercel** - Auto-deployment và hosting
 
 ## 📁 Cấu trúc dự án
 
@@ -61,22 +60,29 @@ npm run build
 npm run lint
 ```
 
-## 🚀 Deployment lên GitHub Pages
+## 🚀 Deployment lên Vercel
 
-### Tự động (Đã cấu hình sẵn)
-Repository này đã được cấu hình để tự động deploy khi:
-1. **Push code lên branch `master`** - Workflow sẽ tự động chạy
-2. **Manual trigger** - Có thể chạy thủ công từ Actions tab
+### Tự động (Khuyến nghị)
+1. **Kết nối GitHub với Vercel:**
+   - Truy cập [vercel.com](https://vercel.com)
+   - Đăng nhập bằng GitHub
+   - Import repository: `https://github.com/Hieubkav/stepv_nextjs`
 
-### Cấu hình GitHub Pages (Chỉ cần làm 1 lần)
-1. Vào repository **Settings** > **Pages**
-2. Chọn **Source**: GitHub Actions
-3. Workflow sẽ tự động chạy và deploy tại: `https://hieubkav.github.io/stepv_nextjs`
+2. **Cấu hình tự động:**
+   - Framework: Next.js (tự động detect)
+   - Build Command: `npm run build`
+   - Output Directory: `.next` (default)
+   - Install Command: `npm install`
+
+3. **Deploy:**
+   - Mỗi lần push lên `master` → Tự động deploy
+   - Preview deployments cho các branch khác
+   - Live URL: `https://stepv-nextjs.vercel.app`
 
 ### Build thủ công (nếu cần)
 ```bash
 npm run build
-# Thư mục `out` sẽ chứa static files
+npm start
 ```
 
 ## 📦 Thêm Shadcn/ui components
@@ -108,19 +114,20 @@ Cập nhật `src/utils/constants.ts` để thay đổi site config.
 ## 📝 Lưu ý quan trọng
 
 1. **Repository URL**: `https://github.com/Hieubkav/stepv_nextjs`
-2. **Live URL**: `https://hieubkav.github.io/stepv_nextjs`
-3. **Base Path**: Đã cấu hình `/stepv_nextjs` cho GitHub Pages
-4. **Static Export**: Dự án được cấu hình cho static export, không hỗ trợ server-side features
-5. **Image Optimization**: Đã disable để tương thích với static hosting
+2. **Live URL**: `https://stepv-nextjs.vercel.app`
+3. **Platform**: Vercel (tối ưu cho Next.js)
+4. **Server-side Features**: Hỗ trợ đầy đủ SSR, API routes, ISR
+5. **Image Optimization**: Tự động tối ưu với Vercel Image Optimization
 6. **Auto Deploy**: Mỗi lần push lên `master` branch sẽ tự động deploy
 
-## 🔧 GitHub Actions Workflow
+## 🔧 Vercel Deployment
 
-File `.github/workflows/deploy.yml` đã được cấu hình để:
-1. **Trigger**: Tự động chạy khi push lên branch `master`
-2. **Build**: Setup Node.js, install dependencies, build project
-3. **Deploy**: Tự động deploy lên GitHub Pages
-4. **Cache**: Tối ưu hóa build time với cache
+Vercel tự động detect và deploy Next.js projects:
+1. **Auto-detect**: Framework, build settings
+2. **Zero-config**: Không cần cấu hình phức tạp
+3. **Fast builds**: Build time nhanh hơn GitHub Actions
+4. **Global CDN**: Performance tối ưu toàn cầu
+5. **Preview deployments**: Mỗi PR có URL preview riêng
 
 ### Cách sử dụng:
 ```bash
@@ -129,7 +136,7 @@ git add .
 git commit -m "Update website"
 git push origin master
 
-# Workflow sẽ tự động chạy và deploy!
+# Vercel sẽ tự động build và deploy!
 ```
 
 ## 📚 Tài liệu tham khảo

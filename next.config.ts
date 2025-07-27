@@ -1,19 +1,24 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Enable static export for GitHub Pages
-  output: 'export',
+  // Vercel handles deployment automatically, no need for static export
+  // output: 'export', // Commented out for Vercel
 
-  // Disable image optimization for static export
+  // Enable image optimization for Vercel (better performance)
   images: {
-    unoptimized: true,
+    domains: [
+      'images.unsplash.com',
+      'stepv.studio',
+      'via.placeholder.com'
+    ],
+    // unoptimized: true, // Not needed for Vercel
   },
 
-  // Set base path for GitHub Pages (will be set by environment variable)
-  basePath: process.env.NODE_ENV === 'production' ? '/stepv_nextjs' : '',
+  // No basePath needed for Vercel (custom domain support)
+  // basePath: process.env.NODE_ENV === 'production' ? '/stepv_nextjs' : '',
 
-  // Ensure trailing slash for GitHub Pages
-  trailingSlash: true,
+  // Trailing slash not required for Vercel
+  // trailingSlash: true,
 
   // Experimental features
   experimental: {

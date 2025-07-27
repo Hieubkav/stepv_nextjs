@@ -1,21 +1,24 @@
-# 🚀 Hướng dẫn Setup GitHub Pages cho Step V Studio
+# 🚀 Hướng dẫn Setup Vercel cho Step V Studio
 
 ## 📋 Checklist Setup (Chỉ cần làm 1 lần)
 
 ### 1. Cấu hình GitHub Repository
 - ✅ Repository: `https://github.com/Hieubkav/stepv_nextjs`
 - ✅ Branch chính: `master`
-- ✅ Workflow file: `.github/workflows/deploy.yml`
+- ✅ Framework: Next.js 15
 
-### 2. Cấu hình GitHub Pages
-1. Vào repository **Settings** > **Pages**
-2. Chọn **Source**: `GitHub Actions`
-3. Không cần chọn branch (workflow sẽ tự động handle)
+### 2. Cấu hình Vercel
+1. Truy cập [vercel.com](https://vercel.com)
+2. **Sign up/Login** với GitHub account
+3. Click **"New Project"**
+4. **Import** repository: `Hieubkav/stepv_nextjs`
+5. **Deploy** (Vercel tự động detect Next.js)
 
 ### 3. Kiểm tra cấu hình
-- ✅ `next.config.ts`: basePath = `/stepv_nextjs`
-- ✅ `package.json`: homepage URL đã cập nhật
+- ✅ `next.config.ts`: Tối ưu cho Vercel
+- ✅ `package.json`: homepage URL = vercel.app
 - ✅ `constants.ts`: URL production đã cập nhật
+- ✅ `vercel.json`: Cấu hình deployment
 
 ## 🔄 Quy trình Deploy
 
@@ -26,21 +29,22 @@ git add .
 git commit -m "Cập nhật website"
 git push origin master
 
-# 2. Workflow tự động chạy
-# 3. Website được deploy tại: https://hieubkav.github.io/stepv_nextjs
+# 2. Vercel tự động build và deploy
+# 3. Website được deploy tại: https://stepv-nextjs.vercel.app
 ```
 
-### Thủ công (từ Actions tab)
-1. Vào repository > **Actions**
-2. Chọn workflow "Deploy Step V Studio to GitHub Pages"
-3. Click **Run workflow** > **Run workflow**
+### Thủ công (từ Vercel Dashboard)
+1. Vào [vercel.com/dashboard](https://vercel.com/dashboard)
+2. Chọn project **stepv-nextjs**
+3. Click **"Redeploy"** nếu cần
 
 ## 🎯 Kết quả mong đợi
 
 - **Development**: `http://localhost:3000`
-- **Production**: `https://hieubkav.github.io/stepv_nextjs`
-- **Build time**: ~2-3 phút
+- **Production**: `https://stepv-nextjs.vercel.app`
+- **Build time**: ~30-60 giây (nhanh hơn GitHub Actions)
 - **Auto deploy**: Mỗi lần push lên `master`
+- **Preview**: Mỗi PR có URL preview riêng
 
 ## 🔍 Troubleshooting
 

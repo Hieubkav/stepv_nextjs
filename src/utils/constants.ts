@@ -4,7 +4,7 @@ export const SITE_CONFIG = {
   name: 'Step V Studio',
   description: 'Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp - Step V Studio',
   url: process.env.NODE_ENV === 'production'
-    ? 'https://hieubkav.github.io/stepv_nextjs'
+    ? 'https://stepv-nextjs.vercel.app'
     : 'http://localhost:3000',
   author: 'Step V Studio',
   keywords: '3D Animation, Product Visualization, Perfume, Beauty, 3D Rendering, Visual Effects, Creative Video Production, Design',
