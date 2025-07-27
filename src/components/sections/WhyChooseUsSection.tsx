@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface WhyChooseUsSectionProps {
   title?: string;
@@ -69,10 +70,12 @@ const WhyChooseUsSection = ({
                   className="relative w-full h-full cursor-pointer group"
                   onClick={handlePlayVideo}
                 >
-                  <img
+                  <Image
                     src={videoPlaceholder}
                     alt="Perfume Product Showcase"
-                    className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-all duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     onError={(e) => {
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=800&h=600&fit=crop&crop=center';
                     }}

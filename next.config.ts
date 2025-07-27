@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
   // Ensure trailing slash for GitHub Pages
   trailingSlash: true,
 
+  // Experimental features
+  experimental: {
+    // Add any experimental features here if needed
+  },
+
   // Turbopack configuration for development
   turbopack: {
     rules: {

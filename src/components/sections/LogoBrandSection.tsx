@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface ClientLogo {
   image: string;
   alt: string;
@@ -90,14 +92,14 @@ const LogoBrandSection = ({
         {logoRows.map((logoRow, rowIndex) => (
           <div key={rowIndex} className="w-full grid grid-cols-3 justify-start items-stretch content-start relative text-left p-[10px] gap-5 box-border">
             {logoRow.map((logo, logoIndex) => (
-              <div key={logoIndex}>
-                <img 
+              <div key={logoIndex} className="relative w-full h-20">
+                <Image
                   src={logo.image}
-                  loading="lazy"
-                  decoding="async"
                   alt={logo.alt}
                   title={logo.client_name}
-                  className="max-w-full align-middle hover:opacity-80 transition-opacity duration-300"
+                  fill
+                  className="object-contain hover:opacity-80 transition-opacity duration-300"
+                  sizes="(max-width: 768px) 33vw, (max-width: 1200px) 25vw, 20vw"
                   onError={(e) => {
                     // Fallback to placeholder if image fails to load
                     e.currentTarget.src = 'https://via.placeholder.com/200x200?text=Logo';

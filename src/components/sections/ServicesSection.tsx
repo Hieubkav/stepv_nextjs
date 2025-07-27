@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface ServiceItem {
   image: string;
@@ -105,10 +106,12 @@ const ServicesSection = ({
               <div className="relative min-h-[500px] md:min-h-[600px]">
                 {/* Background Image */}
                 <div className="absolute inset-0">
-                  <img
+                  <Image
                     src={service.image}
                     alt={service.title}
-                    className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-all duration-700 group-hover:scale-110"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
                       e.currentTarget.src = 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=600&h=800&fit=crop&crop=center';

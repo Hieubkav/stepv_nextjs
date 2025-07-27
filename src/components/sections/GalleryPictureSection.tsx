@@ -1,5 +1,7 @@
 'use client';
 
+import Image from 'next/image';
+
 interface GalleryImage {
   url: string;
   alt: string;
@@ -90,11 +92,12 @@ const GalleryPictureSection = ({
                   style={{ marginBottom: `${margin}px` }}
                 >
                   <div className={`w-full h-44 md:h-52 lg:h-64 relative group cursor-pointer overflow-hidden rounded-2xl shadow-xl ${ring}`}>
-                    <img
+                    <Image
                       src={image.url}
                       alt={image.alt}
-                      className={`w-full h-full object-cover transition-all duration-${animationDuration} group-hover:scale-${String(hoverScale).replace('.', '')} group-hover:brightness-110`}
-                      loading="lazy"
+                      fill
+                      className={`object-cover transition-all duration-${animationDuration} group-hover:scale-${String(hoverScale).replace('.', '')} group-hover:brightness-110`}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       onError={(e) => {
                         // Fallback to local placeholder if image fails to load
                         e.currentTarget.src = '/images/gallery/1.jpg';

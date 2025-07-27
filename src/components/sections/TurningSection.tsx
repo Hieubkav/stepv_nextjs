@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
+import Image, { StaticImageData } from "next/image";
 
 // Import logos as static assets
 import wnxLogo from '../../../public/images/logos/wn-x.png';
@@ -15,7 +15,7 @@ import sdvstudiosLogo from '../../../public/images/logos/sdvstudios.png';
 import caronparisLogo from '../../../public/images/logos/caronparis.png';
 
 interface ClientLogo {
-  image: string;
+  image: string | StaticImageData;
   alt: string;
   client_name: string;
 }
