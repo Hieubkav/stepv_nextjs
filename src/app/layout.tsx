@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { StagewiseToolbar } from '@stagewise/toolbar-next';
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
         <StagewiseToolbar />
         <Header />
         {children}
+        <Footer />
       </body>
     </html>
   );

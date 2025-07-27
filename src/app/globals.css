@@ -185,6 +185,29 @@
   .btn-secondary {
     @apply border-2 border-white text-white hover:bg-white hover:text-black font-semibold py-3 px-8 rounded-full transition-all duration-300 hover:scale-105 uppercase tracking-wide text-sm;
   }
+
+  /* Footer specific styles */
+  .footer-gradient {
+    background: linear-gradient(180deg, #000000 0%, #181818 100%);
+  }
+
+  .footer-gold-accent {
+    color: #FFD700;
+  }
+
+  .footer-gold-border {
+    border-color: #FFD700;
+  }
+
+  .footer-gold-hover:hover {
+    border-color: #FFD700;
+    color: #FFD700;
+  }
+
+  /* Smooth footer animations */
+  .footer-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
 @layer utilities {
