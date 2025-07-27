@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface WorkStep {
   title: string;
@@ -15,158 +15,137 @@ interface WeWorkSectionProps {
 }
 
 const WeWorkSection = ({
-  title = 'How We Work',
-  subtitle = 'Our streamlined process ensures exceptional results every time. From concept to final delivery, we work closely with you to bring your vision to life.',
+  title = 'CÁCH CHÚNG TÔI LÀM VIỆC',
+  subtitle = 'Tại Step V Studio, chúng tôi tin rằng kết quả tuyệt vời đến từ quy trình làm việc có cấu trúc và minh bạch. Đó là lý do tại sao chúng tôi đã thiết kế một quy trình giúp bạn luôn được thông tin và tham gia vào từng bước.',
   steps = [
     {
-      title: 'Discovery & Planning',
-      description: 'We start by understanding your brand, goals, and vision to create the perfect strategy.',
+      title: 'KHỞI ĐỘNG & LÊN KẾ HOẠCH',
+      description: 'Chúng tôi bắt đầu với buổi tư vấn miễn phí để hiểu rõ tầm nhìn, mục tiêu và yêu cầu của bạn. Mỗi dự án đều bắt đầu với lộ trình rõ ràng được thiết kế riêng cho nhu cầu của bạn',
       icon: 'fa-lightbulb'
     },
     {
-      title: 'Concept Development',
-      description: 'Our team develops creative concepts and presents initial ideas for your approval.',
+      title: 'PHÁT TRIỂN Ý TƯỞNG',
+      description: 'Đội ngũ sáng tạo của chúng tôi phát triển các ý tưởng đổi mới và trình bày những ý tưởng ban đầu phù hợp với tầm nhìn thương hiệu và mục tiêu dự án của bạn',
       icon: 'fa-pencil-ruler'
     },
     {
-      title: '3D Production',
-      description: 'We bring your vision to life with cutting-edge 3D modeling and rendering technology.',
+      title: 'MÔ HÌNH HÓA & THIẾT KẾ',
+      description: 'Sử dụng các công cụ tiên tiến, chúng tôi tạo ra các mô hình 3D chi tiết, kết cấu và thiết lập ánh sáng để biến ý tưởng của bạn thành hiện thực',
       icon: 'fa-cube'
     },
     {
-      title: 'Final Delivery',
-      description: 'High-quality final assets delivered in your preferred format, ready for use.',
+      title: 'HOẠT HÌNH & HIỆU ỨNG',
+      description: 'Chúng tôi thêm hoạt hình động, hiệu ứng hình ảnh và đồ họa chuyển động để tạo ra nội dung hấp dẫn và cuốn hút',
+      icon: 'fa-play-circle'
+    },
+    {
+      title: 'ĐÁNH GIÁ & HOÀN THIỆN',
+      description: 'Chúng tôi làm việc chặt chẽ với bạn để đánh giá tiến độ, thu thập phản hồi và thực hiện các điều chỉnh cần thiết để đảm bảo sự hoàn hảo',
+      icon: 'fa-search'
+    },
+    {
+      title: 'BÀN GIAO CUỐI CÙNG',
+      description: 'Sản phẩm cuối cùng chất lượng cao được bàn giao theo định dạng bạn yêu cầu, sẵn sàng sử dụng trên tất cả các kênh marketing của bạn',
       icon: 'fa-check-circle'
     }
   ]
 }: WeWorkSectionProps) => {
   const [activeStep, setActiveStep] = useState(0);
-  const uniqueId = 'we-work-' + Math.random().toString(36).substr(2, 9);
 
-  // Auto-rotate steps every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveStep((prev) => (prev + 1) % steps.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [steps.length]);
-
-  const handleStepClick = (stepIndex: number) => {
-    setActiveStep(stepIndex);
-  };
-
-  // Calculate positions for dots around the circle
+  // Calculate positions for step buttons around the circle
   const getStepPosition = (index: number, total: number) => {
     const angle = (index * 360) / total - 90; // Start from top
-    const radius = 45; // Percentage from center
-    const x = 50 + radius * Math.cos((angle * Math.PI) / 180);
-    const y = 50 + radius * Math.sin((angle * Math.PI) / 180);
+    const radius = 250; // Distance from center in pixels
+    const centerX = 250; // Center X of the 500px circle
+    const centerY = 250; // Center Y of the 500px circle
+    const x = centerX + radius * Math.cos((angle * Math.PI) / 180) - 55; // -55 to center the 110px button
+    const y = centerY + radius * Math.sin((angle * Math.PI) / 180) - 55; // -55 to center the 110px button
     return { x, y };
   };
 
   return (
-    <section className="py-20 bg-black text-white">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white">
-            {title}
-          </h2>
-          <p className="text-lg md:text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
-            {subtitle}
-          </p>
-        </div>
+    <section className="py-20 bg-black text-white min-h-screen">
+      <div className="container mx-auto px-4 max-w-[1140px]">
+        {/* Grid Layout: Content + Circle */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
-        {/* Interactive Circle */}
-        <div className="max-w-4xl mx-auto">
-          <div className="relative aspect-square max-w-lg mx-auto">
-            {/* Main Circle */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 shadow-2xl">
-              {/* Center Content */}
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-center p-10 lg:p-16">
-                <div className="mb-4 text-white text-4xl lg:text-6xl">
-                  <i className={`fa ${steps[activeStep]?.icon || 'fa-star'}`}></i>
-                </div>
-                <h3 className="text-white text-xl lg:text-2xl uppercase leading-tight mb-4">
-                  {steps[activeStep]?.title || 'Step Title'}
-                </h3>
-                <p className="text-gray-300 font-light text-sm lg:text-base leading-relaxed">
-                  {steps[activeStep]?.description || 'Step description'}
-                </p>
-              </div>
-
-              {/* Step Dots */}
-              {steps.map((step, index) => {
-                const position = getStepPosition(index, steps.length);
-                return (
-                  <button
-                    key={index}
-                    className={`absolute w-4 h-4 rounded-full border-2 transition-all duration-300 cursor-pointer hover:scale-125 ${
-                      activeStep === index
-                        ? 'bg-white border-white shadow-lg shadow-white/50'
-                        : 'bg-gray-600 border-gray-500 hover:bg-gray-500'
-                    }`}
-                    style={{
-                      left: `${position.x}%`,
-                      top: `${position.y}%`,
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                    onClick={() => handleStepClick(index)}
-                    aria-label={`Step ${index + 1}: ${step.title}`}
-                  />
-                );
-              })}
-
-              {/* Connecting Lines */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                {steps.map((_, index) => {
-                  const currentPos = getStepPosition(index, steps.length);
-                  const nextPos = getStepPosition((index + 1) % steps.length, steps.length);
-                  
-                  return (
-                    <line
-                      key={index}
-                      x1={`${currentPos.x}%`}
-                      y1={`${currentPos.y}%`}
-                      x2={`${nextPos.x}%`}
-                      y2={`${nextPos.y}%`}
-                      stroke="rgba(156, 163, 175, 0.3)"
-                      strokeWidth="1"
-                      strokeDasharray="4,4"
-                    />
-                  );
-                })}
-              </svg>
-            </div>
-
-            {/* Decorative Rings */}
-            <div className="absolute inset-4 rounded-full border border-gray-700/50"></div>
-            <div className="absolute inset-8 rounded-full border border-gray-600/30"></div>
+          {/* COL 1: CONTENT - Order 2 on mobile, 1 on desktop */}
+          <div className="order-2 lg:order-1 text-center lg:text-left">
+            <h2 className="text-[61px] font-light mb-8 text-white uppercase tracking-wide">
+              {title}
+            </h2>
+            <p className="text-[20px] font-light text-white leading-relaxed mb-12">
+              {subtitle}
+            </p>
+            <a
+              href="#contact"
+              className="inline-block px-8 py-4 border-2 border-[#FFD700] text-[#FFD700] uppercase font-medium rounded-lg hover:bg-[#FFD700] hover:text-black transition-all duration-300"
+            >
+              Bắt đầu dự án của bạn ngay hôm nay
+            </a>
           </div>
 
-          {/* Step Indicators Below */}
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* COL 2: CIRCLE WORKFLOW - Order 1 on mobile, 2 on desktop */}
+          <div className="order-1 lg:order-2">
+            <div className="relative w-full max-w-lg mx-auto" style={{ width: '500px', height: '500px' }}>
+            {/* Main Center Circle */}
+            <div className="absolute inset-0 w-[500px] h-[500px] rounded-full border-2 border-[#FFD700] bg-black flex flex-col justify-center items-center text-center p-12">
+              {/* Active Step Content */}
+              <div className="mb-6 text-[#FFD700] text-5xl">
+                <i className={`fa ${steps[activeStep]?.icon || 'fa-star'}`}></i>
+              </div>
+              <h3 className="text-[#FFD700] text-2xl uppercase font-medium mb-6 leading-tight">
+                {steps[activeStep]?.title || 'Step Title'}
+              </h3>
+              <p className="text-white font-light text-base leading-relaxed">
+                {steps[activeStep]?.description || 'Step description'}
+              </p>
+            </div>
+
+            {/* Step Buttons Around Circle */}
+            {steps.map((step, index) => {
+              const position = getStepPosition(index, steps.length);
+              return (
+                <button
+                  key={index}
+                  className={`absolute w-[110px] h-[110px] rounded-full border-2 border-[#FFD700] bg-black flex items-center justify-center text-white font-medium transition-all duration-300 hover:bg-[#FFD700] hover:text-black ${
+                    activeStep === index ? 'bg-[#FFD700] text-black' : ''
+                  }`}
+                  style={{
+                    left: `${position.x}px`,
+                    top: `${position.y}px`
+                  }}
+                  onClick={() => setActiveStep(index)}
+                  aria-label={`Step ${index + 1}: ${step.title}`}
+                >
+                  Step {index + 1}
+                </button>
+              );
+            })}
+
+            {/* Hidden Content for Other Steps */}
             {steps.map((step, index) => (
-              <button
-                key={index}
-                className={`p-4 rounded-lg border transition-all duration-300 text-left ${
-                  activeStep === index
-                    ? 'bg-white/10 border-white text-white'
-                    : 'bg-gray-800/50 border-gray-700 text-gray-400 hover:bg-gray-700/50'
-                }`}
-                onClick={() => handleStepClick(index)}
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                    activeStep === index ? 'bg-white text-black' : 'bg-gray-600 text-white'
-                  }`}>
-                    {index + 1}
+              index !== activeStep && (
+                <div
+                  key={`hidden-${index}`}
+                  className="absolute inset-0 opacity-0 invisible"
+                  style={{ transition: 'opacity 0.3s ease, visibility 0.3s ease' }}
+                >
+                  <div className="w-full h-full flex flex-col justify-center items-center text-center p-12">
+                    <div className="mb-6 text-[#FFD700] text-5xl">
+                      <i className={`fa ${step.icon}`}></i>
+                    </div>
+                    <h3 className="text-[#FFD700] text-2xl uppercase font-medium mb-6 leading-tight">
+                      {step.title}
+                    </h3>
+                    <p className="text-white font-light text-base leading-relaxed">
+                      {step.description}
+                    </p>
                   </div>
-                  <span className="font-medium text-sm">{step.title}</span>
                 </div>
-              </button>
+              )
             ))}
+            </div>
           </div>
         </div>
       </div>
@@ -176,37 +155,51 @@ const WeWorkSection = ({
 
       {/* Custom Styles */}
       <style jsx>{`
-        /* Smooth transitions */
-        .transition-all {
-          will-change: transform, background-color, border-color;
+        /* Smooth transitions for interactive elements */
+        button {
+          transition: all 0.3s ease;
+        }
+        
+        button:hover {
+          transform: scale(1.05);
         }
 
-        /* Pulse animation for active step */
-        .shadow-yellow-500\\/50 {
-          animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
-          }
-          50% {
-            box-shadow: 0 0 0 10px rgba(234, 179, 8, 0);
-          }
+        /* Ensure proper font rendering */
+        h2, h3 {
+          font-family: inherit;
         }
 
         /* Responsive adjustments */
+        @media (max-width: 1024px) {
+          h2 {
+            font-size: 3rem !important;
+            text-align: center;
+          }
+
+          .order-2 {
+            text-align: center;
+          }
+        }
+
         @media (max-width: 768px) {
-          .aspect-square {
-            max-width: 300px;
+          .container {
+            padding: 0 1rem;
           }
-          
-          .inset-10 {
-            inset: 2rem;
+
+          h2 {
+            font-size: 2.5rem !important;
           }
-          
-          .lg\\:p-16 {
-            padding: 1.5rem;
+
+          .relative {
+            transform: scale(0.7);
+            margin: -75px 0;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .relative {
+            transform: scale(0.5);
+            margin: -125px 0;
           }
         }
       `}</style>
