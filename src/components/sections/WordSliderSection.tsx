@@ -1,7 +1,7 @@
 'use client';
 
 const WordSliderSection = () => {
-  const words = ['ENCHANT', 'EMPOWER', 'ELEVATE'];
+  const words = ['MÊ HOẶC', 'TRAO QUYỀN', 'NÂNG TẦM'];
 
   // Create many copies for seamless loop on wide screens
   const repeatedWords = Array(20).fill(words).flat();

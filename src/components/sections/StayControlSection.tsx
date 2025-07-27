@@ -202,9 +202,9 @@ const StayControlSection = ({
           will-change: transform, box-shadow, scale;
         }
 
-        /* Neon green accent color */
+        /* Neon yellow accent color */
         .text-neon-green {
-          color: #d0ff71;
+          color: #FFD700;
         }
 
         /* Enhanced gradient backgrounds */

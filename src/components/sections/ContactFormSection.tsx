@@ -14,51 +14,53 @@ interface ContactFormSectionProps {
 interface FormData {
   name: string;
   email: string;
-  company: string;
-  phone: string;
+  serviceCategory: string;
   message: string;
+  privacyAgreed: boolean;
 }
 
 const ContactFormSection = ({
-  title = 'Let&apos;s Create Something Amazing Together',
-  subtitle = 'Ready to elevate your brand with stunning 3D visuals? Get in touch with us today and let&apos;s discuss your project.',
-  backgroundColor = 'bg-gray-900'
+  title = 'CÙNG HIỆN THỰC HÓA TẦM NHÌN CỦA BẠN',
+  subtitle = 'Chúng tôi ở đây để giúp bạn tạo ra những hình ảnh và hoạt hình tuyệt đẹp, thu hút khán giả và nâng tầm thương hiệu của bạn. Dù bạn có câu hỏi, cần báo giá, hay muốn thảo luận về dự án tiếp theo, chúng tôi rất mong được lắng nghe từ bạn',
+  backgroundColor = 'bg-black'
 }: ContactFormSectionProps) => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    company: '',
-    phone: '',
-    message: ''
+    serviceCategory: '',
+    message: '',
+    privacyAgreed: false
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.privacyAgreed) {
+      alert('Vui lòng đồng ý với chính sách bảo mật');
+      return;
+    }
+    
     setIsSubmitting(true);
     setSubmitStatus('idle');
 
     try {
-      // Simulate form submission (replace with actual API call)
       await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // For demo purposes, we'll just show success
       setSubmitStatus('success');
       setFormData({
         name: '',
         email: '',
-        company: '',
-        phone: '',
-        message: ''
+        serviceCategory: '',
+        message: '',
+        privacyAgreed: false
       });
     } catch {
       setSubmitStatus('error');
@@ -67,194 +69,231 @@ const ContactFormSection = ({
     }
   };
 
+  const serviceCategories = [
+    'Hình ảnh 3D Sản phẩm',
+    'Sản xuất VFX / AR',
+    'Motion Graphics',
+    'Hoạt hình Thương hiệu',
+    'Hình ảnh Kiến trúc',
+    'Hoạt hình Nhân vật'
+  ];
+
   return (
-    <section id="contact" className={`py-20 ${backgroundColor} text-white`}>
+    <section id="contact" className={`py-20 ${backgroundColor} text-white min-h-screen`}>
       <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-            {/* Left Content */}
-            <div className="space-y-8">
-              <div>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white">
-                  {title}
-                </h2>
-                <p className="text-lg md:text-xl text-gray-300 leading-relaxed">
-                  {subtitle}
-                </p>
-              </div>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+            
+            {/* Left Column - Information & Social */}
+            <div className="lg:pr-16 py-12 flex flex-col justify-center">
+              <div className="space-y-12">
+                
+                {/* Main Title */}
+                <div>
+                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-thin text-white leading-tight mb-8 tracking-wide">
+                    {title}
+                  </h1>
+                  <p className="text-xl text-white font-light leading-relaxed max-w-lg">
+                    {subtitle}
+                  </p>
+                </div>
 
-              {/* Contact Info */}
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Email</h3>
-                    <p className="text-gray-400">hello@stepv.studio</p>
+                {/* Divider */}
+                <div className="w-full h-px bg-white opacity-30"></div>
+
+                {/* Social Media Section */}
+                <div className="space-y-6">
+                  <p className="text-white text-lg font-light">
+                    Theo dõi chúng tôi trên mạng xã hội để cập nhật tin tức mới nhất, dự án và nội dung hậu trường
+                  </p>
+                  
+                  <div className="flex space-x-4">
+                    {[
+                      { 
+                        name: 'YouTube', 
+                        icon: (
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                          </svg>
+                        )
+                      },
+                      { 
+                        name: 'Instagram', 
+                        icon: (
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                        )
+                      },
+                      { 
+                        name: 'LinkedIn', 
+                        icon: (
+                          <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          </svg>
+                        )
+                      }
+                    ].map((social, index) => (
+                      <a
+                        key={index}
+                        href="#"
+                        className="w-12 h-12 bg-black border border-gray-800 rounded-lg flex items-center justify-center transition-all duration-300 hover:border-[#FFD700] group"
+                      >
+                        <div className="text-[#FFD700] group-hover:scale-110 transition-transform duration-300">
+                          {social.icon}
+                        </div>
+                      </a>
+                    ))}
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Phone</h3>
-                    <p className="text-gray-400">+1 (555) 123-4567</p>
-                  </div>
+                {/* Our Services Button */}
+                <div>
+                  <Button className="bg-white text-black hover:bg-gray-100 px-8 py-3 rounded-lg font-medium tracking-wide uppercase transition-all duration-300">
+                    DỊCH VỤ CỦA CHÚNG TÔI
+                  </Button>
                 </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center">
-                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-white">Location</h3>
-                    <p className="text-gray-400">Worldwide Remote</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Social Links */}
-              <div className="flex space-x-4">
-                {[
-                  { name: 'LinkedIn', icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z' },
-                  { name: 'Instagram', icon: 'M12.017 0C5.396 0 .029 5.367.029 11.987c0 6.62 5.367 11.987 11.988 11.987s11.987-5.367 11.987-11.987C24.004 5.367 18.637.001 12.017.001zM8.449 16.988c-1.297 0-2.448-.596-3.205-1.529l1.529-1.297c.447.596 1.148.894 1.676.894.745 0 1.297-.447 1.297-1.148 0-.596-.447-1.148-1.297-1.148H7.301V11.54h1.148c.745 0 1.297-.447 1.297-1.148 0-.596-.447-1.148-1.297-1.148-.596 0-1.148.298-1.529.745L5.691 8.692c.745-.894 1.826-1.529 3.056-1.529 2.001 0 3.503 1.297 3.503 3.205 0 .894-.447 1.676-1.148 2.15.745.447 1.297 1.297 1.297 2.299 0 1.908-1.502 3.171-3.503 3.171z' },
-                  { name: 'YouTube', icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' }
-                ].map((social, index) => (
-                  <a
-                    key={index}
-                    href="#"
-                    className="w-10 h-10 bg-gray-800 hover:bg-yellow-500 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110"
-                  >
-                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                      <path d={social.icon} />
-                    </svg>
-                  </a>
-                ))}
               </div>
             </div>
 
-            {/* Right Form */}
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                      Full Name *
-                    </label>
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-500"
-                      placeholder="Your full name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                      Email Address *
-                    </label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-500"
-                      placeholder="your@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="company" className="block text-sm font-medium text-gray-300 mb-2">
-                      Company
-                    </label>
-                    <Input
-                      id="company"
-                      name="company"
-                      type="text"
-                      value={formData.company}
-                      onChange={handleInputChange}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-500"
-                      placeholder="Your company name"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
-                      Phone Number
-                    </label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-500"
-                      placeholder="+1 (555) 123-4567"
-                    />
-                  </div>
-                </div>
-
+            {/* Right Column - Contact Info & Form */}
+            <div className="lg:pl-16 py-12 flex flex-col justify-center">
+              <div className="space-y-12">
+                
+                {/* Contact Information */}
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
-                    Project Details *
-                  </label>
-                  <Textarea
-                    id="message"
-                    name="message"
-                    required
-                    rows={5}
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    className="bg-gray-700 border-gray-600 text-white placeholder-gray-400 focus:border-yellow-500 resize-none"
-                    placeholder="Tell us about your project, timeline, and any specific requirements..."
-                  />
+                  <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-6">
+                    CÁCH LIÊN HỆ VỚI CHÚNG TÔI
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <a href="mailto:contact@stepv.studio" className="text-[#FFD700] hover:underline text-lg">
+                        contact@stepv.studio
+                      </a>
+                    </div>
+                    <div>
+                      <a href="tel:+49-176-21129718" className="text-[#FFD700] hover:underline text-lg">
+                        +49-176-21129718
+                      </a>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Submit Button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-white hover:bg-gray-200 text-black font-semibold py-3 px-6 rounded-full transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wide"
-                >
-                  {isSubmitting ? (
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                      <span>Sending...</span>
+                {/* Contact Form */}
+                <div>
+                  <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-2">
+                    HOẶC GỬI TIN NHẮN CHO CHÚNG TÔI
+                  </h3>
+                  <p className="text-white mb-8">
+                    Điền vào biểu mẫu bên dưới, chúng tôi sẽ phản hồi bạn trong vòng <span className="text-[#FFD700]">24 giờ</span>
+                  </p>
+
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Name Field */}
+                    <div>
+                      <Input
+                        name="name"
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        className="bg-black border border-gray-600 text-white placeholder-gray-400 focus:border-[#FFD700] focus:ring-0 rounded-lg h-12"
+                        placeholder="Họ và tên*"
+                      />
                     </div>
-                  ) : (
-                    'Send Message'
-                  )}
-                </Button>
 
-                {/* Status Messages */}
-                {submitStatus === 'success' && (
-                  <div className="p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg text-yellow-400 text-center">
-                    Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
-                  </div>
-                )}
+                    {/* Email Field */}
+                    <div>
+                      <Input
+                        name="email"
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="bg-black border border-gray-600 text-white placeholder-gray-400 focus:border-[#FFD700] focus:ring-0 rounded-lg h-12"
+                        placeholder="E-Mail*"
+                      />
+                    </div>
 
-                {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400 text-center">
-                    Sorry, there was an error sending your message. Please try again.
-                  </div>
-                )}
-              </form>
+                    {/* Service Category Dropdown */}
+                    <div>
+                      <select
+                        name="serviceCategory"
+                        value={formData.serviceCategory}
+                        onChange={handleInputChange}
+                        className="w-full bg-black border border-gray-600 text-white focus:border-[#FFD700] focus:ring-0 rounded-lg h-12 px-3"
+                      >
+                        <option value="" className="text-gray-400">Danh mục dịch vụ</option>
+                        {serviceCategories.map((category, index) => (
+                          <option key={index} value={category} className="text-white bg-black">
+                            {category}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Message Field */}
+                    <div>
+                      <Textarea
+                        name="message"
+                        required
+                        rows={5}
+                        value={formData.message}
+                        onChange={handleInputChange}
+                        className="bg-black border border-gray-600 text-white placeholder-gray-400 focus:border-[#FFD700] focus:ring-0 rounded-lg resize-none"
+                        placeholder="Tin nhắn"
+                      />
+                    </div>
+
+                    {/* Privacy Policy Checkbox */}
+                    <div className="flex items-start space-x-3">
+                      <input
+                        type="checkbox"
+                        name="privacyAgreed"
+                        checked={formData.privacyAgreed}
+                        onChange={handleInputChange}
+                        className="mt-1 w-4 h-4 text-[#FFD700] bg-black border-gray-600 rounded focus:ring-[#FFD700] focus:ring-2"
+                        required
+                      />
+                      <label className="text-white text-sm">
+                        Tôi đồng ý với{' '}
+                        <a href="#" className="text-[#FFD700] hover:underline">
+                          CHÍNH SÁCH BẢO MẬT
+                        </a>
+                      </label>
+                    </div>
+
+                    {/* Submit Button */}
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-black border border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-black font-medium py-3 px-6 rounded-lg transition-all duration-300 uppercase tracking-wide disabled:opacity-50"
+                    >
+                      {isSubmitting ? (
+                        <div className="flex items-center justify-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-[#FFD700] border-t-transparent rounded-full animate-spin"></div>
+                          <span>Đang gửi...</span>
+                        </div>
+                      ) : (
+                        'GỬI'
+                      )}
+                    </Button>
+
+                    {/* Status Messages */}
+                    {submitStatus === 'success' && (
+                      <div className="p-4 bg-[#FFD700]/20 border border-[#FFD700] rounded-lg text-[#FFD700] text-center">
+                        Cảm ơn bạn! Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi bạn sớm.
+                      </div>
+                    )}
+
+                    {submitStatus === 'error' && (
+                      <div className="p-4 bg-red-500/20 border border-red-500 rounded-lg text-red-400 text-center">
+                        Xin lỗi, đã có lỗi xảy ra khi gửi tin nhắn của bạn. Vui lòng thử lại.
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
         </div>
