@@ -302,4 +302,68 @@
   .animate-glow-yellow {
     animation: glow-yellow 2s ease-in-out infinite;
   }
+
+  /* Ken Burns Effect for Hero Images */
+  .animate-ken-burns {
+    animation: ken-burns 20s ease-in-out infinite alternate;
+  }
+
+  @keyframes ken-burns {
+    0% {
+      transform: scale(1) translate(0, 0);
+    }
+    25% {
+      transform: scale(1.1) translate(-2%, -1%);
+    }
+    50% {
+      transform: scale(1.05) translate(1%, -2%);
+    }
+    75% {
+      transform: scale(1.08) translate(-1%, 1%);
+    }
+    100% {
+      transform: scale(1.12) translate(2%, -1%);
+    }
+  }
+
+  /* Vertical Scrolling Animation for Client Logos */
+  .animate-scroll-vertical {
+    animation: scroll-vertical 30s linear infinite;
+  }
+
+  @keyframes scroll-vertical {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  /* Horizontal Scrolling Animations for Text Tickers */
+  .animate-scroll-right {
+    animation: scroll-right 20s linear infinite;
+  }
+
+  .animate-scroll-left {
+    animation: scroll-left 20s linear infinite;
+  }
+
+  @keyframes scroll-right {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes scroll-left {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
 }
