@@ -20,10 +20,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
   const menuItems: MenuItem[] = [
     { label: 'TRANG CHỦ', href: '/', isActive: true },
-    { label: 'LIÊN HỆ', href: '#contact' },
+    { label: 'KHÓA HỌC', href: '#contact' },
     { label: 'DỰ ÁN', href: '#projects' },
     { label: 'VỀ CHÚNG TÔI', href: '#about' },
-    { label: 'TUYỂN DỤNG', href: '#jobs' },
+    { label: 'THƯ VIỆN', href: '#jobs' },
     { label: 'THÊM', href: '#more' }
   ];
 
