@@ -63,11 +63,11 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
       {/* Top Header */}
       <header
         id="header-top"
-        className={`font-sans absolute top-0 left-0 w-full z-20 transition-opacity duration-300 ${className}`}
+        className={`font-sans absolute top-0 left-0 w-full z-40 transition-opacity duration-300 ${className}`}
       >
-        <div className="flex items-center justify-between gap-5 w-full min-h-[110px] px-6 bg-black/30 backdrop-blur-sm border-b border-white/80">
+        <div className="flex items-center justify-between gap-2 w-full min-h-[110px] px-6 bg-black/30 backdrop-blur-sm border-b border-white/80">
           {/* Logo */}
-          <div className="w-1/4">
+          <div className="w-1/5 flex-shrink-0">
             <Link href="/">
               <Image
                 src="/images/logo.png"
@@ -81,10 +81,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex justify-center w-1/2">
-            <ul className="flex items-center space-x-2">
+          <nav className="hidden lg:flex justify-center flex-1 max-w-3xl mx-4">
+            <ul className="flex items-center justify-center space-x-1 w-full">
               {menuItems.map((item, index) => (
-                <li key={index}>
+                <li key={index} className="flex-shrink-0">
                   <Link
                     href={item.href}
                     onClick={(e) => {
@@ -93,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         handleLinkClick(item.href);
                       }
                     }}
-                    className={`px-5 py-2 uppercase font-semibold text-sm transition-colors ${
+                    className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
                       item.isActive
                         ? 'text-white border-b-2 border-white'
                         : 'text-white hover:text-gray-300'
@@ -107,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           </nav>
 
           {/* Right Side - Contact Button, Social Icons & Mobile Menu */}
-          <div className="flex items-center justify-end w-1/4 gap-4">
+          <div className="flex items-center justify-end w-1/5 flex-shrink-0 gap-3">
             {/* Social Icons */}
             <div className="hidden lg:flex items-center gap-2">
               {[
@@ -154,9 +154,9 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           isScrolled ? 'translate-y-0 opacity-100' : '-translate-y-[150%] opacity-0'
         }`}
       >
-        <div className="flex items-center justify-between gap-5 w-full h-[100px] px-8 bg-black/50 backdrop-blur-lg rounded-full shadow-2xl shadow-black/30">
+        <div className="flex items-center justify-between gap-2 w-full h-[100px] px-8 bg-black/50 backdrop-blur-lg rounded-full shadow-2xl shadow-black/30">
           {/* Logo */}
-          <div className="w-1/4">
+          <div className="w-1/5 flex-shrink-0">
             <Link href="/">
               <Image
                 src="/images/logo.png"
@@ -170,10 +170,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex justify-center w-1/2">
-            <ul className="flex items-center space-x-2">
+          <nav className="hidden lg:flex justify-center flex-1 max-w-3xl mx-4">
+            <ul className="flex items-center justify-center space-x-1 w-full">
               {menuItems.map((item, index) => (
-                <li key={index}>
+                <li key={index} className="flex-shrink-0">
                   <Link
                     href={item.href}
                     onClick={(e) => {
@@ -182,7 +182,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         handleLinkClick(item.href);
                       }
                     }}
-                    className={`px-5 py-2 uppercase font-semibold text-sm transition-colors ${
+                    className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
                       item.isActive
                         ? 'text-white border-b-2 border-white'
                         : 'text-white hover:text-gray-300'
@@ -196,7 +196,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
           </nav>
 
           {/* Right Side - Contact Button, Social Icons & Mobile Menu */}
-          <div className="flex items-center justify-end w-1/4 gap-4">
+          <div className="flex items-center justify-end w-1/5 flex-shrink-0 gap-3">
             {/* Social Icons */}
             <div className="hidden lg:flex items-center gap-2">
               {[
@@ -355,13 +355,47 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
         /* Responsive adjustments */
         @media (max-width: 1024px) {
-          .w-1\\/4 {
+          .w-1\\/5 {
             width: auto;
           }
 
-          .w-1\\/2 {
+          .flex-1 {
             display: none;
           }
+        }
+
+        /* Additional responsive breakpoints for navigation */
+        @media (min-width: 1024px) and (max-width: 1280px) {
+          .max-w-3xl {
+            max-width: 42rem; /* Slightly smaller for medium screens */
+          }
+
+          /* Tighter spacing for medium screens */
+          .space-x-1 > :not([hidden]) ~ :not([hidden]) {
+            margin-left: 0.125rem; /* 2px */
+          }
+        }
+
+        @media (min-width: 1280px) {
+          .max-w-3xl {
+            max-width: 48rem; /* Full width for large screens */
+          }
+
+          /* Normal spacing for large screens */
+          .space-x-1 > :not([hidden]) ~ :not([hidden]) {
+            margin-left: 0.25rem; /* 4px */
+          }
+        }
+
+        /* Ensure navigation items never wrap */
+        nav ul {
+          flex-wrap: nowrap;
+          overflow: hidden;
+        }
+
+        nav ul li {
+          flex-shrink: 0;
+          min-width: fit-content;
         }
       `}</style>
     </>

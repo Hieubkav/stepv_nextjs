@@ -74,7 +74,7 @@ const HeroSection = ({
   const videoSrc = `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&rel=0&playsinline=1&cc_load_policy=0&enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${videoId}&start=${videoStart}&end=${videoEnd}`;
 
   return (
-    <section id="home" className="relative min-h-screen flex flex-col overflow-hidden">
+    <section id="home" className="relative min-h-screen flex flex-col overflow-hidden pt-[110px]">
       {/* Background Video */}
       <div className="absolute inset-0 z-0">
         <div className="video-background relative w-full h-full">
@@ -98,7 +98,7 @@ const HeroSection = ({
       </div>
 
       {/* Main Content */}
-      <div className="relative z-20 flex-1 flex flex-col justify-between items-center px-4 py-8 md:py-16">
+      <div className="relative z-10 flex-1 flex flex-col justify-between items-center px-4 py-8 md:py-16">
         <div className="flex-1 flex flex-col justify-center items-center">
           <div className="container mx-auto text-center max-w-6xl">
             {/* Main Title */}
@@ -148,7 +148,7 @@ const HeroSection = ({
       </div>
 
       {/* Brand Logos Scrolling Section */}
-      <div className="relative z-30 w-full bg-black/25 md:bg-black/20 backdrop-blur-md py-8 md:py-8 lg:py-10 overflow-hidden">
+      <div className="relative z-20 w-full bg-black/25 md:bg-black/20 backdrop-blur-md py-8 md:py-8 lg:py-10 overflow-hidden">
         <div className="relative">
           {/* Scrolling container */}
           <div className="flex animate-scroll">
@@ -224,6 +224,7 @@ const HeroSection = ({
           #home {
             min-height: 100vh;
             min-height: 100dvh; /* Dynamic viewport height for mobile */
+            padding-top: 110px; /* Ensure header clearance on mobile */
           }
 
           .video-background iframe {
@@ -319,6 +320,10 @@ const HeroSection = ({
 
         /* Landscape mobile optimization */
         @media (max-height: 500px) and (orientation: landscape) {
+          #home {
+            padding-top: 80px; /* Reduced padding for landscape */
+          }
+
           .hero-heading h1 {
             font-size: 2rem !important;
             margin-bottom: 0.5rem !important;
@@ -403,6 +408,26 @@ const HeroSection = ({
           width: 100%;
           height: 100%;
           overflow: hidden;
+        }
+
+        /* Z-index hierarchy to prevent header overlap */
+        #home {
+          position: relative;
+          z-index: 1; /* Lower than header */
+        }
+
+        /* Ensure proper spacing from header */
+        @media (min-width: 769px) {
+          #home {
+            padding-top: 110px; /* Match header height */
+          }
+        }
+
+        /* Additional mobile breakpoints for header clearance */
+        @media (max-width: 640px) {
+          #home {
+            padding-top: 100px; /* Slightly less for small screens */
+          }
         }
 
         /* Fix for iOS Safari viewport issues */
