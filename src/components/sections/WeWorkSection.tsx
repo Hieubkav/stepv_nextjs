@@ -93,7 +93,7 @@ const WeWorkSection = ({
   const { circleSize, buttonSize } = getResponsiveDimensions();
 
   return (
-    <section className="py-12 sm:py-16 md:py-20 bg-black text-white min-h-screen">
+    <section id="more" className="py-12 sm:py-16 md:py-20 bg-black text-white min-h-screen">
       <div className="container mx-auto px-4 max-w-[1140px]">
         {/* Grid Layout: Content + Circle */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">

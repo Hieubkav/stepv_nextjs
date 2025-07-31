@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
 
 interface MenuItem {
   label: string;
@@ -17,13 +18,15 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
-    { label: 'TRANG CHỦ', href: '/', isActive: true },
+    { label: 'TRANG CHỦ', href: '/', isActive: pathname === '/' },
     { label: 'KHÓA HỌC', href: '/khoa-hoc' },
     { label: 'DỰ ÁN', href: '/du-an' },
     { label: 'VỀ CHÚNG TÔI', href: '#about' },
-    { label: 'THƯ VIỆN', href: '#jobs' },
+    { label: 'THƯ VIỆN', href: '/thu-vien' },
     { label: 'THÊM', href: '#more' }
   ];
 
@@ -49,9 +52,15 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
 
   const handleLinkClick = (href: string) => {
     if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+      // Nếu đang ở trang chủ, scroll đến section
+      if (pathname === '/') {
+        const element = document.querySelector(href);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        // Nếu ở trang khác, chuyển về trang chủ với hash
+        router.push(`/${href}`);
       }
     }
     setIsMobileMenuOpen(false);

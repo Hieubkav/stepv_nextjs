@@ -131,6 +131,41 @@
     @apply bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent;
   }
 
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Glow effect for yellow text */
+  .animate-glow-yellow {
+    animation: glowYellow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glowYellow {
+    from {
+      text-shadow: 0 0 5px #fbbf24, 0 0 10px #fbbf24, 0 0 15px #fbbf24;
+    }
+    to {
+      text-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24, 0 0 30px #fbbf24;
+    }
+  }
+
+  /* Countdown number glow */
+  .countdown-number {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+
   /* Glass effect */
   .glass-effect {
     backdrop-filter: blur(10px);
