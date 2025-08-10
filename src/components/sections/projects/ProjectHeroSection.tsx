@@ -80,26 +80,41 @@ const ProjectHeroSection = () => {
 
               {/* Social Media Icons */}
               <div className="flex space-x-6">
-                <a 
-                  href="#" 
+                <a
+                  href="https://www.youtube.com/@dohystudio"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
                   aria-label="YouTube"
                 >
                   <i className="fab fa-youtube text-2xl"></i>
                 </a>
-                <a 
-                  href="#" 
+                <a
+                  href="https://www.tiktok.com/@dohystudio"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
+                  aria-label="TikTok"
+                >
+                  <i className="fab fa-tiktok text-2xl"></i>
+                </a>
+                <a
+                  href="https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
+                  aria-label="Facebook"
+                >
+                  <i className="fab fa-facebook text-2xl"></i>
+                </a>
+                <a
+                  href="https://www.instagram.com/dohy_studio/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
                   aria-label="Instagram"
                 >
                   <i className="fab fa-instagram text-2xl"></i>
-                </a>
-                <a 
-                  href="#" 
-                  className="text-yellow-400 hover:text-yellow-300 transition-colors duration-300"
-                  aria-label="LinkedIn"
-                >
-                  <i className="fab fa-linkedin text-2xl"></i>
                 </a>
               </div>
 
