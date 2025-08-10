@@ -3,6 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import type { Database } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/useToast';
+import { useCrud } from '@/hooks/useCrud';
+import { ToastContainer } from '@/components/ui/Toast';
+import CrudModal from '@/components/dashboard/CrudModal';
+import DeleteConfirmModal from '@/components/dashboard/DeleteConfirmModal';
+import { setupStorageBuckets, testUpload, cleanupOrphanedFiles } from '@/utils/setupStorage';
 
 type User = Database['public']['Tables']['users']['Row'];
 type Library = Database['public']['Tables']['libraries']['Row'];
@@ -12,6 +18,19 @@ interface DashboardStats {
   totalUsers: number;
   totalLibraries: number;
   totalImages: number;
+}
+
+interface ModalState {
+  isOpen: boolean;
+  type: 'users' | 'libraries' | 'library_images';
+  mode: 'create' | 'edit';
+  editData?: User | Library | LibraryImage | null;
+}
+
+interface DeleteModalState {
+  isOpen: boolean;
+  type: 'users' | 'libraries' | 'library_images';
+  item?: User | Library | LibraryImage | null;
 }
 
 export default function DashboardClient() {
@@ -25,11 +44,155 @@ export default function DashboardClient() {
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images'>('libraries');
+
+  // Toast notifications
+  const { toasts, removeToast } = useToast();
+
+  // CRUD hooks
+  const usersCrud = useCrud('users');
+  const librariesCrud = useCrud('libraries');
+  const imagesCrud = useCrud('library_images');
+
+  // Modal states
+  const [crudModal, setCrudModal] = useState<ModalState>({
+    isOpen: false,
+    type: 'users',
+    mode: 'create',
+    editData: null
+  });
+
+  const [deleteModal, setDeleteModal] = useState<DeleteModalState>({
+    isOpen: false,
+    type: 'users',
+    item: null
+  });
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  // CRUD Handlers
+  const openCreateModal = (type: 'users' | 'libraries' | 'library_images') => {
+    setCrudModal({
+      isOpen: true,
+      type,
+      mode: 'create',
+      editData: null
+    });
+  };
+
+  const openEditModal = (type: 'users' | 'libraries' | 'library_images', item: User | Library | LibraryImage) => {
+    setCrudModal({
+      isOpen: true,
+      type,
+      mode: 'edit',
+      editData: item
+    });
+  };
+
+  const closeCrudModal = () => {
+    setCrudModal({
+      isOpen: false,
+      type: 'users',
+      mode: 'create',
+      editData: null
+    });
+  };
+
+  const openDeleteModal = (type: 'users' | 'libraries' | 'library_images', item: User | Library | LibraryImage) => {
+    setDeleteModal({
+      isOpen: true,
+      type,
+      item
+    });
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModal({
+      isOpen: false,
+      type: 'users',
+      item: null
+    });
+  };
+
+  const handleCrudSubmit = async (data: any) => {
+    const { type, mode } = crudModal;
+    let result = null;
+
+    if (mode === 'create') {
+      switch (type) {
+        case 'users':
+          result = await usersCrud.create(data);
+          break;
+        case 'libraries':
+          result = await librariesCrud.create(data);
+          break;
+        case 'library_images':
+          result = await imagesCrud.create(data);
+          break;
+      }
+    } else {
+      const id = crudModal.editData?.id;
+      if (!id) return;
+
+      switch (type) {
+        case 'users':
+          result = await usersCrud.update(id, data);
+          break;
+        case 'libraries':
+          result = await librariesCrud.update(id, data);
+          break;
+        case 'library_images':
+          result = await imagesCrud.update(id, data);
+          break;
+      }
+    }
+
+    if (result) {
+      await fetchDashboardData(); // Refresh data
+    }
+  };
+
+  const handleDelete = async () => {
+    const { type, item } = deleteModal;
+    if (!item?.id) return;
+
+    let success = false;
+
+    switch (type) {
+      case 'users':
+        success = await usersCrud.remove(item.id);
+        break;
+      case 'libraries':
+        success = await librariesCrud.remove(item.id);
+        break;
+      case 'library_images':
+        success = await imagesCrud.remove(item.id);
+        break;
+    }
+
+    if (success) {
+      await fetchDashboardData(); // Refresh data
+    }
+  };
+
+  const handleSetupStorage = async () => {
+    console.log('🔄 Setting up Supabase Storage...');
+    const success = await setupStorageBuckets();
+    if (success) {
+      console.log('✅ Storage setup completed');
+      await testUpload();
+    }
+  };
+
+  const handleCleanupStorage = async () => {
+    console.log('🧹 Starting storage cleanup...');
+    const success = await cleanupOrphanedFiles();
+    if (success) {
+      console.log('✅ Storage cleanup completed');
+    }
+  };
 
   const createTestLibrary = async () => {
     try {
@@ -221,33 +384,53 @@ export default function DashboardClient() {
   }
 
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      {/* Dashboard Header */}
-      <div className="mb-8">
-        <div className="md:flex md:items-center md:justify-between">
+    <div className="px-3 sm:px-6 lg:px-8">
+      {/* Dashboard Header - Mobile Optimized */}
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              <i className="fas fa-chart-line text-blue-600 mr-3"></i>
-              Dashboard Analytics
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-7 text-gray-900 truncate">
+              <i className="fas fa-chart-line text-blue-600 mr-2 sm:mr-3"></i>
+              <span className="hidden sm:inline">Dashboard Analytics</span>
+              <span className="sm:hidden">Thư viện</span>
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
-              Tổng quan dữ liệu từ Supabase Database
+            <p className="mt-1 text-xs sm:text-sm text-gray-500">
+              <span className="hidden sm:inline">Tổng quan dữ liệu từ Supabase Database</span>
+              <span className="sm:hidden">Quản lý thư viện</span>
             </p>
           </div>
-          <div className="mt-4 flex space-x-3 md:mt-0 md:ml-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button
               onClick={fetchDashboardData}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-2 py-1.5 sm:px-4 sm:py-2 border border-gray-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              <i className="fas fa-sync-alt mr-2"></i>
-              Làm mới
+              <i className="fas fa-sync-alt mr-1 sm:mr-2"></i>
+              <span className="hidden sm:inline">Làm mới</span>
+              <span className="sm:hidden">Refresh</span>
             </button>
             <button
               onClick={createTestLibrary}
-              className="inline-flex items-center px-4 py-2 border border-green-300 rounded-md shadow-sm text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              className="inline-flex items-center px-2 py-1.5 sm:px-4 sm:py-2 border border-green-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
             >
-              <i className="fas fa-plus mr-2"></i>
-              Test Library
+              <i className="fas fa-plus mr-1 sm:mr-2"></i>
+              <span className="hidden sm:inline">Test Library</span>
+              <span className="sm:hidden">Test</span>
+            </button>
+            <button
+              onClick={handleSetupStorage}
+              className="inline-flex items-center px-2 py-1.5 sm:px-4 sm:py-2 border border-purple-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            >
+              <i className="fas fa-cloud mr-1 sm:mr-2"></i>
+              <span className="hidden sm:inline">Setup Storage</span>
+              <span className="sm:hidden">Setup</span>
+            </button>
+            <button
+              onClick={handleCleanupStorage}
+              className="inline-flex items-center px-2 py-1.5 sm:px-4 sm:py-2 border border-orange-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+            >
+              <i className="fas fa-broom mr-1 sm:mr-2"></i>
+              <span className="hidden sm:inline">Cleanup Storage</span>
+              <span className="sm:hidden">Clean</span>
             </button>
           </div>
         </div>
@@ -257,10 +440,10 @@ export default function DashboardClient() {
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {[
-            { key: 'overview', label: 'Tổng quan', icon: 'fas fa-chart-pie' },
-            { key: 'users', label: 'Người dùng', icon: 'fas fa-users' },
+            // { key: 'overview', label: 'Tổng quan', icon: 'fas fa-chart-pie' },
+            // { key: 'users', label: 'Người dùng', icon: 'fas fa-users' },
             { key: 'libraries', label: 'Thư viện', icon: 'fas fa-book' },
-            { key: 'images', label: 'Hình ảnh', icon: 'fas fa-images' }
+            // { key: 'images', label: 'Hình ảnh', icon: 'fas fa-images' }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -280,8 +463,8 @@ export default function DashboardClient() {
 
       {/* Tab Content */}
       <div className="space-y-6">
-        {/* Overview Tab */}
-        {activeTab === 'overview' && (
+        {/* Overview Tab - Hidden */}
+        {false && activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
@@ -391,16 +574,25 @@ export default function DashboardClient() {
           </div>
         )}
 
-        {/* Users Tab */}
-        {activeTab === 'users' && (
+        {/* Users Tab - Hidden */}
+        {false && activeTab === 'users' && (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Danh sách người dùng
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Tổng cộng {stats.totalUsers} người dùng
-              </p>
+            <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Danh sách người dùng
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Tổng cộng {stats.totalUsers} người dùng
+                </p>
+              </div>
+              <button
+                onClick={() => openCreateModal('users')}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Thêm người dùng
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -414,6 +606,9 @@ export default function DashboardClient() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày tạo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
                     </th>
                   </tr>
                 </thead>
@@ -429,11 +624,29 @@ export default function DashboardClient() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(user.created_at)}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openEditModal('users', user)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Chỉnh sửa"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal('users', user)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Xóa"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {users.length === 0 && (
                     <tr>
-                      <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                         Chưa có người dùng nào
                       </td>
                     </tr>
@@ -444,56 +657,121 @@ export default function DashboardClient() {
           </div>
         )}
 
-        {/* Libraries Tab */}
+        {/* Libraries Tab - Mobile Optimized */}
         {activeTab === 'libraries' && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Danh sách thư viện
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Tổng cộng {stats.totalLibraries} thư viện
-              </p>
+          <div className="bg-white shadow overflow-hidden rounded-lg">
+            <div className="px-3 py-4 sm:px-6 sm:py-5 border-b border-gray-200">
+              <div className="flex flex-col space-y-3 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg leading-6 font-medium text-gray-900">
+                    Danh sách thư viện
+                  </h3>
+                  <p className="mt-1 text-xs sm:text-sm text-gray-500">
+                    Tổng cộng {stats.totalLibraries} thư viện
+                  </p>
+                </div>
+                <button
+                  onClick={() => openCreateModal('libraries')}
+                  className="inline-flex items-center justify-center px-3 py-2 sm:px-4 border border-transparent text-xs sm:text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 w-full sm:w-auto"
+                >
+                  <i className="fas fa-plus mr-1 sm:mr-2"></i>
+                  Thêm thư viện
+                </button>
+              </div>
             </div>
             {libraries.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-3 sm:p-6">
                 {libraries.map((library) => (
-                  <div key={library.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <h4 className="text-lg font-medium text-gray-900 mb-2">{library.title}</h4>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-3">{library.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {library.type}
-                      </span>
-                      <span className="text-sm font-medium text-green-600">
-                        {library.pricing}
-                      </span>
-                    </div>
-                    <div className="mt-3 text-xs text-gray-500">
-                      {formatDate(library.created_at)}
+                  <div key={library.id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
+                    {/* Library Image */}
+                    {library.image_url && (
+                      <div className="w-full h-40 sm:h-48 relative">
+                        <img
+                          src={library.image_url}
+                          alt={library.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    <div className="p-3 sm:p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-base sm:text-lg font-medium text-gray-900 truncate flex-1 mr-2">{library.title}</h4>
+                        <div className="flex space-x-1 sm:space-x-2 flex-shrink-0">
+                          <button
+                            onClick={() => openEditModal('libraries', library)}
+                            className="p-1.5 sm:p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                            title="Chỉnh sửa"
+                          >
+                            <i className="fas fa-edit text-sm"></i>
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal('libraries', library)}
+                            className="p-1.5 sm:p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors"
+                            title="Xóa"
+                          >
+                            <i className="fas fa-trash text-sm"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{library.description}</p>
+                      <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                        <div className="flex flex-wrap gap-1">
+                          {library.type.split(', ').filter(t => t.trim()).map((type, index) => (
+                            <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {type.trim()}
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-xs sm:text-sm font-medium text-green-600">
+                          {library.pricing}
+                        </span>
+                      </div>
+                      <div className="mt-2 sm:mt-3 text-xs text-gray-500">
+                        {formatDate(library.created_at)}
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
-                <i className="fas fa-book text-gray-400 text-4xl mb-4"></i>
-                <p className="text-gray-500">Chưa có thư viện nào</p>
+              <div className="text-center py-8 sm:py-12 px-4">
+                <i className="fas fa-book text-gray-400 text-3xl sm:text-4xl mb-3 sm:mb-4"></i>
+                <p className="text-sm sm:text-base text-gray-500">Chưa có thư viện nào</p>
+                <button
+                  onClick={() => openCreateModal('libraries')}
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <i className="fas fa-plus mr-2"></i>
+                  Tạo thư viện đầu tiên
+                </button>
               </div>
             )}
           </div>
         )}
 
-        {/* Images Tab */}
-        {activeTab === 'images' && (
+        {/* Images Tab - Hidden */}
+        {false && activeTab === 'images' && (
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Danh sách hình ảnh
-              </h3>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Tổng cộng {stats.totalImages} hình ảnh
-              </p>
+            <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  Danh sách hình ảnh
+                </h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                  Tổng cộng {stats.totalImages} hình ảnh
+                </p>
+              </div>
+              <button
+                onClick={() => openCreateModal('library_images')}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                <i className="fas fa-plus mr-2"></i>
+                Thêm hình ảnh
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
@@ -510,6 +788,9 @@ export default function DashboardClient() {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày tạo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Thao tác
                     </th>
                   </tr>
                 </thead>
@@ -535,11 +816,29 @@ export default function DashboardClient() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(image.created_at)}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openEditModal('library_images', image)}
+                            className="text-blue-600 hover:text-blue-900"
+                            title="Chỉnh sửa"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            onClick={() => openDeleteModal('library_images', image)}
+                            className="text-red-600 hover:text-red-900"
+                            title="Xóa"
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                   {images.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                         Chưa có hình ảnh nào
                       </td>
                     </tr>
@@ -550,6 +849,44 @@ export default function DashboardClient() {
           </div>
         )}
       </div>
+
+      {/* CRUD Modal */}
+      <CrudModal
+        isOpen={crudModal.isOpen}
+        onClose={closeCrudModal}
+        onSubmit={handleCrudSubmit}
+        title={
+          crudModal.mode === 'create'
+            ? `Thêm ${crudModal.type === 'users' ? 'người dùng' : crudModal.type === 'libraries' ? 'thư viện' : 'hình ảnh'}`
+            : `Chỉnh sửa ${crudModal.type === 'users' ? 'người dùng' : crudModal.type === 'libraries' ? 'thư viện' : 'hình ảnh'}`
+        }
+        type={crudModal.type}
+        editData={crudModal.editData}
+        loading={usersCrud.loading || librariesCrud.loading || imagesCrud.loading}
+        libraries={libraries}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="Xác nhận xóa"
+        message={`Bạn có chắc chắn muốn xóa ${deleteModal.type === 'users' ? 'người dùng' : deleteModal.type === 'libraries' ? 'thư viện' : 'hình ảnh'} này không?`}
+        itemName={
+          deleteModal.item
+            ? deleteModal.type === 'users'
+              ? (deleteModal.item as User).email
+              : deleteModal.type === 'libraries'
+              ? (deleteModal.item as Library).title
+              : (deleteModal.item as LibraryImage).image_url
+            : undefined
+        }
+        loading={usersCrud.loading || librariesCrud.loading || imagesCrud.loading}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 }

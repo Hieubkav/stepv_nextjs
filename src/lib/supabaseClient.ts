@@ -32,6 +32,7 @@ export interface Database {
           description: string;
           type: string;
           pricing: string;
+          image_url?: string;
           created_at: string;
         };
         Insert: {
@@ -40,6 +41,7 @@ export interface Database {
           description: string;
           type: string;
           pricing: string;
+          image_url?: string;
           created_at?: string;
         };
         Update: {
@@ -48,6 +50,7 @@ export interface Database {
           description?: string;
           type?: string;
           pricing?: string;
+          image_url?: string;
           created_at?: string;
         };
       };

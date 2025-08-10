@@ -9,7 +9,8 @@ const nextConfig: NextConfig = {
     domains: [
       'images.unsplash.com',
       'stepv.studio',
-      'via.placeholder.com'
+      'via.placeholder.com',
+      'eqriodcmakvwbjcbbegu.supabase.co'
     ],
     // unoptimized: true, // Not needed for Vercel
   },
