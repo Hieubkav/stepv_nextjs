@@ -13,6 +13,7 @@ export const SITE_CONFIG = {
 export const NAVIGATION_ITEMS = [
   { label: 'Trang chủ', href: '/' },
   { label: 'Giới thiệu', href: '/about' },
+  { label: 'Thư viện', href: '/thu-vien' },
   { label: 'Dashboard', href: '/dashboard' },
   { label: 'Liên hệ', href: '/contact' },
 ];
