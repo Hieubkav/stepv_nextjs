@@ -23,11 +23,11 @@ export function useCrud<T extends TableName>(tableName: T) {
       setLoading(true);
 
       // Ensure ID is provided for all records
-      const dataWithId = { ...data } as any;
-      if (!dataWithId.id) {
-        dataWithId.id = generateShortId();
-        console.log(`🔑 Generated ID for ${tableName}:`, dataWithId.id);
-      }
+      const dataWithId: Insert & { id: string } = {
+        ...data,
+        id: (data as { id?: string }).id || generateShortId()
+      };
+      console.log(`🔑 Using ID for ${tableName}:`, dataWithId.id);
 
       const { data: result, error: createError } = await supabase
         .from(tableName)

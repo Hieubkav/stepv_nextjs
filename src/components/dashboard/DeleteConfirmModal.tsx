@@ -48,7 +48,7 @@ const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           <p className="text-sm text-gray-500">{message}</p>
           {itemName && (
             <p className="text-sm font-medium text-gray-900 mt-2">
-              "{itemName}"
+              &quot;{itemName}&quot;
             </p>
           )}
         </div>

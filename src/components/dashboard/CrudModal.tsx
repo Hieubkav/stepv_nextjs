@@ -8,10 +8,12 @@ type User = Database['public']['Tables']['users']['Row'];
 type Library = Database['public']['Tables']['libraries']['Row'];
 type LibraryImage = Database['public']['Tables']['library_images']['Row'];
 
+type FormData = Record<string, string | undefined>;
+
 interface CrudModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: any) => Promise<void>;
+  onSubmit: (data: FormData) => Promise<void>;
   title: string;
   type: 'users' | 'libraries' | 'library_images';
   editData?: User | Library | LibraryImage | null;
@@ -29,7 +31,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
   loading = false,
   libraries = []
 }) => {
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<Partial<FormData>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -111,7 +113,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
     }
   };
 
-  const handleImageUpload = (url: string, path: string) => {
+  const handleImageUpload = (url: string, _path: string) => {
     setUploadedImageUrl(url);
     setFormData(prev => ({ ...prev, image_url: url }));
     // Clear any image_url errors
@@ -126,7 +128,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
 
   const handleImageRemove = () => {
     setUploadedImageUrl('');
-    setFormData((prev: any) => ({ ...prev, image_url: '' }));
+    setFormData((prev: Partial<FormData>) => ({ ...prev, image_url: '' }));
     // Clear any image_url errors
     if (errors.image_url) {
       setErrors(prev => ({ ...prev, image_url: '' }));
@@ -146,7 +148,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
 
     // Update form data with comma-separated string
     const typeString = newSelectedTypes.join(', ');
-    setFormData((prev: any) => ({ ...prev, type: typeString }));
+    setFormData((prev: Partial<FormData>) => ({ ...prev, type: typeString }));
 
     // Clear type errors
     if (errors.type) {

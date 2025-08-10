@@ -116,20 +116,20 @@ export default function DashboardClient() {
     });
   };
 
-  const handleCrudSubmit = async (data: any) => {
+  const handleCrudSubmit = async (data: Record<string, string | undefined>) => {
     const { type, mode } = crudModal;
     let result = null;
 
     if (mode === 'create') {
       switch (type) {
         case 'users':
-          result = await usersCrud.create(data);
+          result = await usersCrud.create(data as Database['public']['Tables']['users']['Insert']);
           break;
         case 'libraries':
-          result = await librariesCrud.create(data);
+          result = await librariesCrud.create(data as Database['public']['Tables']['libraries']['Insert']);
           break;
         case 'library_images':
-          result = await imagesCrud.create(data);
+          result = await imagesCrud.create(data as Database['public']['Tables']['library_images']['Insert']);
           break;
       }
     } else {
@@ -138,13 +138,13 @@ export default function DashboardClient() {
 
       switch (type) {
         case 'users':
-          result = await usersCrud.update(id, data);
+          result = await usersCrud.update(id, data as Database['public']['Tables']['users']['Update']);
           break;
         case 'libraries':
-          result = await librariesCrud.update(id, data);
+          result = await librariesCrud.update(id, data as Database['public']['Tables']['libraries']['Update']);
           break;
         case 'library_images':
-          result = await imagesCrud.update(id, data);
+          result = await imagesCrud.update(id, data as Database['public']['Tables']['library_images']['Update']);
           break;
       }
     }
@@ -447,7 +447,7 @@ export default function DashboardClient() {
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as any)}
+              onClick={() => setActiveTab(tab.key as 'overview' | 'users' | 'libraries' | 'images')}
               className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.key
                   ? 'border-blue-500 text-blue-600'

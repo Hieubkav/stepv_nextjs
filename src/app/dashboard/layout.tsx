@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export const metadata = {
   title: "Dashboard - Step V Studio",
   description: "Quản lý dữ liệu Supabase - Step V Studio Dashboard",
@@ -35,14 +37,14 @@ export default function DashboardLayout({
                 <i className="fas fa-database mr-1"></i>
                 <span className="hidden md:inline">Supabase </span>Connected
               </div>
-              <a
+              <Link
                 href="/"
                 className="inline-flex items-center px-2 py-1.5 sm:px-3 sm:py-2 border border-gray-300 shadow-sm text-xs sm:text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 <i className="fas fa-home mr-1 sm:mr-2"></i>
                 <span className="hidden sm:inline">Về trang chủ</span>
                 <span className="sm:hidden">Home</span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
