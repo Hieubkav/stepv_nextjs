@@ -14,25 +14,23 @@ interface LibraryCardProps {
 export default function LibraryCard({ library }: LibraryCardProps) {
   const isFree = library.pricing.toLowerCase().includes('free');
   
-  // Get software icons based on type
+  // Get software icons based on type - parse from actual library.type string
   const getSoftwareIcons = (type: string) => {
     const icons = [];
-    switch (type.toLowerCase()) {
-      case '3d model':
-        icons.push('blender', 'cinema4d');
-        break;
-      case 'after effects':
-        icons.push('ae');
-        break;
-      case 'premiere pro':
-        icons.push('pr');
-        break;
-      case 'photoshop':
-        icons.push('ps');
-        break;
-      default:
-        icons.push('ae', 'pr');
+    const typeStr = type.toLowerCase();
+
+    // Check for each software in the type string
+    if (typeStr.includes('ae')) icons.push('ae');
+    if (typeStr.includes('pr')) icons.push('pr');
+    if (typeStr.includes('blender')) icons.push('bl');
+    if (typeStr.includes('ps') || typeStr.includes('photoshop')) icons.push('ps');
+    if (typeStr.includes('mo') || typeStr.includes('motion')) icons.push('mo');
+
+    // If no specific software found, default to ae, pr
+    if (icons.length === 0) {
+      icons.push('ae', 'pr');
     }
+
     return icons;
   };
 

@@ -13,7 +13,31 @@ export default function ThuVienClient() {
 
   // Filter libraries based on selected filters
   const filteredLibraries = libraries.filter(library => {
-    const typeMatch = selectedType === 'all' || library.type === selectedType;
+    // Type matching - check if library type contains the selected software
+    let typeMatch = selectedType === 'all';
+    if (!typeMatch) {
+      const libraryType = library.type.toLowerCase();
+      switch (selectedType) {
+        case 'After Effects':
+          typeMatch = libraryType.includes('ae');
+          break;
+        case 'Premiere Pro':
+          typeMatch = libraryType.includes('pr');
+          break;
+        case '3D Model':
+          typeMatch = libraryType.includes('blender');
+          break;
+        case 'Photoshop':
+          typeMatch = libraryType.includes('ps');
+          break;
+        case 'Motion Graphics':
+          typeMatch = libraryType.includes('mo');
+          break;
+        default:
+          typeMatch = false;
+      }
+    }
+
     const priceMatch = selectedPrice === 'all' ||
       (selectedPrice === 'free' && library.pricing.toLowerCase().includes('free')) ||
       (selectedPrice === 'paid' && !library.pricing.toLowerCase().includes('free'));
@@ -34,6 +58,8 @@ export default function ThuVienClient() {
         return 0;
     }
   });
+
+
 
   if (error) {
     return (
