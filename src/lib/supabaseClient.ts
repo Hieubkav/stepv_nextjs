@@ -78,7 +78,29 @@ export interface Database {
   };
 }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Safe environment variable access with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
+// Create Supabase client with error handling
+export const supabase = (() => {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('⚠️ Supabase environment variables not found. Client will be limited.');
+      // Return a mock client for static generation
+      return createClient('https://placeholder.supabase.co', 'placeholder-key');
+    }
+    return createClient<Database>(supabaseUrl, supabaseAnonKey);
+  } catch (error) {
+    console.error('❌ Failed to create Supabase client:', error);
+    // Return a mock client as fallback
+    return createClient('https://placeholder.supabase.co', 'placeholder-key');
+  }
+})();
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return !!(supabaseUrl && supabaseAnonKey &&
+    supabaseUrl !== 'https://placeholder.supabase.co' &&
+    supabaseAnonKey !== 'placeholder-key');
+};

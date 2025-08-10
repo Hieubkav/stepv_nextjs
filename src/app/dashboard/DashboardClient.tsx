@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from '@/lib/supabaseClient';
 import type { Database } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/useToast';
 import { useCrud } from '@/hooks/useCrud';
@@ -231,6 +231,14 @@ export default function DashboardClient() {
     try {
       setLoading(true);
       setError(null);
+
+      // Check if Supabase is properly configured
+      if (!isSupabaseConfigured()) {
+        console.warn('⚠️ Supabase not configured. Using mock data.');
+        setError('Supabase configuration not found. Please check environment variables.');
+        setLoading(false);
+        return;
+      }
 
       console.log('🔄 Fetching data from Supabase...');
 
