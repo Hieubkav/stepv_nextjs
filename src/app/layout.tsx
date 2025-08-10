@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import { StagewiseToolbar } from '@stagewise/toolbar-next';
 
 const inter = Inter({
@@ -36,11 +34,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased bg-black text-white min-h-screen`}>
+      <body className={`${inter.variable} font-sans antialiased min-h-screen`}>
         <StagewiseToolbar />
-        <Header />
         {children}
-        <Footer />
       </body>
     </html>
   );

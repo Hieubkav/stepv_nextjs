@@ -10,12 +10,12 @@ interface FooterProps {
 const Footer: React.FC<FooterProps> = ({ className = '' }) => {
   return (
     <footer className={`relative ${className}`}>
-      {/* Main Footer Container with Gradient Background and Rounded Top Corners */}
-      <div className="footer-gradient rounded-t-[45px] text-white">
+      {/* Main Footer Container with Full Width Dark Background */}
+      <div className="w-full bg-black text-white">
 
         {/* 1. Welcome & CTA Section */}
-        <div className="px-8 lg:px-16 pt-20 pb-16">
-          <div className="max-w-7xl mx-auto text-center">
+        <div className="w-full py-20">
+          <div className="max-w-7xl mx-auto px-8 lg:px-16 text-center">
             {/* Main Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-thin text-gray-300 leading-tight mb-8 tracking-wide uppercase">
               HÃY ĐỂ CHÚNG TÔI CHĂM SÓC BẠN
@@ -38,8 +38,8 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         <div className="w-full h-px bg-white opacity-20"></div>
 
         {/* 2. Sitemap Section */}
-        <div className="px-8 lg:px-16 py-16">
-          <div className="max-w-7xl mx-auto">
+        <div className="w-full py-16">
+          <div className="max-w-7xl mx-auto px-8 lg:px-16">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
 
               {/* Our Studio Column */}
@@ -228,8 +228,8 @@ const Footer: React.FC<FooterProps> = ({ className = '' }) => {
         <div className="w-full h-px bg-white opacity-20"></div>
 
         {/* 4. Copyright Section */}
-        <div className="px-8 lg:px-16 py-8">
-          <div className="max-w-7xl mx-auto">
+        <div className="w-full py-8">
+          <div className="max-w-7xl mx-auto px-8 lg:px-16">
             <p className="text-white text-sm">
               © Bản quyền 2025 - Step V Studio. Tất cả quyền được bảo lưu
             </p>

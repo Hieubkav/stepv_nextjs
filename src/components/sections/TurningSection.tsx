@@ -84,8 +84,9 @@ const TurningSection = ({
   return (
     <section
       id="about"
-      className={`max-w-7xl mx-auto ${backgroundColor} py-20 px-6 lg:px-8`}
+      className={`w-full ${backgroundColor} py-20`}
     >
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
         {/* Left Column: Content */}
         <div className="space-y-8">
@@ -250,6 +251,7 @@ const TurningSection = ({
           }
         }
       `}</style>
+      </div>
     </section>
   );
 };
