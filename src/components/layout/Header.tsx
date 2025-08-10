@@ -121,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             <div className="hidden lg:flex items-center gap-2">
               {[
                 { icon: 'fab fa-youtube', href: 'https://www.youtube.com/@dohystudio', color: 'text-red-500' },
-                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-black' },
+                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-white' },
                 { icon: 'fab fa-facebook', href: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes', color: 'text-blue-600' },
                 { icon: 'fab fa-instagram', href: 'https://www.instagram.com/dohy_studio/', color: 'text-pink-500' }
               ].map((social, index) => (
@@ -211,7 +211,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             <div className="hidden lg:flex items-center gap-2">
               {[
                 { icon: 'fab fa-youtube', href: 'https://www.youtube.com/@dohystudio', color: 'text-red-500' },
-                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-black' },
+                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-white' },
                 { icon: 'fab fa-facebook', href: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes', color: 'text-blue-600' },
                 { icon: 'fab fa-instagram', href: 'https://www.instagram.com/dohy_studio/', color: 'text-pink-500' }
               ].map((social, index) => (
