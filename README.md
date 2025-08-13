@@ -2,7 +2,7 @@
 
 Website chuyên nghiệp cho Step V Studio - chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp. Được xây dựng với NextJS 15, TypeScript, Tailwind CSS và Shadcn/ui, tự động deploy lên Vercel.
 
-🌐 **Live Demo:** [https://stepv-nextjs.vercel.app](https://stepv-nextjs.vercel.app)
+🌐 **Live Demo:** [https://dohystudio.com](https://dohystudio.com)
 
 ## 🚀 Công nghệ sử dụng
 
@@ -77,7 +77,7 @@ npm run lint
 3. **Deploy:**
    - Mỗi lần push lên `master` → Tự động deploy
    - Preview deployments cho các branch khác
-   - Live URL: `https://stepv-nextjs.vercel.app`
+   - Live URL: `https://dohystudio.com`
 
 ### Build thủ công (nếu cần)
 ```bash
@@ -114,7 +114,7 @@ Cập nhật `src/utils/constants.ts` để thay đổi site config.
 ## 📝 Lưu ý quan trọng
 
 1. **Repository URL**: `https://github.com/Hieubkav/stepv_nextjs`
-2. **Live URL**: `https://stepv-nextjs.vercel.app`
+2. **Live URL**: `https://dohystudio.com`
 3. **Platform**: Vercel (tối ưu cho Next.js)
 4. **Server-side Features**: Hỗ trợ đầy đủ SSR, API routes, ISR
 5. **Image Optimization**: Tự động tối ưu với Vercel Image Optimization

@@ -30,7 +30,7 @@ git commit -m "Cập nhật website"
 git push origin master
 
 # 2. Vercel tự động build và deploy
-# 3. Website được deploy tại: https://stepv-nextjs.vercel.app
+# 3. Website được deploy tại: https://dohystudio.com
 ```
 
 ### Thủ công (từ Vercel Dashboard)
@@ -41,7 +41,7 @@ git push origin master
 ## 🎯 Kết quả mong đợi
 
 - **Development**: `http://localhost:3000`
-- **Production**: `https://stepv-nextjs.vercel.app`
+- **Production**: `https://dohystudio.com`
 - **Build time**: ~30-60 giây (nhanh hơn GitHub Actions)
 - **Auto deploy**: Mỗi lần push lên `master`
 - **Preview**: Mỗi PR có URL preview riêng

@@ -75,7 +75,7 @@ After adding environment variables:
    - Check build logs for any environment variable errors
 
 2. **Test Dashboard Page**
-   - Visit: https://stepv-nextjs.vercel.app/dashboard
+   - Visit: https://dohystudio.com/dashboard
    - Should load without "supabaseUrl is required" error
 
 3. **Check Browser Console**

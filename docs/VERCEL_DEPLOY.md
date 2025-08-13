@@ -44,7 +44,7 @@ Vercel sẽ tự động detect:
 ### Bước 5: Đợi Deploy
 - ⏱️ Build time: ~30-60 giây
 - 🔄 Status: Building → Deploying → Ready
-- 🎉 Live URL: `https://stepv-nextjs.vercel.app`
+- 🎉 Live URL: `https://dohystudio.com`
 
 ## 🔧 Cấu hình đã tối ưu
 
@@ -69,7 +69,7 @@ Vercel sẽ tự động detect:
 
 ## 🎯 Kết quả
 
-- **Live URL**: https://stepv-nextjs.vercel.app
+- **Live URL**: https://dohystudio.com
 - **Build time**: ~30-60 giây
 - **Auto deploy**: Mỗi push lên `master`
 - **Preview**: Mỗi PR có URL preview
@@ -103,4 +103,4 @@ Website Step V Studio giờ đã:
 - ✅ Image optimization
 - ✅ Zero downtime deployments
 
-**Live Demo**: [https://stepv-nextjs.vercel.app](https://stepv-nextjs.vercel.app)
+**Live Demo**: [https://dohystudio.com](https://dohystudio.com)

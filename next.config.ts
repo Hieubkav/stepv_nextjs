@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
     domains: [
       'images.unsplash.com',
       'stepv.studio',
+      'dohystudio.com',
       'via.placeholder.com',
       'eqriodcmakvwbjcbbegu.supabase.co'
     ],
