@@ -738,6 +738,98 @@ export default function DashboardClient() {
                           {library.pricing}
                         </span>
                       </div>
+
+                      {/* Download Info */}
+                      {library.download_url && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">Download:</span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${
+                                library.download_status === 'active' ? 'text-green-600' :
+                                library.download_status === 'inactive' ? 'text-red-600' :
+                                library.download_status === 'pending' ? 'text-yellow-600' :
+                                library.download_status === 'expired' ? 'text-red-600' :
+                                library.download_status === 'maintenance' ? 'text-orange-600' :
+                                'text-gray-600'
+                              }`}>
+                                {library.download_status === 'active' ? 'Hoạt động' :
+                                 library.download_status === 'inactive' ? 'Không hoạt động' :
+                                 library.download_status === 'pending' ? 'Đang chờ' :
+                                 library.download_status === 'expired' ? 'Hết hạn' :
+                                 library.download_status === 'maintenance' ? 'Bảo trì' :
+                                 'Không xác định'}
+                              </span>
+                              {library.download_status === 'active' && (
+                                <a
+                                  href={library.download_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800"
+                                  title="Tải về"
+                                >
+                                  <i className="fas fa-download text-xs"></i>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-1">
+                            <a
+                              href={library.download_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 truncate block"
+                              title={library.download_url}
+                            >
+                              {library.download_url.length > 40
+                                ? `${library.download_url.substring(0, 40)}...`
+                                : library.download_url}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+
+                      {/* Link Info */}
+                      {library.link_url && (
+                        <div className="mt-2 p-2 bg-gray-50 rounded-md">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-gray-600">Link:</span>
+                            <div className="flex items-center space-x-2">
+                              <span className={`text-xs font-medium ${
+                                library.link_status === 'visible' ? 'text-green-600' : 'text-gray-600'
+                              }`}>
+                                {library.link_status === 'visible' ? 'Hiện' : 'Ẩn'}
+                              </span>
+                              {library.link_status === 'visible' && (
+                                <a
+                                  href={library.link_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800"
+                                  title="Mở link"
+                                >
+                                  <i className="fas fa-external-link-alt text-xs"></i>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-1">
+                            <a
+                              href={library.link_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 truncate block"
+                              title={library.link_url}
+                            >
+                              {library.link_url.length > 40
+                                ? `${library.link_url.substring(0, 40)}...`
+                                : library.link_url}
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="mt-2 sm:mt-3 text-xs text-gray-500">
                         {formatDate(library.created_at)}
                       </div>

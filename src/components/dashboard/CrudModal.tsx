@@ -56,7 +56,15 @@ const CrudModal: React.FC<CrudModalProps> = ({
           setFormData({ email: '', password_hash: '' });
           break;
         case 'libraries':
-          setFormData({ title: '', description: '', type: '', pricing: '', image_url: '' });
+          setFormData({
+            title: '',
+            description: '',
+            type: '',
+            pricing: '',
+            image_url: '',
+            link_url: '',
+            link_status: 'visible'
+          });
           setSelectedTypes([]);
           break;
         case 'library_images':
@@ -295,6 +303,45 @@ const CrudModal: React.FC<CrudModalProps> = ({
               {errors.image_url && <p className="text-red-500 text-xs mt-1">{errors.image_url}</p>}
               <p className="text-xs text-gray-500 mt-1">
                 Upload ảnh đại diện cho thư viện (không bắt buộc)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                URL Link
+              </label>
+              <input
+                type="url"
+                value={formData.link_url || ''}
+                onChange={(e) => handleInputChange('link_url', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.link_url ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="https://example.com/page"
+              />
+              {errors.link_url && <p className="text-red-500 text-xs mt-1">{errors.link_url}</p>}
+              <p className="text-xs text-gray-500 mt-1">
+                Link mở trang mới (không bắt buộc)
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Trạng thái Link
+              </label>
+              <select
+                value={formData.link_status || 'visible'}
+                onChange={(e) => handleInputChange('link_status', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.link_status ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="visible">Hiện</option>
+                <option value="hidden">Ẩn</option>
+              </select>
+              {errors.link_status && <p className="text-red-500 text-xs mt-1">{errors.link_status}</p>}
+              <p className="text-xs text-gray-500 mt-1">
+                Hiển thị hoặc ẩn link trên giao diện
               </p>
             </div>
           </>

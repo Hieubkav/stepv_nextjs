@@ -71,6 +71,18 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
   }
 
   const isFree = library.pricing.toLowerCase().includes('free');
+  const hasLinkUrl = library.link_url && library.link_url.trim() !== '';
+  const isLinkVisible = library.link_status === 'visible';
+
+  // Handle download/link click
+  const handleDownloadClick = () => {
+    if (hasLinkUrl && isLinkVisible) {
+      window.open(library.link_url, '_blank');
+    } else {
+      // Fallback behavior if no link is set
+      console.log('No download link available');
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
@@ -166,12 +178,37 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
 
               {/* Download Button */}
               <div className="pt-6">
-                <button className="w-full bg-yellow-400 text-black font-bold py-4 px-8 rounded-lg hover:bg-yellow-300 transition-colors flex items-center justify-center gap-3 text-lg">
-                  <i className="fas fa-download"></i>
-                  {isFree ? 'Tải xuống miễn phí' : 'Mua ngay'}
+                <button
+                  onClick={handleDownloadClick}
+                  disabled={!hasLinkUrl || !isLinkVisible}
+                  className={`w-full font-bold py-4 px-8 rounded-lg transition-colors flex items-center justify-center gap-3 text-lg ${
+                    hasLinkUrl && isLinkVisible
+                      ? 'bg-yellow-400 text-black hover:bg-yellow-300'
+                      : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  <i className={hasLinkUrl && isLinkVisible ? "fas fa-external-link-alt" : "fas fa-download"}></i>
+                  {hasLinkUrl && isLinkVisible
+                    ? (isFree ? 'Tải xuống miễn phí' : 'Mua ngay')
+                    : 'Chưa có link tải'
+                  }
                 </button>
-                
-                {!isFree && (
+
+                {/* Link Status Info */}
+                {hasLinkUrl && (
+                  <div className="mt-3 p-3 bg-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-400">Link:</span>
+                      <span className={`text-sm font-medium ${
+                        isLinkVisible ? 'text-green-400' : 'text-gray-400'
+                      }`}>
+                        {isLinkVisible ? 'Hiện' : 'Ẩn'}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {!isFree && hasLinkUrl && isLinkVisible && (
                   <p className="text-gray-400 text-sm mt-2 text-center">
                     Thanh toán an toàn qua PayPal hoặc thẻ tín dụng
                   </p>

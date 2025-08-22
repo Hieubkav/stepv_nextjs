@@ -83,12 +83,7 @@ export default function LibraryCard({ library }: LibraryCardProps) {
             ))}
           </div>
 
-          {/* Download Button */}
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button className="w-10 h-10 bg-yellow-400 rounded-full flex items-center justify-center hover:bg-yellow-300 transition-colors">
-              <i className="fas fa-download text-black text-sm"></i>
-            </button>
-          </div>
+
         </div>
 
         {/* Content */}
@@ -107,13 +102,15 @@ export default function LibraryCard({ library }: LibraryCardProps) {
                 {library.type}
               </span>
             </div>
-            
+
             <div className="text-right">
               <div className="text-lg font-bold text-yellow-400">
                 {library.pricing}
               </div>
             </div>
           </div>
+
+
         </div>
       </div>
     </Link>
