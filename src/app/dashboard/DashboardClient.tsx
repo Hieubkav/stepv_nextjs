@@ -16,6 +16,12 @@ type User = Database['public']['Tables']['users']['Row'];
 type Library = Database['public']['Tables']['libraries']['Row'];
 type LibraryImage = Database['public']['Tables']['library_images']['Row'];
 
+// Extended Library type with optional download fields
+interface ExtendedLibrary extends Library {
+  download_url?: string;
+  download_status?: 'active' | 'inactive' | 'pending' | 'expired' | 'maintenance';
+}
+
 interface DashboardStats {
   totalUsers: number;
   totalLibraries: number;
@@ -743,29 +749,29 @@ export default function DashboardClient() {
                       </div>
 
                       {/* Download Info */}
-                      {library.download_url && (
+                      {(library as ExtendedLibrary).download_url && (
                         <div className="mt-2 p-2 bg-gray-50 rounded-md">
                           <div className="flex items-center justify-between">
                             <span className="text-xs text-gray-600">Download:</span>
                             <div className="flex items-center space-x-2">
                               <span className={`text-xs font-medium ${
-                                library.download_status === 'active' ? 'text-green-600' :
-                                library.download_status === 'inactive' ? 'text-red-600' :
-                                library.download_status === 'pending' ? 'text-yellow-600' :
-                                library.download_status === 'expired' ? 'text-red-600' :
-                                library.download_status === 'maintenance' ? 'text-orange-600' :
+                                (library as ExtendedLibrary).download_status === 'active' ? 'text-green-600' :
+                                (library as ExtendedLibrary).download_status === 'inactive' ? 'text-red-600' :
+                                (library as ExtendedLibrary).download_status === 'pending' ? 'text-yellow-600' :
+                                (library as ExtendedLibrary).download_status === 'expired' ? 'text-red-600' :
+                                (library as ExtendedLibrary).download_status === 'maintenance' ? 'text-orange-600' :
                                 'text-gray-600'
                               }`}>
-                                {library.download_status === 'active' ? 'Hoạt động' :
-                                 library.download_status === 'inactive' ? 'Không hoạt động' :
-                                 library.download_status === 'pending' ? 'Đang chờ' :
-                                 library.download_status === 'expired' ? 'Hết hạn' :
-                                 library.download_status === 'maintenance' ? 'Bảo trì' :
+                                {(library as ExtendedLibrary).download_status === 'active' ? 'Hoạt động' :
+                                 (library as ExtendedLibrary).download_status === 'inactive' ? 'Không hoạt động' :
+                                 (library as ExtendedLibrary).download_status === 'pending' ? 'Đang chờ' :
+                                 (library as ExtendedLibrary).download_status === 'expired' ? 'Hết hạn' :
+                                 (library as ExtendedLibrary).download_status === 'maintenance' ? 'Bảo trì' :
                                  'Không xác định'}
                               </span>
-                              {library.download_status === 'active' && (
+                              {(library as ExtendedLibrary).download_status === 'active' && (
                                 <a
-                                  href={library.download_url}
+                                  href={(library as ExtendedLibrary).download_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-blue-600 hover:text-blue-800"
@@ -778,15 +784,15 @@ export default function DashboardClient() {
                           </div>
                           <div className="mt-1">
                             <a
-                              href={library.download_url}
+                              href={(library as ExtendedLibrary).download_url}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs text-blue-600 hover:text-blue-800 truncate block"
-                              title={library.download_url}
+                              title={(library as ExtendedLibrary).download_url}
                             >
-                              {library.download_url.length > 40
-                                ? `${library.download_url.substring(0, 40)}...`
-                                : library.download_url}
+                              {(library as ExtendedLibrary).download_url && (library as ExtendedLibrary).download_url!.length > 40
+                                ? `${(library as ExtendedLibrary).download_url!.substring(0, 40)}...`
+                                : (library as ExtendedLibrary).download_url}
                             </a>
                           </div>
                         </div>

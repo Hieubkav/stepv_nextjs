@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSiteConfig } from '@/hooks/useSiteConfig';
-import { SiteConfig } from '@/types/settings';
+import { useSiteSettings } from '@/hooks/useSiteConfig';
+import { Settings } from '@/types/settings';
 
 export default function SiteConfigManager() {
-  const { config, loading, error, updateConfig, refreshConfig } = useSiteConfig();
-  const [formData, setFormData] = useState<SiteConfig>({});
+  const { settings, loading, error, updateSettings, refreshSettings } = useSiteSettings();
+  const [formData, setFormData] = useState<Partial<Settings>>({});
   const [saving, setSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Update form data when config changes
+  // Update form data when settings changes
   useEffect(() => {
-    setFormData(config);
-  }, [config]);
+    setFormData(settings || {});
+  }, [settings]);
 
-  const handleInputChange = (field: keyof SiteConfig, value: string) => {
+  const handleInputChange = (field: keyof Settings, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -24,7 +24,7 @@ export default function SiteConfigManager() {
     setSaving(true);
     setSuccessMessage('');
     
-    const success = await updateConfig(formData);
+    const success = await updateSettings(formData);
     
     if (success) {
       setSuccessMessage('Cập nhật thành công!');
@@ -35,7 +35,7 @@ export default function SiteConfigManager() {
   };
 
   const handleReset = () => {
-    setFormData(config);
+    setFormData(settings || {});
   };
 
   if (loading) {
@@ -50,8 +50,8 @@ export default function SiteConfigManager() {
     return (
       <div className="bg-red-50 border border-red-200 rounded-md p-4">
         <div className="text-red-800">Lỗi: {error}</div>
-        <button 
-          onClick={refreshConfig}
+        <button
+          onClick={refreshSettings}
           className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
           Thử lại
