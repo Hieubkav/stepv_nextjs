@@ -64,8 +64,9 @@ const HeroSection = ({
 
     // Kiểm tra nếu là mobile hoặc connection chậm thì không load video
     const isMobile = window.innerWidth <= 768;
-    const isSlowConnection = (navigator as any).connection?.effectiveType === 'slow-2g' ||
-                            (navigator as any).connection?.effectiveType === '2g';
+    const connection = (navigator as { connection?: { effectiveType?: string } }).connection;
+    const isSlowConnection = connection?.effectiveType === 'slow-2g' ||
+                            connection?.effectiveType === '2g';
 
     if (isMobile || isSlowConnection) {
       // Trên mobile hoặc connection chậm, chỉ dùng poster image

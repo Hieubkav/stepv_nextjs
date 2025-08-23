@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import Image from 'next/image';
+import React from 'react';
 
 interface WhyChooseUsSectionProps {
   title?: string;

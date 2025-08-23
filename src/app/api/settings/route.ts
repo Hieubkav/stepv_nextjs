@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabaseClient';
-import { Settings, UpdateSettingsRequest } from '@/types/settings';
+import { UpdateSettingsRequest } from '@/types/settings';
 
 // GET /api/settings - Lấy settings (record duy nhất)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // Kiểm tra authentication (tạm thời bỏ qua để test)
     // const { data: { user }, error: authError } = await supabase.auth.getUser();

@@ -6,8 +6,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+export async function generateMetadata(): Promise<Metadata> {
   // In a real app, you would fetch the library data here
   return {
     title: `Chi tiết thư viện - Step V Studio`,

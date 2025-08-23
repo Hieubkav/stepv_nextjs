@@ -34,7 +34,6 @@ const YourAdviceSection = ({
     { videoId: 'EZwwRmLAg90', title: 'Oro Bianco | BOIS 1920 | Step V Studio | 3D Animation', linkUrl: '/projects' },
     { videoId: 'M7lc1UVf-VE', title: '3D Product Animation - Perfume Bottle', linkUrl: '/projects' }
   ],
-  desktopHeight = 600,
   mobileHeight = 400
 }: YourAdviceSectionProps) => {
 
