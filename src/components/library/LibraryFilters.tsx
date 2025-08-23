@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface LibraryFiltersProps {
   selectedType: string;
@@ -22,12 +23,13 @@ export default function LibraryFilters({
   totalCount
 }: LibraryFiltersProps) {
   const types = [
-    { value: 'all', label: 'ALL' },
-    { value: 'After Effects', label: 'Ae' },
-    { value: 'Premiere Pro', label: 'Pr' },
-    { value: '3D Model', label: 'Blender' },
-    { value: 'Photoshop', label: 'Ps' },
-    { value: 'Motion Graphics', label: 'Mo' },
+    { value: 'all', label: 'ALL', image: null },
+    { value: 'After Effects', label: 'AE', image: '/images/icon_design/ae_icon.webp' },
+    { value: 'Premiere Pro', label: 'PR', image: '/images/icon_design/premiere-pro.png' },
+    { value: 'Blender', label: 'BLENDER', image: '/images/icon_design/Blender_logo_no_text.svg.png' },
+    { value: 'Cinema 4D', label: 'C4D', image: '/images/icon_design/c4d.png' },
+    { value: '3DS Max', label: '3DS MAX', image: '/images/icon_design/3ds-max-logo-png_seeklogo-482396.png' },
+    { value: 'Unreal Engine', label: 'UNREAL', image: '/images/icon_design/unreal.jpg' },
   ];
 
   const prices = [
@@ -83,13 +85,39 @@ export default function LibraryFilters({
               <button
                 key={type.value}
                 onClick={() => onTypeChange(type.value)}
-                className={`px-3 py-2 rounded-lg text-sm font-bold uppercase transition-all duration-200 min-w-[50px] ${
+                className={`px-4 py-2.5 rounded-lg text-sm font-bold uppercase transition-all duration-200 min-w-[60px] flex items-center gap-2.5 ${
                   selectedType === type.value
-                    ? 'bg-yellow-400 text-black shadow-lg'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-700'
+                    ? 'bg-yellow-400 text-black shadow-lg transform scale-105'
+                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white border border-gray-700 hover:border-gray-600'
                 }`}
               >
-                {type.label}
+                {type.image && (
+                  <div className="w-6 h-6 flex items-center justify-center">
+                    {type.label === 'BLENDER' ? (
+                      // Fallback for Blender
+                      <div className="w-5 h-5 bg-orange-500 rounded flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">B</span>
+                      </div>
+                    ) : (
+                      <Image
+                        src={type.image}
+                        alt={type.label}
+                        width={24}
+                        height={24}
+                        className="object-contain filter brightness-110"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = `<div class="w-5 h-5 bg-gray-600 rounded flex items-center justify-center"><span class="text-white text-xs font-bold">${type.label.charAt(0)}</span></div>`;
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+                <span className="whitespace-nowrap">{type.label}</span>
               </button>
             ))}
           </div>

@@ -9,18 +9,12 @@ interface BrandLogo {
 }
 
 interface HeroSectionProps {
-  videoId?: string;
-  videoStart?: number;
-  videoEnd?: number;
   titleLines?: string[];
   subtitle?: string;
   brands?: BrandLogo[];
 }
 
 const HeroSection = ({
-  videoId = 'GXppDZ0k2IM',
-  videoStart = 2,
-  videoEnd = 31,
   titleLines = ['TẠO RA.', 'THU HÚT.', 'CHUYỂN ĐỔI.'],
   subtitle = 'CHUYÊN GIA HÌNH ẢNH 3D CHO THƯƠNG HIỆU NƯỚC HOA & LÀM ĐẸP',
   brands = [
@@ -47,6 +41,10 @@ const HeroSection = ({
 }: HeroSectionProps) => {
   const [currentTitleIndex, setCurrentTitleIndex] = useState(0);
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [isMobileDisabled, setIsMobileDisabled] = useState(false);
+  const [isPosterLoaded, setIsPosterLoaded] = useState(false);
 
   // Rotate title lines every 4 seconds
   useEffect(() => {
@@ -56,6 +54,35 @@ const HeroSection = ({
 
     return () => clearInterval(interval);
   }, [titleLines.length]);
+
+  // Preload poster image và delay video loading
+  useEffect(() => {
+    // Preload poster image bằng cách tạo element img thông thường
+    const img = document.createElement('img');
+    img.src = '/hero-glass.jpg';
+    img.onload = () => setIsPosterLoaded(true);
+
+    // Kiểm tra nếu là mobile hoặc connection chậm thì không load video
+    const isMobile = window.innerWidth <= 768;
+    const isSlowConnection = (navigator as any).connection?.effectiveType === 'slow-2g' ||
+                            (navigator as any).connection?.effectiveType === '2g';
+
+    if (isMobile || isSlowConnection) {
+      // Trên mobile hoặc connection chậm, chỉ dùng poster image
+      console.log('Mobile/slow connection detected, using poster image only');
+      setIsMobileDisabled(true);
+      setVideoError(true);
+      setIsVideoLoaded(true);
+      return;
+    }
+
+    // Delay video loading để ưu tiên content chính
+    const timer = setTimeout(() => {
+      setShowVideo(true);
+    }, 1500); // Delay 1.5 giây để trang load content trước
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleViewMore = () => {
     const element = document.querySelector('#services');
@@ -71,28 +98,89 @@ const HeroSection = ({
     }
   };
 
-  const videoSrc = `https://www.youtube-nocookie.com/embed/${videoId}?controls=0&rel=0&playsinline=1&cc_load_policy=0&enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${videoId}&start=${videoStart}&end=${videoEnd}`;
+  const handleEnableVideo = () => {
+    setIsMobileDisabled(false);
+    setVideoError(false);
+    setShowVideo(true);
+  };
 
   return (
     <section id="home" className="relative min-h-screen flex flex-col overflow-hidden pt-[110px]">
-      {/* Background Video */}
+      {/* Background với poster image luôn hiển thị trước */}
       <div className="absolute inset-0 z-0">
         <div className="video-background relative w-full h-full">
-          {!isVideoLoaded && (
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center z-20">
-              <div className="text-white text-xl">Đang tải...</div>
+          {/* Loading state cho poster image */}
+          {!isPosterLoaded && (
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center">
+              <div className="text-white text-lg flex items-center space-x-3">
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Đang tải...</span>
+              </div>
             </div>
           )}
-          <iframe
-            id="hero-video"
-            src={videoSrc}
-            frameBorder="0"
-            allowFullScreen
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            title="Step V Studio Showreel"
-            className="absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 pointer-events-none object-cover"
-            onLoad={() => setIsVideoLoaded(true)}
+
+          {/* Poster image hiển thị ngay lập tức */}
+          <div
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+              isPosterLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{ backgroundImage: 'url(/hero-glass.jpg)' }}
           />
+
+          {/* Video chỉ load khi showVideo = true */}
+          {showVideo && !videoError && (
+            <>
+              {!isVideoLoaded && (
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center z-20">
+                  <div className="text-white text-sm opacity-75 flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Đang tải video...</span>
+                  </div>
+                </div>
+              )}
+              <video
+                id="hero-video"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                className={`absolute top-1/2 left-1/2 w-[100vw] h-[56.25vw] min-h-[100vh] min-w-[177.77vh] transform -translate-x-1/2 -translate-y-1/2 pointer-events-none object-cover transition-opacity duration-1000 ${
+                  isVideoLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                onLoadedData={() => setIsVideoLoaded(true)}
+                onError={() => {
+                  console.log('Video failed to load, using poster image');
+                  setVideoError(true);
+                  setIsVideoLoaded(true);
+                }}
+              >
+                <source src="/hero-glass-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </>
+          )}
+
+          {/* Hiển thị thông báo khi video lỗi */}
+          {videoError && !isMobileDisabled && (
+            <div className="absolute bottom-4 right-4 bg-black/50 text-white text-xs px-3 py-2 rounded-lg z-30">
+              <i className="fas fa-image mr-2"></i>
+              Hiển thị ảnh nền
+            </div>
+          )}
+
+          {/* Button để bật video trên mobile */}
+          {isMobileDisabled && (
+            <div className="absolute bottom-4 right-4 z-30">
+              <button
+                onClick={handleEnableVideo}
+                className="bg-[#FFD700] text-black text-xs px-4 py-2 rounded-lg hover:bg-[#FFD700]/90 transition-colors flex items-center space-x-2"
+              >
+                <i className="fas fa-play"></i>
+                <span>Phát video</span>
+              </button>
+            </div>
+          )}
         </div>
         <div className="absolute inset-0 bg-black/30 md:bg-black/40 z-10"></div>
       </div>

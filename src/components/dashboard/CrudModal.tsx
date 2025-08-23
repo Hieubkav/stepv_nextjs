@@ -247,7 +247,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
               <div className={`space-y-2 p-3 border rounded-md ${
                 errors.type ? 'border-red-500' : 'border-gray-300'
               }`}>
-                {['Ae', 'Pr', 'Blender'].map((typeOption) => (
+                {['Ae', 'Pr', 'Blender', 'C4D', '3DS Max', 'Unreal'].map((typeOption) => (
                   <label key={typeOption} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"

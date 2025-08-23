@@ -8,7 +8,9 @@ import { useCrud } from '@/hooks/useCrud';
 import { ToastContainer } from '@/components/ui/Toast';
 import CrudModal from '@/components/dashboard/CrudModal';
 import DeleteConfirmModal from '@/components/dashboard/DeleteConfirmModal';
+import SiteSettingsManager from '@/components/admin/SimpleSettingsManager';
 import { setupStorageBuckets, testUpload, cleanupOrphanedFiles } from '@/utils/setupStorage';
+import { getSoftwareIcons } from '@/utils/softwareIcons';
 
 type User = Database['public']['Tables']['users']['Row'];
 type Library = Database['public']['Tables']['libraries']['Row'];
@@ -44,7 +46,7 @@ export default function DashboardClient() {
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images'>('libraries');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images' | 'settings'>('libraries');
 
   // Toast notifications
   const { toasts, removeToast } = useToast();
@@ -452,10 +454,11 @@ export default function DashboardClient() {
             // { key: 'users', label: 'Người dùng', icon: 'fas fa-users' },
             { key: 'libraries', label: 'Thư viện', icon: 'fas fa-book' },
             // { key: 'images', label: 'Hình ảnh', icon: 'fas fa-images' }
+            { key: 'settings', label: 'Cài đặt', icon: 'fas fa-cog' },
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as 'overview' | 'users' | 'libraries' | 'images')}
+              onClick={() => setActiveTab(tab.key as 'overview' | 'users' | 'libraries' | 'images' | 'settings')}
               className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.key
                   ? 'border-blue-500 text-blue-600'
@@ -728,9 +731,9 @@ export default function DashboardClient() {
                       <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{library.description}</p>
                       <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                         <div className="flex flex-wrap gap-1">
-                          {library.type.split(', ').filter(t => t.trim()).map((type, index) => (
+                          {getSoftwareIcons(library.type).map((icon, index) => (
                             <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              {type.trim()}
+                              {icon.name}
                             </span>
                           ))}
                         </div>
@@ -947,6 +950,11 @@ export default function DashboardClient() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+          <SiteSettingsManager />
         )}
       </div>
 

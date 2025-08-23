@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Database } from '@/lib/supabaseClient';
+import { getSoftwareIcons, getFormattedSoftwareNames } from '@/utils/softwareIcons';
 
 type Library = Database['public']['Tables']['libraries']['Row'];
 
@@ -13,28 +14,8 @@ interface LibraryCardProps {
 
 export default function LibraryCard({ library }: LibraryCardProps) {
   const isFree = library.pricing.toLowerCase().includes('free');
-  
-  // Get software icons based on type - parse from actual library.type string
-  const getSoftwareIcons = (type: string) => {
-    const icons = [];
-    const typeStr = type.toLowerCase();
-
-    // Check for each software in the type string
-    if (typeStr.includes('ae')) icons.push('ae');
-    if (typeStr.includes('pr')) icons.push('pr');
-    if (typeStr.includes('blender')) icons.push('bl');
-    if (typeStr.includes('ps') || typeStr.includes('photoshop')) icons.push('ps');
-    if (typeStr.includes('mo') || typeStr.includes('motion')) icons.push('mo');
-
-    // If no specific software found, default to ae, pr
-    if (icons.length === 0) {
-      icons.push('ae', 'pr');
-    }
-
-    return icons;
-  };
-
   const softwareIcons = getSoftwareIcons(library.type);
+  const formattedSoftwareNames = getFormattedSoftwareNames(library.type);
 
   return (
     <Link href={`/thu-vien/${library.id}`} className="group block">
@@ -73,12 +54,30 @@ export default function LibraryCard({ library }: LibraryCardProps) {
           </div>
 
           {/* Software Icons */}
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute top-3 right-3 flex gap-1.5">
             {softwareIcons.map((icon, index) => (
-              <div key={index} className="w-8 h-8 bg-black/50 rounded flex items-center justify-center">
-                <span className="text-white text-xs font-bold uppercase">
-                  {icon}
-                </span>
+              <div key={index} className="w-10 h-10 bg-black/70 rounded-lg flex items-center justify-center p-1.5 backdrop-blur-sm border border-white/10">
+                {icon.name === 'BL' ? (
+                  // Fallback for Blender if image doesn't load
+                  <span className="text-white text-xs font-bold">BL</span>
+                ) : (
+                  <Image
+                    src={icon.image}
+                    alt={icon.name}
+                    width={28}
+                    height={28}
+                    className="object-contain filter brightness-110"
+                    onError={(e) => {
+                      // If image fails to load, show text instead
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      const parent = target.parentElement;
+                      if (parent) {
+                        parent.innerHTML = `<span class="text-white text-xs font-bold">${icon.name}</span>`;
+                      }
+                    }}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -99,7 +98,7 @@ export default function LibraryCard({ library }: LibraryCardProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500 uppercase tracking-wider">
-                {library.type}
+                {formattedSoftwareNames}
               </span>
             </div>
 

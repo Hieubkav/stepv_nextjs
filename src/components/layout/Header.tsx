@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
+import { useSiteSettings } from '@/hooks/useSiteConfig';
 
 interface MenuItem {
   label: string;
@@ -20,6 +21,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { getSetting } = useSiteSettings();
 
   const menuItems: MenuItem[] = [
     { label: 'TRANG CHỦ', href: '/', isActive: pathname === '/' },
@@ -120,10 +122,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             {/* Social Icons */}
             <div className="hidden lg:flex items-center gap-2">
               {[
-                { icon: 'fab fa-youtube', href: 'https://www.youtube.com/@dohystudio', color: 'text-red-500' },
-                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-white' },
-                { icon: 'fab fa-facebook', href: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes', color: 'text-blue-600' },
-                { icon: 'fab fa-instagram', href: 'https://www.instagram.com/dohy_studio/', color: 'text-pink-500' }
+                { icon: 'fab fa-youtube', href: getSetting('youtube_url', 'https://www.youtube.com/@dohystudio'), color: 'text-red-500' },
+                { icon: 'fab fa-tiktok', href: getSetting('tiktok_url', 'https://www.tiktok.com/@dohystudio'), color: 'text-white' },
+                { icon: 'fab fa-facebook', href: getSetting('facebook_url', 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes'), color: 'text-blue-600' },
+                { icon: 'fab fa-instagram', href: getSetting('instagram_url', 'https://www.instagram.com/dohy_studio/'), color: 'text-pink-500' }
               ].map((social, index) => (
                 <a
                   key={index}

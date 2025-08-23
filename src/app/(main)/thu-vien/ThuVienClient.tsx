@@ -24,14 +24,17 @@ export default function ThuVienClient() {
         case 'Premiere Pro':
           typeMatch = libraryType.includes('pr');
           break;
-        case '3D Model':
+        case 'Blender':
           typeMatch = libraryType.includes('blender');
           break;
-        case 'Photoshop':
-          typeMatch = libraryType.includes('ps');
+        case 'Cinema 4D':
+          typeMatch = libraryType.includes('c4d') || libraryType.includes('cinema');
           break;
-        case 'Motion Graphics':
-          typeMatch = libraryType.includes('mo');
+        case '3DS Max':
+          typeMatch = libraryType.includes('3ds') || libraryType.includes('max');
+          break;
+        case 'Unreal Engine':
+          typeMatch = libraryType.includes('unreal') || libraryType.includes('ue');
           break;
         default:
           typeMatch = false;
@@ -73,12 +76,22 @@ export default function ThuVienClient() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800">
-      {/* Background Effects */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-yellow-400/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
+    <main className="min-h-screen relative">
+      {/* Background Image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+        style={{
+          backgroundImage: 'url(/background.jpg)',
+        }}
+      >
+        {/* Dark overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/50"></div>
+
+        {/* Additional subtle effects */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-yellow-400/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        </div>
       </div>
 
       {/* Content */}

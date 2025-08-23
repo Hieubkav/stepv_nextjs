@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useSiteSettings } from '@/hooks/useSiteConfig';
 
 interface ContactFormSectionProps {
   title?: string;
@@ -24,6 +25,7 @@ const ContactFormSection = ({
   subtitle = 'Chúng tôi ở đây để giúp bạn tạo ra những hình ảnh và hoạt hình tuyệt đẹp, thu hút khán giả và nâng tầm thương hiệu của bạn. Dù bạn có câu hỏi, cần báo giá, hay muốn thảo luận về dự án tiếp theo, chúng tôi rất mong được lắng nghe từ bạn',
   backgroundColor = 'bg-black'
 }: ContactFormSectionProps) => {
+  const { getSetting } = useSiteSettings();
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
@@ -181,13 +183,13 @@ const ContactFormSection = ({
                   </h3>
                   <div className="space-y-4">
                     <div>
-                      <a href="mailto:contact@stepv.studio" className="text-[#FFD700] hover:underline text-lg">
-                        contact@stepv.studio
+                      <a href={`mailto:${getSetting('contact_email', 'contact@stepv.studio')}`} className="text-[#FFD700] hover:underline text-lg">
+                        {getSetting('contact_email', 'contact@stepv.studio')}
                       </a>
                     </div>
                     <div>
-                      <a href="tel:+49-176-21129718" className="text-[#FFD700] hover:underline text-lg">
-                        +49-176-21129718
+                      <a href={`tel:${getSetting('contact_phone', '+49-176-21129718')}`} className="text-[#FFD700] hover:underline text-lg">
+                        {getSetting('contact_phone', '+49-176-21129718')}
                       </a>
                     </div>
                   </div>

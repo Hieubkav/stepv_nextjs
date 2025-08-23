@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '@/lib/supabaseClient';
 import type { Database } from '@/lib/supabaseClient';
+import { getSoftwareIcons, getFormattedSoftwareNames } from '@/utils/softwareIcons';
+import { useSiteSettings } from '@/hooks/useSiteConfig';
 
 type Library = Database['public']['Tables']['libraries']['Row'];
 
@@ -16,6 +18,10 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
   const [library, setLibrary] = useState<Library | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPaymentInfo, setShowPaymentInfo] = useState(true);
+
+  // Get site settings for payment info
+  const { getSetting } = useSiteSettings();
 
   useEffect(() => {
     const fetchLibrary = async () => {
@@ -73,6 +79,8 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
   const isFree = library.pricing.toLowerCase().includes('free');
   const hasLinkUrl = library.link_url && library.link_url.trim() !== '';
   const isLinkVisible = library.link_status === 'visible';
+  const softwareIcons = getSoftwareIcons(library.type);
+  const formattedSoftwareNames = getFormattedSoftwareNames(library.type);
 
   // Handle download/link click
   const handleDownloadClick = () => {
@@ -151,12 +159,42 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
                 <div className="flex items-center gap-4 text-gray-400">
                   <span className="flex items-center gap-2">
                     <i className="fas fa-tag"></i>
-                    {library.type}
+                    {formattedSoftwareNames}
                   </span>
                   <span className="flex items-center gap-2">
                     <i className="fas fa-calendar"></i>
                     {new Date(library.created_at).toLocaleDateString('vi-VN')}
                   </span>
+                </div>
+
+                {/* Software Icons */}
+                <div className="flex items-center gap-3 mt-4">
+                  <span className="text-gray-400 text-sm">Tương thích:</span>
+                  <div className="flex gap-2">
+                    {softwareIcons.map((icon, index) => (
+                      <div key={index} className="w-8 h-8 bg-gray-700 rounded-lg flex items-center justify-center p-1.5 border border-gray-600">
+                        {icon.name === 'BL' ? (
+                          <span className="text-white text-xs font-bold">BL</span>
+                        ) : (
+                          <Image
+                            src={icon.image}
+                            alt={icon.name}
+                            width={20}
+                            height={20}
+                            className="object-contain filter brightness-110"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<span class="text-white text-xs font-bold">${icon.name}</span>`;
+                              }
+                            }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -174,6 +212,88 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
                 <div className="text-3xl font-bold text-yellow-400">
                   {library.pricing}
                 </div>
+
+                {/* Payment Info for Premium Items */}
+                {!isFree && (
+                  <div className="mt-6 p-6 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-white">Thông tin thanh toán</h3>
+                      <button
+                        onClick={() => setShowPaymentInfo(!showPaymentInfo)}
+                        className="text-yellow-400 hover:text-yellow-300 transition-colors"
+                      >
+                        <i className={`fas fa-chevron-${showPaymentInfo ? 'up' : 'down'}`}></i>
+                      </button>
+                    </div>
+
+                    {showPaymentInfo && (
+                      <div className="space-y-4">
+                        {/* Bank Info */}
+                        {getSetting('bank_name') && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm text-gray-400 mb-1">Ngân hàng</label>
+                              <div className="text-white font-medium">{getSetting('bank_name')}</div>
+                            </div>
+                            <div>
+                              <label className="block text-sm text-gray-400 mb-1">Số tài khoản</label>
+                              <div className="text-white font-medium font-mono">{getSetting('bank_account')}</div>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="block text-sm text-gray-400 mb-1">Chủ tài khoản</label>
+                              <div className="text-white font-medium">{getSetting('bank_account_name')}</div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* QR Code */}
+                        {getSetting('payment_qr_code') && (
+                          <div className="text-center">
+                            <label className="block text-sm text-gray-400 mb-2">Quét mã QR để thanh toán</label>
+                            <div className="inline-block p-4 bg-white rounded-lg">
+                              <Image
+                                src={getSetting('payment_qr_code')}
+                                alt="QR Code thanh toán"
+                                width={200}
+                                height={200}
+                                className="mx-auto"
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Contact Info */}
+                        <div className="pt-4 border-t border-gray-700">
+                          <p className="text-sm text-gray-400 mb-2">Sau khi thanh toán, vui lòng liên hệ:</p>
+                          <div className="space-y-1">
+                            {getSetting('contact_email') && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <i className="fas fa-envelope text-yellow-400"></i>
+                                <a
+                                  href={`mailto:${getSetting('contact_email')}`}
+                                  className="text-yellow-400 hover:text-yellow-300"
+                                >
+                                  {getSetting('contact_email')}
+                                </a>
+                              </div>
+                            )}
+                            {getSetting('contact_phone') && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <i className="fas fa-phone text-yellow-400"></i>
+                                <a
+                                  href={`tel:${getSetting('contact_phone')}`}
+                                  className="text-yellow-400 hover:text-yellow-300"
+                                >
+                                  {getSetting('contact_phone')}
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Download Button */}
@@ -189,7 +309,7 @@ export default function LibraryDetailClient({ id }: LibraryDetailClientProps) {
                 >
                   <i className={hasLinkUrl && isLinkVisible ? "fas fa-external-link-alt" : "fas fa-download"}></i>
                   {hasLinkUrl && isLinkVisible
-                    ? (isFree ? 'Tải xuống miễn phí' : 'Mua ngay')
+                    ? (isFree ? 'Tải xuống miễn phí' : 'Liên hệ để mua')
                     : 'Chưa có link tải'
                   }
                 </button>
