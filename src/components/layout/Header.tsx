@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useSiteSettings } from '@/hooks/useSiteConfig';
+import XIcon from '@/components/ui/XIcon';
 
 interface MenuItem {
   label: string;
@@ -125,8 +126,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 { icon: 'fab fa-youtube', href: getSetting('youtube_url', 'https://www.youtube.com/@dohystudio'), color: 'text-red-500' },
                 { icon: 'fab fa-tiktok', href: getSetting('tiktok_url', 'https://www.tiktok.com/@dohystudio'), color: 'text-white' },
                 { icon: 'fab fa-facebook', href: getSetting('facebook_url', 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes'), color: 'text-blue-600' },
-                { icon: 'fab fa-instagram', href: getSetting('instagram_url', 'https://www.instagram.com/dohy_studio/'), color: 'text-pink-500' }
-              ].map((social, index) => (
+                { icon: 'fab fa-instagram', href: getSetting('instagram_url', 'https://www.instagram.com/dohy_studio/'), color: 'text-pink-500' },
+                { icon: 'fab fa-pinterest', href: getSetting('pinterest_url'), color: 'text-red-600' },
+                { icon: 'fab fa-x-twitter', href: getSetting('x_url'), color: 'text-white' }
+              ].filter(social => social.href).map((social, index) => (
                 <a
                   key={index}
                   href={social.href}
@@ -134,7 +137,11 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   rel="noopener noreferrer"
                   className={`w-8 h-8 ${social.color} hover:scale-110 transition-all duration-300 flex items-center justify-center`}
                 >
-                  <i className={`${social.icon} text-lg`}></i>
+                  {social.icon === 'fab fa-x-twitter' ? (
+                    <XIcon className="text-lg" size={18} />
+                  ) : (
+                    <i className={`${social.icon} text-lg`}></i>
+                  )}
                 </a>
               ))}
             </div>
@@ -212,11 +219,13 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             {/* Social Icons */}
             <div className="hidden lg:flex items-center gap-2">
               {[
-                { icon: 'fab fa-youtube', href: 'https://www.youtube.com/@dohystudio', color: 'text-red-500' },
-                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio', color: 'text-white' },
-                { icon: 'fab fa-facebook', href: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes', color: 'text-blue-600' },
-                { icon: 'fab fa-instagram', href: 'https://www.instagram.com/dohy_studio/', color: 'text-pink-500' }
-              ].map((social, index) => (
+                { icon: 'fab fa-youtube', href: getSetting('youtube_url', 'https://www.youtube.com/@dohystudio'), color: 'text-red-500' },
+                { icon: 'fab fa-tiktok', href: getSetting('tiktok_url', 'https://www.tiktok.com/@dohystudio'), color: 'text-white' },
+                { icon: 'fab fa-facebook', href: getSetting('facebook_url', 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes'), color: 'text-blue-600' },
+                { icon: 'fab fa-instagram', href: getSetting('instagram_url', 'https://www.instagram.com/dohy_studio/'), color: 'text-pink-500' },
+                { icon: 'fab fa-pinterest', href: getSetting('pinterest_url'), color: 'text-red-600' },
+                { icon: 'fab fa-x-twitter', href: getSetting('x_url'), color: 'text-white' }
+              ].filter(social => social.href).map((social, index) => (
                 <a
                   key={index}
                   href={social.href}
@@ -224,7 +233,11 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   rel="noopener noreferrer"
                   className={`w-8 h-8 ${social.color} hover:scale-110 transition-all duration-300 flex items-center justify-center`}
                 >
-                  <i className={`${social.icon} text-lg`}></i>
+                  {social.icon === 'fab fa-x-twitter' ? (
+                    <XIcon className="text-lg" size={18} />
+                  ) : (
+                    <i className={`${social.icon} text-lg`}></i>
+                  )}
                 </a>
               ))}
             </div>
@@ -325,17 +338,23 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
             {/* Social Links */}
             <div className="flex space-x-4 mt-8 justify-center">
               {[
-                { icon: 'fab fa-youtube', href: 'https://www.youtube.com/@dohystudio' },
-                { icon: 'fab fa-tiktok', href: 'https://www.tiktok.com/@dohystudio' },
-                { icon: 'fab fa-facebook', href: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes' },
-                { icon: 'fab fa-instagram', href: 'https://www.instagram.com/dohy_studio/' }
-              ].map((social, index) => (
+                { icon: 'fab fa-youtube', href: getSetting('youtube_url', 'https://www.youtube.com/@dohystudio') },
+                { icon: 'fab fa-tiktok', href: getSetting('tiktok_url', 'https://www.tiktok.com/@dohystudio') },
+                { icon: 'fab fa-facebook', href: getSetting('facebook_url', 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes') },
+                { icon: 'fab fa-instagram', href: getSetting('instagram_url', 'https://www.instagram.com/dohy_studio/') },
+                { icon: 'fab fa-pinterest', href: getSetting('pinterest_url') },
+                { icon: 'fab fa-x-twitter', href: getSetting('x_url') }
+              ].filter(social => social.href).map((social, index) => (
                 <a
                   key={index}
                   href={social.href}
                   className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300"
                 >
-                  <i className={`${social.icon} text-white text-lg`}></i>
+                  {social.icon === 'fab fa-x-twitter' ? (
+                    <XIcon className="text-white text-lg" size={18} />
+                  ) : (
+                    <i className={`${social.icon} text-white text-lg`}></i>
+                  )}
                 </a>
               ))}
             </div>

@@ -99,6 +99,8 @@ export interface Database {
           instagram_url?: string;
           youtube_url?: string;
           tiktok_url?: string;
+          pinterest_url?: string;
+          x_url?: string;
           created_at: string;
           updated_at: string;
         };
@@ -120,6 +122,8 @@ export interface Database {
           instagram_url?: string;
           youtube_url?: string;
           tiktok_url?: string;
+          pinterest_url?: string;
+          x_url?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -141,6 +145,8 @@ export interface Database {
           instagram_url?: string;
           youtube_url?: string;
           tiktok_url?: string;
+          pinterest_url?: string;
+          x_url?: string;
           created_at?: string;
           updated_at?: string;
         };

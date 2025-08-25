@@ -1,6 +1,7 @@
 'use client';
 
 import { useSiteSettings } from '@/hooks/useSiteConfig';
+import XIcon from './XIcon';
 
 interface DynamicContactInfoProps {
   showEmail?: boolean;
@@ -74,7 +75,7 @@ export function DynamicSocialLinks({
       color: 'text-red-500'
     },
     {
-      name: 'TikTok', 
+      name: 'TikTok',
       url: getSetting('tiktok_url'),
       icon: 'fab fa-tiktok',
       color: 'text-white'
@@ -90,6 +91,18 @@ export function DynamicSocialLinks({
       url: getSetting('instagram_url'),
       icon: 'fab fa-instagram',
       color: 'text-pink-500'
+    },
+    {
+      name: 'Pinterest',
+      url: getSetting('pinterest_url'),
+      icon: 'fab fa-pinterest',
+      color: 'text-red-600'
+    },
+    {
+      name: 'X',
+      url: getSetting('x_url'),
+      icon: 'fab fa-x-twitter',
+      color: 'text-white'
     }
   ].filter(social => social.url); // Chỉ hiển thị những link có URL
 
@@ -106,7 +119,11 @@ export function DynamicSocialLinks({
           className="hover:scale-110 transition-transform"
           title={social.name}
         >
-          <i className={`${social.icon} ${iconClassName} ${social.color}`}></i>
+          {social.icon === 'fab fa-x-twitter' ? (
+            <XIcon className={`${iconClassName} ${social.color}`} size={20} />
+          ) : (
+            <i className={`${social.icon} ${iconClassName} ${social.color}`}></i>
+          )}
           {showLabels && (
             <span className="ml-2 text-sm">{social.name}</span>
           )}

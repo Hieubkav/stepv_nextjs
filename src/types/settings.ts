@@ -27,6 +27,8 @@ export interface Settings {
   instagram_url?: string;
   youtube_url?: string;
   tiktok_url?: string;
+  pinterest_url?: string;
+  x_url?: string;
 
   // Timestamps
   created_at: string;
@@ -51,6 +53,8 @@ export interface UpdateSettingsRequest {
   instagram_url?: string;
   youtube_url?: string;
   tiktok_url?: string;
+  pinterest_url?: string;
+  x_url?: string;
 }
 
 // Helper type for getting setting values

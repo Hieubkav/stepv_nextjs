@@ -253,6 +253,30 @@ export default function SiteConfigManager() {
                 placeholder="https://tiktok.com/@stepvstudio"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Pinterest URL
+              </label>
+              <input
+                type="url"
+                value={formData.pinterest_url || ''}
+                onChange={(e) => handleInputChange('pinterest_url', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://pinterest.com/stepvstudio"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                X (Twitter) URL
+              </label>
+              <input
+                type="url"
+                value={formData.x_url || ''}
+                onChange={(e) => handleInputChange('x_url', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="https://x.com/stepvstudio"
+              />
+            </div>
           </div>
         </div>
 
