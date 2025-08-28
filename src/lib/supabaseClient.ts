@@ -159,7 +159,7 @@ export interface Database {
           title?: string;
           subtitle?: string;
           description?: string;
-          config_data?: any;
+          config_data?: Record<string, any> | null;
           position: number;
           is_visible: boolean;
           created_at: string;
@@ -172,7 +172,7 @@ export interface Database {
           title?: string;
           subtitle?: string;
           description?: string;
-          config_data?: any;
+          config_data?: Record<string, any> | null;
           position?: number;
           is_visible?: boolean;
           created_at?: string;
@@ -185,7 +185,7 @@ export interface Database {
           title?: string;
           subtitle?: string;
           description?: string;
-          config_data?: any;
+          config_data?: Record<string, any> | null;
           position?: number;
           is_visible?: boolean;
           created_at?: string;

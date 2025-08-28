@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/useToast';
+import HeroSectionEditForm from './forms/HeroSectionEditForm';
 
 interface WebDesignItem {
   id: string;
@@ -11,7 +12,7 @@ interface WebDesignItem {
   title: string | null;
   subtitle: string | null;
   description: string | null;
-  config_data: any;
+  config_data: Record<string, any> | null;
   position: number;
   is_visible: boolean;
   created_at: string;
@@ -315,44 +316,55 @@ const WebDesignManager: React.FC<WebDesignManagerProps> = ({ className = '' }) =
         )}
       </div>
 
-      {/* Edit Modal - Placeholder for now */}
+      {/* Edit Modal */}
       {showEditModal && editingItem && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Chỉnh sửa: {editingItem.component_name}
-                </h3>
-                <button
-                  onClick={closeEditModal}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <i className="fas fa-times"></i>
-                </button>
-              </div>
-              
-              <div className="text-center py-8">
-                <i className="fas fa-tools text-gray-400 text-4xl mb-4"></i>
-                <p className="text-gray-500">
-                  Form chỉnh sửa chi tiết sẽ được phát triển trong phần tiếp theo
-                </p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Component: {editingItem.component_name} | Type: {editingItem.component_type}
-                </p>
-              </div>
+        <>
+          {editingItem.component_name === 'HeroSection' ? (
+            <HeroSectionEditForm
+              item={editingItem as WebDesignItem & { config_data: { titleLines: string[]; videoBackground: string; brands: Array<{ url: string; alt: string }> } }}
+              onClose={closeEditModal}
+              onSave={fetchWebDesignData}
+            />
+          ) : (
+            // Default placeholder for other components
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+                <div className="mt-3">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Chỉnh sửa: {editingItem.component_name}
+                    </h3>
+                    <button
+                      onClick={closeEditModal}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
 
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={closeEditModal}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                >
-                  Đóng
-                </button>
+                  <div className="text-center py-8">
+                    <i className="fas fa-tools text-gray-400 text-4xl mb-4"></i>
+                    <p className="text-gray-500">
+                      Form chỉnh sửa cho {editingItem.component_name} sẽ được phát triển trong phần tiếp theo
+                    </p>
+                    <p className="text-sm text-gray-400 mt-2">
+                      Component: {editingItem.component_name} | Type: {editingItem.component_type}
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end space-x-3 mt-6">
+                    <button
+                      onClick={closeEditModal}
+                      className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    >
+                      Đóng
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
     </div>
   );
