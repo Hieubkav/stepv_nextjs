@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { StagewiseToolbar } from '@stagewise/toolbar-next';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,7 +36,6 @@ export default function RootLayout({
         <link rel="preload" href="/hero-glass.jpg" as="image" />
       </head>
       <body className={`${inter.variable} font-sans antialiased min-h-screen`}>
-        <StagewiseToolbar />
         {children}
       </body>
     </html>

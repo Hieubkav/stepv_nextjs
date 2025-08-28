@@ -9,6 +9,7 @@ import { ToastContainer } from '@/components/ui/Toast';
 import CrudModal from '@/components/dashboard/CrudModal';
 import DeleteConfirmModal from '@/components/dashboard/DeleteConfirmModal';
 import SiteSettingsManager from '@/components/admin/SimpleSettingsManager';
+import WebDesignManager from '@/components/dashboard/WebDesignManager';
 import { setupStorageBuckets, testUpload, cleanupOrphanedFiles } from '@/utils/setupStorage';
 import { getSoftwareIcons } from '@/utils/softwareIcons';
 
@@ -52,7 +53,7 @@ export default function DashboardClient() {
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images' | 'settings'>('libraries');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'libraries' | 'images' | 'webdesign' | 'settings'>('libraries');
 
   // Toast notifications
   const { toasts, removeToast } = useToast();
@@ -460,11 +461,12 @@ export default function DashboardClient() {
             // { key: 'users', label: 'Người dùng', icon: 'fas fa-users' },
             { key: 'libraries', label: 'Thư viện', icon: 'fas fa-book' },
             // { key: 'images', label: 'Hình ảnh', icon: 'fas fa-images' }
+            { key: 'webdesign', label: 'WebDesign', icon: 'fas fa-palette' },
             { key: 'settings', label: 'Cài đặt', icon: 'fas fa-cog' },
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as 'overview' | 'users' | 'libraries' | 'images' | 'settings')}
+              onClick={() => setActiveTab(tab.key as 'overview' | 'users' | 'libraries' | 'images' | 'webdesign' | 'settings')}
               className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.key
                   ? 'border-blue-500 text-blue-600'
@@ -956,6 +958,11 @@ export default function DashboardClient() {
               </table>
             </div>
           </div>
+        )}
+
+        {/* WebDesign Tab */}
+        {activeTab === 'webdesign' && (
+          <WebDesignManager />
         )}
 
         {/* Settings Tab */}

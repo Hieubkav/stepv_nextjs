@@ -151,6 +151,47 @@ export interface Database {
           updated_at?: string;
         };
       };
+      webdesign: {
+        Row: {
+          id: string;
+          component_name: string;
+          component_type: string;
+          title?: string;
+          subtitle?: string;
+          description?: string;
+          config_data?: any;
+          position: number;
+          is_visible: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          component_name: string;
+          component_type: string;
+          title?: string;
+          subtitle?: string;
+          description?: string;
+          config_data?: any;
+          position?: number;
+          is_visible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          component_name?: string;
+          component_type?: string;
+          title?: string;
+          subtitle?: string;
+          description?: string;
+          config_data?: any;
+          position?: number;
+          is_visible?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
   };
 }
