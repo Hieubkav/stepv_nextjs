@@ -16,6 +16,7 @@ interface FileUploadProps {
   disabled?: boolean;
   showPreview?: boolean;
   currentImageUrl?: string;
+  quality?: number; // WebP quality (1-100)
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({
@@ -30,7 +31,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
   className = '',
   disabled = false,
   showPreview = true,
-  currentImageUrl
+  currentImageUrl,
+  quality = 80
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragActive, setDragActive] = useState(false);
@@ -71,7 +73,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
         bucket,
         folder,
         maxSizeInMB,
-        allowedTypes
+        allowedTypes,
+        quality
       });
 
       if (result) {
@@ -87,7 +90,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
             bucket,
             folder,
             maxSizeInMB,
-            allowedTypes
+            allowedTypes,
+            quality
           });
 
           if (retryResult) {
@@ -237,7 +241,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 <span className="font-medium text-blue-600">Click để upload</span> hoặc kéo thả file vào đây
               </p>
               <p className="text-xs text-gray-500 mt-1">
-                PNG, JPG, WEBP, GIF tối đa {maxSizeInMB}MB
+                PNG, JPG, WEBP, GIF tối đa {maxSizeInMB}MB (tự động chuyển WebP với chất lượng {quality}%)
               </p>
             </div>
           </div>

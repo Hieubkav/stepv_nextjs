@@ -3,18 +3,24 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from './useToast';
+import { imageCleanup } from '@/utils/imageCleanup';
 
 interface UploadOptions {
   bucket: string;
   folder?: string;
   maxSizeInMB?: number;
   allowedTypes?: string[];
+  quality?: number; // WebP quality (1-100)
 }
 
 interface UploadResult {
   url: string;
   path: string;
   fullUrl: string;
+  fileName: string;
+  originalName: string;
+  processedSize: number;
+  originalSize: number;
 }
 
 // Utility function to extract file path from Supabase URL
@@ -66,59 +72,64 @@ export function useFileUpload() {
         return null;
       }
 
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const folder = options.folder || 'uploads';
-      const filePath = `${folder}/${fileName}`;
-
-      console.log('🔄 Uploading file:', { fileName, filePath, size: file.size, type: file.type });
+      console.log('🔄 Uploading file via API:', { 
+        name: file.name, 
+        size: file.size, 
+        type: file.type 
+      });
 
       // Simulate progress for better UX
       const progressInterval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 100);
+        setProgress(prev => Math.min(prev + 10, 85));
+      }, 200);
 
-      // Upload to Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
-        .from(options.bucket)
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      // Prepare form data for API upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('bucket', options.bucket);
+      formData.append('folder', options.folder || 'uploads');
+      formData.append('quality', (options.quality || 80).toString());
+
+      // Upload via API route with WebP conversion
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
       clearInterval(progressInterval);
       setProgress(100);
 
-      if (uploadError) {
-        console.error('❌ Upload error:', uploadError);
-        
-        // Handle specific errors
-        if (uploadError.message.includes('Bucket not found')) {
-          error('Lỗi cấu hình', 'Bucket storage chưa được tạo. Vui lòng liên hệ admin.');
-        } else if (uploadError.message.includes('already exists')) {
-          error('Lỗi upload', 'File đã tồn tại. Vui lòng thử lại.');
-        } else {
-          error('Lỗi upload', uploadError.message);
-        }
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Upload API error:', errorData);
+        error('Lỗi upload', errorData.error || 'Upload thất bại');
         return null;
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
-        .from(options.bucket)
-        .getPublicUrl(filePath);
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error('❌ Upload failed:', result);
+        error('Lỗi upload', 'Upload thất bại');
+        return null;
+      }
 
-      const result: UploadResult = {
-        url: urlData.publicUrl,
-        path: filePath,
-        fullUrl: urlData.publicUrl
+      const uploadResult: UploadResult = {
+        url: result.data.url,
+        path: result.data.path,
+        fullUrl: result.data.url,
+        fileName: result.data.fileName,
+        originalName: result.data.originalName,
+        processedSize: result.data.processedSize,
+        originalSize: result.data.originalSize
       };
 
-      console.log('✅ Upload successful:', result);
-      success('Upload thành công', 'File đã được upload thành công!');
+      console.log('✅ Upload successful via API:', uploadResult);
+      
+      const compressionPercent = ((uploadResult.originalSize - uploadResult.processedSize) / uploadResult.originalSize * 100).toFixed(1);
+      success('Upload thành công', `File đã được tối ưu WebP (tiết kiệm ${compressionPercent}%)`);
 
-      return result;
+      return uploadResult;
     } catch (err) {
       console.error('❌ Unexpected upload error:', err);
       error('Lỗi không mong muốn', 'Có lỗi xảy ra khi upload file');
@@ -134,13 +145,23 @@ export function useFileUpload() {
     filePath: string
   ): Promise<boolean> => {
     try {
-      const { error: deleteError } = await supabase.storage
-        .from(bucket)
-        .remove([filePath]);
+      // Use API route for deletion
+      const response = await fetch(`/api/upload?bucket=${bucket}&path=${encodeURIComponent(filePath)}`, {
+        method: 'DELETE',
+      });
 
-      if (deleteError) {
-        console.error('❌ Delete error:', deleteError);
-        error('Lỗi xóa file', deleteError.message);
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Delete API error:', errorData);
+        error('Lỗi xóa file', errorData.error || 'Xóa file thất bại');
+        return false;
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        console.error('❌ Delete failed:', result);
+        error('Lỗi xóa file', 'Xóa file thất bại');
         return false;
       }
 
@@ -183,6 +204,10 @@ export function useFileUpload() {
     progress,
     uploadFile,
     deleteFile,
-    createBucket
+    createBucket,
+    // Cleanup utilities
+    cleanupAfterDelete: imageCleanup.cleanupAfterDelete.bind(imageCleanup),
+    cleanupAfterUpdate: imageCleanup.cleanupAfterUpdate.bind(imageCleanup),
+    runFullCleanup: imageCleanup.runFullCleanup.bind(imageCleanup)
   };
 }

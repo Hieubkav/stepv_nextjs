@@ -6,6 +6,7 @@ import type { Database } from '@/lib/supabaseClient';
 import { useToast } from './useToast';
 import { extractFilePathFromUrl } from './useFileUpload';
 import { generateShortId } from '@/utils/uuid';
+import { imageCleanup } from '@/utils/imageCleanup';
 
 type Tables = Database['public']['Tables'];
 type TableName = keyof Tables;
@@ -62,6 +63,17 @@ export function useCrud<T extends TableName>(tableName: T) {
     try {
       setLoading(true);
       
+      // Get old data for cleanup purposes
+      let oldImageUrl: string | null = null;
+      if (tableName === 'libraries') {
+        const { data: oldData } = await supabase
+          .from('libraries')
+          .select('image_url')
+          .eq('id', id)
+          .single();
+        oldImageUrl = oldData?.image_url || null;
+      }
+      
       const { data: result, error: updateError } = await supabase
         .from(tableName)
         .update(data)
@@ -73,6 +85,12 @@ export function useCrud<T extends TableName>(tableName: T) {
         console.error(`❌ Error updating ${tableName}:`, updateError);
         error('Lỗi cập nhật', updateError.message);
         return null;
+      }
+
+      // Cleanup old image if it was changed
+      if (tableName === 'libraries' && oldImageUrl) {
+        const newImageUrl = (data as any).image_url;
+        await imageCleanup.cleanupAfterUpdate(oldImageUrl, newImageUrl);
       }
 
       success('Thành công', `Đã cập nhật ${tableName} thành công!`);

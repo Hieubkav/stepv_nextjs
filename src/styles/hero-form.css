@@ -1,0 +1,49 @@
+/* Ultra Minimal Hero Form - Shadcn/ui style */
+
+/* Clean focus states */
+.hero-form input:focus,
+.hero-form textarea:focus,
+.hero-form select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(17 24 39);
+  border-color: transparent;
+}
+
+/* Minimal transitions */
+.hero-form button,
+.hero-form input,
+.hero-form textarea {
+  transition: all 0.15s ease;
+}
+
+/* Clean disabled states */
+.hero-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Clean scrollbar */
+.hero-form::-webkit-scrollbar {
+  width: 4px;
+}
+
+.hero-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hero-form::-webkit-scrollbar-thumb {
+  background: rgb(209 213 219);
+  border-radius: 2px;
+}
+
+.hero-form::-webkit-scrollbar-thumb:hover {
+  background: rgb(156 163 175);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .hero-form * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

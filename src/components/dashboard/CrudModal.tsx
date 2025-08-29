@@ -35,6 +35,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [imageInputMode, setImageInputMode] = useState<'upload' | 'url'>('upload'); // Toggle between upload and URL input
 
   // Initialize form data
   useEffect(() => {
@@ -72,6 +73,7 @@ const CrudModal: React.FC<CrudModalProps> = ({
           break;
       }
       setUploadedImageUrl('');
+      setImageInputMode('upload');
     }
     setErrors({});
   }, [editData, type, isOpen]);
@@ -286,24 +288,91 @@ const CrudModal: React.FC<CrudModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Hình ảnh thư viện
-              </label>
-              <FileUpload
-                onUploadSuccess={handleImageUpload}
-                onUploadError={handleImageUploadError}
-                onImageRemove={handleImageRemove}
-                bucket="library-images"
-                folder="libraries"
-                maxSizeInMB={5}
-                currentImageUrl={uploadedImageUrl}
-                disabled={loading}
-                className="w-full"
-              />
-              {errors.image_url && <p className="text-red-500 text-xs mt-1">{errors.image_url}</p>}
-              <p className="text-xs text-gray-500 mt-1">
-                Upload ảnh đại diện cho thư viện (không bắt buộc)
-              </p>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Hình ảnh thư viện
+                </label>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setImageInputMode('upload')}
+                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                      imageInputMode === 'upload'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <i className="fas fa-upload mr-1"></i>
+                    Upload
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageInputMode('url')}
+                    className={`px-3 py-1 text-xs rounded-md transition-colors ${
+                      imageInputMode === 'url'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    }`}
+                  >
+                    <i className="fas fa-link mr-1"></i>
+                    URL
+                  </button>
+                </div>
+              </div>
+
+              {imageInputMode === 'upload' ? (
+                <>
+                  <FileUpload
+                    onUploadSuccess={handleImageUpload}
+                    onUploadError={handleImageUploadError}
+                    onImageRemove={handleImageRemove}
+                    bucket="library-images"
+                    folder="libraries"
+                    maxSizeInMB={10}
+                    currentImageUrl={uploadedImageUrl}
+                    disabled={loading}
+                    className="w-full"
+                    quality={85} // Higher quality for library images
+                  />
+                  {errors.image_url && <p className="text-red-500 text-xs mt-1">{errors.image_url}</p>}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Upload ảnh đại diện cho thư viện (tự động chuyển WebP, tối ưu SEO)
+                  </p>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="url"
+                    value={formData.image_url || ''}
+                    onChange={(e) => {
+                      handleInputChange('image_url', e.target.value);
+                      setUploadedImageUrl(e.target.value);
+                    }}
+                    className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.image_url ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                  {errors.image_url && <p className="text-red-500 text-xs mt-1">{errors.image_url}</p>}
+                  <p className="text-xs text-gray-500 mt-1">
+                    Nhập URL ảnh từ internet (không bắt buộc)
+                  </p>
+                  
+                  {/* Preview for URL input */}
+                  {formData.image_url && (
+                    <div className="mt-2 p-2 border rounded-md bg-gray-50">
+                      <img
+                        src={formData.image_url}
+                        alt="Preview"
+                        className="max-h-32 max-w-full rounded-md shadow-sm mx-auto"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div>

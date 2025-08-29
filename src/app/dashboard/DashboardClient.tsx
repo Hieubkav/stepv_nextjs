@@ -12,6 +12,7 @@ import SiteSettingsManager from '@/components/admin/SimpleSettingsManager';
 import WebDesignManager from '@/components/dashboard/WebDesignManager';
 import { setupStorageBuckets, testUpload, cleanupOrphanedFiles } from '@/utils/setupStorage';
 import { getSoftwareIcons } from '@/utils/softwareIcons';
+import { imageCleanup } from '@/utils/imageCleanup';
 
 type User = Database['public']['Tables']['users']['Row'];
 type Library = Database['public']['Tables']['libraries']['Row'];
@@ -168,20 +169,34 @@ export default function DashboardClient() {
     if (!item?.id) return;
 
     let success = false;
+    let deletedImageUrls: string[] = [];
 
+    // Collect image URLs before deletion for cleanup
     switch (type) {
       case 'users':
         success = await usersCrud.remove(item.id);
         break;
       case 'libraries':
+        const library = item as Library;
+        if (library.image_url) {
+          deletedImageUrls.push(library.image_url);
+        }
         success = await librariesCrud.remove(item.id);
         break;
       case 'library_images':
+        const libImage = item as LibraryImage;
+        if (libImage.image_url) {
+          deletedImageUrls.push(libImage.image_url);
+        }
         success = await imagesCrud.remove(item.id);
         break;
     }
 
     if (success) {
+      // Cleanup orphaned images after successful deletion
+      if (deletedImageUrls.length > 0) {
+        await imageCleanup.cleanupAfterDelete(deletedImageUrls);
+      }
       await fetchDashboardData(); // Refresh data
     }
   };
@@ -196,11 +211,10 @@ export default function DashboardClient() {
   };
 
   const handleCleanupStorage = async () => {
-    console.log('🧹 Starting storage cleanup...');
-    const success = await cleanupOrphanedFiles();
-    if (success) {
-      console.log('✅ Storage cleanup completed');
-    }
+    console.log('🧹 Starting advanced storage cleanup...');
+    const result = await imageCleanup.runFullCleanup();
+    console.log(`✅ Advanced cleanup completed: ${result.deleted} deleted, ${result.errors} errors`);
+    alert(`🧹 Đã dọn dẹp ${result.deleted} file không sử dụng, ${result.errors} lỗi`);
   };
 
   const createTestLibrary = async () => {
@@ -446,7 +460,7 @@ export default function DashboardClient() {
               className="inline-flex items-center px-2 py-1.5 sm:px-4 sm:py-2 border border-orange-300 rounded-md shadow-sm text-xs sm:text-sm font-medium text-orange-700 bg-orange-50 hover:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
             >
               <i className="fas fa-broom mr-1 sm:mr-2"></i>
-              <span className="hidden sm:inline">Cleanup Storage</span>
+              <span className="hidden sm:inline">Smart Cleanup</span>
               <span className="sm:hidden">Clean</span>
             </button>
           </div>
