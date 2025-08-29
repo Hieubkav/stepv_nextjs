@@ -368,25 +368,29 @@ const HeroSectionEditForm: React.FC<HeroSectionEditFormProps> = ({
                   
                   {/* Preview */}
                   {formData.videoBackground && (
-                    <div className="border border-gray-200 rounded-md p-2">
+                    <div className="border border-gray-200 rounded-md p-3">
                       {formData.videoBackground.includes('.mp4') || formData.videoBackground.includes('.webm') ? (
-                        <video
-                          src={formData.videoBackground}
-                          className="w-full max-h-32 rounded"
-                          controls
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 flex items-center justify-center min-h-[120px]">
+                          <video
+                            src={formData.videoBackground}
+                            className="max-h-28 max-w-full rounded"
+                            controls
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
                       ) : (
-                        <img
-                          src={formData.videoBackground}
-                          alt="Background preview"
-                          className="w-full max-h-32 object-cover rounded"
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                          }}
-                        />
+                        <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 flex items-center justify-center min-h-[120px]">
+                          <img
+                            src={formData.videoBackground}
+                            alt="Background preview"
+                            className="max-h-28 max-w-full object-contain rounded"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
                       )}
                     </div>
                   )}
@@ -574,16 +578,18 @@ const HeroSectionEditForm: React.FC<HeroSectionEditFormProps> = ({
                             
                             {/* Preview */}
                             {brand.url && (
-                              <div className="border border-gray-200 rounded-md p-2">
+                              <div className="border border-gray-200 rounded-md p-3">
                                 <div className="flex justify-center">
-                                  <img
-                                    src={brand.url}
-                                    alt={brand.alt || 'Brand logo preview'}
-                                    className="max-h-16 max-w-24 object-contain rounded bg-white p-1"
-                                    onError={(e) => {
-                                      e.currentTarget.style.display = 'none';
-                                    }}
-                                  />
+                                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 min-w-[120px] min-h-[80px] flex items-center justify-center">
+                                    <img
+                                      src={brand.url}
+                                      alt={brand.alt || 'Brand logo preview'}
+                                      className="max-h-16 max-w-24 object-contain"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
                                 </div>
                               </div>
                             )}
