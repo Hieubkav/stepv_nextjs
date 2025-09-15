@@ -1,0 +1,28 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"ui": "tui",
+	"tasks": {
+		"build": {
+			"dependsOn": ["^build"],
+			"inputs": ["$TURBO_DEFAULT$", ".env*"],
+			"outputs": ["dist/**"],
+			"env": ["NEXT_PUBLIC_CONVEX_URL", "CONVEX_URL"]
+		},
+		"lint": {
+			"dependsOn": ["^lint"]
+		},
+		"check-types": {
+			"dependsOn": ["^check-types"]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true,
+			"env": ["NEXT_PUBLIC_CONVEX_URL", "CONVEX_URL"]
+		},
+		"dev:setup": {
+			"cache": false,
+			"persistent": true,
+			"env": ["NEXT_PUBLIC_CONVEX_URL", "CONVEX_URL"]
+		}
+	}
+}

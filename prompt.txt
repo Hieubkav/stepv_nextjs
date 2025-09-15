@@ -1,0 +1,71 @@
+deploy lỗi 
+
+[20:21:11.016] Running build in Washington, D.C., USA (East) – iad1
+[20:21:11.017] Build machine configuration: 2 cores, 8 GB
+[20:21:11.039] Cloning github.com/Hieubkav/dohy (Branch: master, Commit: 943555b)
+[20:21:14.545] Warning: Failed to fetch one or more git submodules
+[20:21:14.546] Cloning completed: 3.507s
+[20:21:15.490] Restored build cache from previous deployment (HggpQrG2cr44a1M6uvLobXVAPwQ9)
+[20:21:16.117] Running "vercel build"
+[20:21:16.511] Vercel CLI 47.0.5
+[20:21:16.679] > Detected Turbo. Adjusting default settings...
+[20:21:16.838] Running "install" command: `bun install`...
+[20:21:16.883] bun install v1.2.21 (7c45ed97)
+[20:21:16.911] Resolving dependencies
+[20:21:17.628] Resolved, downloaded and extracted [50]
+[20:21:18.253] Saved lockfile
+[20:21:18.257] 
+[20:21:18.257] Checked 346 installs across 451 packages (no changes) [1396.00ms]
+[20:21:18.267] Detected Next.js version: 15.5.0
+[20:21:18.268] Running "turbo run build"
+[20:21:18.364] 
+[20:21:18.364] Attention:
+[20:21:18.364] Turborepo now collects completely anonymous telemetry regarding usage.
+[20:21:18.364] This information is used to shape the Turborepo roadmap and prioritize features.
+[20:21:18.364] You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+[20:21:18.365] https://turborepo.com/docs/telemetry
+[20:21:18.365] 
+[20:21:18.409]  WARNING  Unable to calculate transitive closures: No lockfile entry found for '@emnapi/core'
+[20:21:18.415] • Packages in scope: web
+[20:21:18.415] • Running build in 1 packages
+[20:21:18.415] • Remote caching enabled
+[20:21:18.763] web:build: cache miss, executing 9700ac97fc6d50e3
+[20:21:18.767] web:build: $ next build
+[20:21:19.882] web:build:    ▲ Next.js 15.5.0
+[20:21:19.883] web:build: 
+[20:21:20.158] web:build: [MDX] updated map file in 11.865676000000121ms
+[20:21:20.205] web:build:    Creating an optimized production build ...
+[20:21:31.260] web:build:  ✓ Compiled successfully in 10.9s
+[20:21:31.272] web:build:    Linting and checking validity of types ...
+[20:21:39.090] web:build: Failed to compile.
+[20:21:39.091] web:build: 
+[20:21:39.091] web:build: ./src/components/layout/header.tsx:66:21
+[20:21:39.091] web:build: Type error: Argument of type '`/${string}`' is not assignable to parameter of type 'RouteImpl<`/${string}`>'.
+[20:21:39.092] web:build: 
+[20:21:39.092] web:build: [0m [90m 64 |[39m       } [36melse[39m {
+[20:21:39.092] web:build:  [90m 65 |[39m         [90m// Nếu ở trang khác, chuyển về trang chủ với hash[39m
+[20:21:39.092] web:build: [31m[1m>[22m[39m[90m 66 |[39m         router[33m.[39mpush([32m`/${href}`[39m)[33m;[39m
+[20:21:39.092] web:build:  [90m    |[39m                     [31m[1m^[22m[39m
+[20:21:39.093] web:build:  [90m 67 |[39m       }
+[20:21:39.093] web:build:  [90m 68 |[39m     }
+[20:21:39.093] web:build:  [90m 69 |[39m     setIsMobileMenuOpen([36mfalse[39m)[33m;[39m[0m
+[20:21:39.119] web:build: Next.js build worker exited with code: 1 and signal: null
+[20:21:39.152] web:build: error: script "build" exited with code 1
+[20:21:39.153] web:build: ERROR: command finished with error: command (/vercel/path0/apps/web) /bun1/bun run build exited (1)
+[20:21:39.153] web#build: command (/vercel/path0/apps/web) /bun1/bun run build exited (1)
+[20:21:39.154] 
+[20:21:39.154]  WARNING  finished with warnings
+[20:21:39.154] 
+[20:21:39.154] Warning - the following environment variables are set on your Vercel project, but missing from "turbo.json". These variables WILL NOT be available to your application and may cause your build to fail. Learn more at https://turborepo.com/docs/crafting-your-repository/using-environment-variables#platform-environment-variables
+[20:21:39.154] 
+[20:21:39.154] [warn] web#build
+[20:21:39.154] [warn]   - CONVEX_URL 
+[20:21:39.155] 
+[20:21:39.155]   Tasks:    0 successful, 1 total
+[20:21:39.155]  Cached:    0 cached, 1 total
+[20:21:39.155]    Time:    20.776s 
+[20:21:39.156] Summary:    /vercel/path0/.turbo/runs/32Q0t50LPik0DfM8iORodNaqD0g.json
+[20:21:39.156]  Failed:    web#build
+[20:21:39.156] 
+[20:21:39.158]  ERROR  run failed: command  exited (1)
+[20:21:39.172] Error: Command "turbo run build" exited with 1
