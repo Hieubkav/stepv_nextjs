@@ -1,0 +1,210 @@
+---
+title: Dashboard Media – SAP (Scaffold, Approach, Pattern)
+description: Tài liệu chi tiết cho module Media (ảnh/video) trong dashboard. Dùng lại được cho dự án khác. Có phần Feynman để dễ hiểu.
+---
+
+## Mục tiêu
+
+- Quản lý media theo KISS: chỉ 2 loại `image` và `video`.
+- Ảnh: upload vào Convex Storage, tự chuyển WebP bằng `sharp`, lưu metadata.
+- Video: chỉ lưu `externalUrl` (không upload file nặng).
+- Dọn dẹp file mồ côi; an toàn khi blob bị xóa thủ công.
+- Tài liệu chuẩn cho người và Agent (AI) tái sử dụng.
+
+---
+
+## Feynman: Giải thích cực ngắn
+
+- Media có 2 loại: `image` và `video`.
+- Với ảnh: trình duyệt gửi file -> API Next chuyển sang WebP -> xin `uploadUrl` của Convex -> tải buffer WebP lên Storage -> lưu bản ghi `media` với `storageId`, kích thước, vv.
+- Với video: chỉ nhập link (`externalUrl`), lưu vào `media` (không đụng Storage).
+- Xóa ảnh: xóa record, nếu có `storageId` thì xóa blob; nếu blob đã mất, vẫn xóa record (không lỗi).
+
+---
+
+## Scaffold
+
+Các file chính (trích đường dẫn):
+
+```text
+packages/backend/convex/schema.ts            // Bảng `media`
+packages/backend/convex/media.ts             // API Convex: list, saveImage, createVideo, remove, replaceImage, forceRemove
+apps/web/src/app/api/media/upload/route.ts   // Next API: upload ảnh -> sharp -> WebP -> Storage -> saveImage
+apps/web/src/app/api/media/replace/route.ts  // Next API: thay ảnh -> sharp -> WebP -> Storage -> replaceImage
+apps/web/src/app/(dashboard)/dashboard/media/page.tsx  // Trang CRUD thư viện
+apps/web/src/components/media/media-modal.tsx          // Popup thêm nhanh ảnh/video (ở topbar)
+```
+
+Cấu hình:
+
+- ENV bắt buộc: `NEXT_PUBLIC_CONVEX_URL`.
+- FE build khi xong tính năng: `bun run --cwd apps/web build`.
+
+---
+
+## Schema Convex (trích yếu)
+
+```ts
+// packages/backend/convex/schema.ts
+import { defineSchema, defineTable } from "convex/server";
+import { v } from "convex/values";
+
+export default defineSchema({
+  media: defineTable({
+    kind: v.union(v.literal("image"), v.literal("video")),
+    title: v.optional(v.string()),
+    // Image fields
+    storageId: v.optional(v.id("_storage")),
+    format: v.optional(v.string()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    sizeBytes: v.optional(v.number()),
+    // Video fields
+    externalUrl: v.optional(v.string()),
+    // Common
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_kind", ["kind"]).index("by_deleted", ["deletedAt"]),
+});
+```
+
+Lưu ý:
+
+- Chỉ `image` có `storageId`. `video` dùng `externalUrl`.
+- `sizeBytes` phục vụ hiển thị KB/MB.
+
+---
+
+## API Convex (CRUD + an toàn Storage)
+
+Các hàm (public):
+
+```ts
+// packages/backend/convex/media.ts
+export const generateUploadUrl = action({ args: {}, handler })
+export const saveImage         = mutation({ args: { title?, storageId, width?, height?, format?, sizeBytes? }, handler })
+export const createVideo       = mutation({ args: { title?, externalUrl }, handler })
+export const list              = query   ({ args: { kind? }, handler })
+export const remove            = mutation({ args: { id }, handler })        // try/catch delete storage
+export const replaceImage      = mutation({ args: { id, storageId, width?, height?, format?, sizeBytes? }, handler })
+export const getImageUrl       = action  ({ args: { storageId }, handler })
+export const forceRemove       = mutation({ args: { id }, handler })        // xóa cứng khi blob đã mất
+```
+
+Chiến lược an toàn:
+
+- `list`: khi `getUrl(storageId)` lỗi (blob bị xóa thủ công), trả về record không có `url` (không làm vỡ UI).
+- `remove`/`replaceImage`: bọc `ctx.storage.delete(...)` trong `try/catch` để không lỗi nếu blob không còn.
+- `forceRemove`: dự phòng khi cần xóa cứng record mồ côi.
+
+---
+
+## Next API (sharp -> WebP)
+
+```ts
+// POST /api/media/upload
+// - Nhận form-data: `file`, `title?`
+// - Dùng `sharp` chuyển sang WebP (quality ~82)
+// - Lấy `uploadUrl` từ Convex -> POST buffer -> nhận `storageId`
+// - Gọi `media.saveImage` lưu record (có fallback nếu args validator cũ chưa nhận `sizeBytes`)
+
+// POST /api/media/replace
+// - Nhận form-data: `file`, `id`
+// - Quy trình tương tự, gọi `media.replaceImage` (có fallback với validator cũ)
+```
+
+Ghi chú:
+
+- Hai route đặt `export const runtime = "nodejs"` để dùng `sharp`.
+- Có fallback gọi mutation không có `sizeBytes` nếu backend cũ chưa cập nhật validator (tránh gián đoạn).
+
+---
+
+## UI – Trang Thư viện (/dashboard/media)
+
+Tính năng:
+
+- Danh sách dạng bảng: Loại, Xem trước, Tiêu đề, Kích thước (KB/MB), Tỉ lệ `width:height` (ảnh), Link (ảnh/video), Hành động.
+- Bulk: Chọn tất cả / Bỏ chọn tất cả, Xóa hàng loạt.
+- Hành động mỗi dòng:
+  - Sửa tiêu đề (Dialog nhỏ).
+  - Thay ảnh (reupload -> replace).
+  - Mở ảnh/video tab mới.
+  - Xóa (nếu lỗi do blob mất, UI fallback gọi `forceRemove`).
+
+Mẫu định dạng kích thước:
+
+```ts
+function fmtBytes(bytes?: number) {
+  if (!bytes || bytes <= 0) return "";
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${Math.round(kb)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
+}
+```
+
+---
+
+## UI – Popup Thêm Media (topbar)
+
+Kịch bản:
+
+- Tab Ảnh: input file, preview bằng `URL.createObjectURL`, tiêu đề, nút Tải lên (tự chuyển WebP).
+- Tab Video: link URL, tiêu đề, nút Thêm video.
+
+Chi tiết kỹ thuật:
+
+- Controlled vs uncontrolled đã xử lý bằng key theo tab (`key="image"`, `key="video"`).
+- Input text luôn có `value` chuỗi (mặc định `""`).
+- Preview tạo và revoke URL để tránh rò rỉ bộ nhớ.
+
+Mẫu preview:
+
+```ts
+const [imageFile, setImageFile] = useState<File | null>(null);
+const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+useEffect(() => {
+  if (!imageFile) { setImagePreview(null); return }
+  const url = URL.createObjectURL(imageFile)
+  setImagePreview(url)
+  return () => URL.revokeObjectURL(url)
+}, [imageFile])
+```
+
+---
+
+## Cleanup & Orphan Handling
+
+- Khi xóa: backend cố gắng xóa blob, nếu không thấy blob vẫn xóa record (không throw).
+- Có `forceRemove` để xóa cứng record khi cần.
+- Có thể bổ sung cron để scan file mồ côi theo nhu cầu dự án khác.
+
+---
+
+## Checklist tích hợp lại cho dự án khác
+
+- Thêm bảng `media` vào `schema.ts` và publish Convex (`npx convex dev` hoặc `npx convex deploy`).
+- Sao chép file API Next: `/api/media/upload`, `/api/media/replace` và cài `sharp` ở FE.
+- Đặt `NEXT_PUBLIC_CONVEX_URL` trong `.env.local`.
+- Thêm trang `/dashboard/media` hoặc tích hợp popup `MediaModal` vào topbar.
+- Kiểm thử: upload ảnh nhỏ, kiểm tra WebP, link video, xóa lỗi (blob mất) vẫn hoạt động.
+- Build FE khi xong: `bun run --cwd apps/web build`.
+
+---
+
+## Lưu ý MDX (an toàn cho AI)
+
+- Luôn bọc các biểu thức có `{}`, `[]`, `<>` trong backticks khi viết inline.
+- Ưu tiên đặt code vào khối code với ngôn ngữ `ts`, `json`.
+- Không chèn JSX không có sẵn trong theme docs.
+
+---
+
+## FAQ ngắn
+
+- Tại sao dùng WebP? Nhẹ, hỗ trợ tốt, chất lượng ổn với `quality ~82`.
+- Vì sao video chỉ là link? Tránh tải trọng nặng vào Convex Storage, kiểm soát chi phí.
+- Blob bị xóa thủ công thì sao? Backend đã bọc `try/catch`, UI có `forceRemove` – không chặn thao tác.
+
