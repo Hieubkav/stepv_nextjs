@@ -45,5 +45,21 @@ export default defineSchema({
   })
     .index("by_page_order", ["pageId", "order"]) 
     .index("by_page_kind", ["pageId", "kind"]),
-});
 
+  // Media: ảnh (upload vào Convex storage) và video (link ngoài)
+  media: defineTable({
+    kind: v.union(v.literal("image"), v.literal("video")),
+    title: v.optional(v.string()),
+    // Image fields
+    storageId: v.optional(v.id("_storage")),
+    format: v.optional(v.string()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    sizeBytes: v.optional(v.number()),
+    // Video fields
+    externalUrl: v.optional(v.string()),
+    // Common
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  }).index("by_kind", ["kind"]).index("by_deleted", ["deletedAt"]),
+});

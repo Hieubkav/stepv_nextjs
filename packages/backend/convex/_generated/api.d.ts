@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as healthCheck from "../healthCheck.js";
 import type * as homepage from "../homepage.js";
+import type * as media from "../media.js";
 import type * as pageBlocks from "../pageBlocks.js";
 import type * as pages from "../pages.js";
 import type * as seed from "../seed.js";
@@ -32,6 +33,7 @@ import type * as todos from "../todos.js";
 declare const fullApi: ApiFromModules<{
   healthCheck: typeof healthCheck;
   homepage: typeof homepage;
+  media: typeof media;
   pageBlocks: typeof pageBlocks;
   pages: typeof pages;
   seed: typeof seed;

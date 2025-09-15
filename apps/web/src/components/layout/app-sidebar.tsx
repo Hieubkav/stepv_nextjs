@@ -14,7 +14,7 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
-        {/* Icon xem trang chu (mo tab moi) */
+        {/* Icon Xem trang chủ (mo tab moi) */
         }
         <div className="px-2 py-2 flex gap-2">
           <Tooltip>

@@ -1,0 +1,117 @@
+---
+title: Hướng dẫn quản lý File Storage trong Convex cho AI Agents
+description: Tài liệu này giúp các AI Agents hiểu và thực hiện CRUD, xóa file không dùng, và cleanup storage hiệu quả trong Convex.
+---
+
+# Quản lý File Storage trong Convex cho AI Agents
+
+Convex cung cấp hệ thống lưu trữ file (File Storage) mạnh mẽ, cho phép upload, lưu trữ, truy xuất và xóa file một cách dễ dàng. Dưới đây là hướng dẫn dành cho các AI Agent để thao tác với file storage một cách hợp lý, đảm bảo không để lại file rác khi không còn sử dụng.
+
+## 1. Lưu file vào Storage
+
+- Sử dụng `ctx.storage.store(blob)` để lưu file (ví dụ: ảnh, tài liệu) và nhận về `storageId`.
+- Lưu `storageId` này vào document trong database để quản lý reference.
+
+```ts
+const storageId = await ctx.storage.store(imageBlob);
+// Lưu storageId vào bảng images, messages, ...
+```
+([Chi tiết](https://docs.convex.dev/file-storage/store-files))
+
+## 2. Lấy URL để truy xuất file
+
+- Dùng `ctx.storage.getUrl(storageId)` để lấy URL truy xuất file cho client hoặc bên thứ ba.
+
+```ts
+const url = await ctx.storage.getUrl(storageId);
+```
+([API getUrl](https://docs.convex.dev/api/interfaces/server.StorageWriter#geturl))
+
+## 3. Xóa file khi không còn sử dụng
+
+- Khi document chứa `storageId` bị xóa hoặc cập nhật không còn tham chiếu file, hãy gọi `ctx.storage.delete(storageId)` để xóa file khỏi storage.
+- Có thể thực hiện trong mutation, action hoặc httpAction.
+
+```ts
+import { v } from "convex/values";
+import { mutation } from "./_generated/server";
+
+export const deleteById = mutation({
+  args: { storageId: v.id("_storage") },
+  handler: async (ctx, args) => {
+    return await ctx.storage.delete(args.storageId);
+  },
+});
+```
+([Hướng dẫn xóa file](https://docs.convex.dev/file-storage/delete-files))
+
+## 4. Dọn dẹp file không còn tham chiếu (Cleanup)
+
+- Có thể sử dụng cron job để định kỳ quét và xóa các file không còn được tham chiếu trong database (orphan files).
+- Storage IDs là các document trong bảng `"_storage"`, có thể kiểm tra reference và xóa nếu cần.
+
+> **Lưu ý:** Sau khi file bị xóa, mọi URL đã cấp phát sẽ trả về 404.
+
+([Quản lý file trên dashboard](https://docs.convex.dev/dashboard/deployments/file-storage))
+
+## 5. Best Practice
+
+- Luôn đảm bảo xóa file khi không còn reference trong database.
+- Có thể dùng trường `deletedAt` hoặc `isDeleted` để soft delete, sau đó cleanup thật bằng cron job ([thảo luận best practice](https://stack.convex.dev/ents#cascading-deletes-soft-deletion-and-scheduled-deletion), [thảo luận thực tế](https://discord.com/channels/1019350475847499849/1395518376851538120)).
+- Khi cập nhật document mà không còn dùng file cũ, hãy xóa file cũ khỏi storage.
+
+## 6. Tư duy event-driven/observer (giống Laravel)
+
+- Khi có sự kiện xóa/cập nhật document, hãy trigger logic cleanup file tương ứng.
+- Có thể dùng cron job để batch cleanup các file orphan, đảm bảo không còn file rác.
+- Tham khảo thêm về triggers và event-driven programming tại [Stack Convex](https://stack.convex.dev/event-driven-programming#addressing-common-challenges-in-event-driven-programming) và [triggers](https://stack.convex.dev/triggers).
+
+---
+
+## Ví dụ AgentManifest JSON cho AI Agents
+
+```json
+{
+  "name": "ConvexStorageAgent",
+  "description": "Quản lý CRUD file trong Convex storage, đảm bảo xóa file không còn tham chiếu bằng event-driven và cleanup định kỳ.",
+  "capabilities": [
+    "Lưu file với ctx.storage.store(blob)",
+    "Tạo URL file với ctx.storage.getUrl(storageId)",
+    "Xóa file với ctx.storage.delete(storageId) khi không còn reference",
+    "Theo dõi reference file trong các document",
+    "Phản ứng khi document bị xóa/cập nhật để cleanup file",
+    "Định kỳ cleanup file orphan bằng cron job"
+  ],
+  "eventListeners": [
+    {
+      "event": "documentDeleted",
+      "action": "Xóa file liên quan khỏi storage"
+    },
+    {
+      "event": "fileUnreferenced",
+      "action": "Xóa file khỏi storage"
+    }
+  ],
+  "cronJobs": [
+    {
+      "name": "cleanupOrphanFiles",
+      "schedule": "daily",
+      "action": "Quét và xóa file không còn reference"
+    }
+  ],
+  "softDelete": {
+    "enabled": true,
+    "field": "deletedAt",
+    "cleanupDelay": "7d"
+  }
+}
+```
+
+---
+
+**Tóm lại:**  
+Các AI Agent cần thực hiện đầy đủ CRUD với file storage, đặc biệt chú ý xóa file khi không còn sử dụng để tiết kiệm tài nguyên và chi phí. Có thể áp dụng cron job để cleanup tự động, tương tự observer/event-driven pattern.
+
+> Tài liệu này tổng hợp từ các nguồn chính thức của Convex, đảm bảo các AI Agent khác đọc vào đều hiểu và áp dụng đúng quy trình quản lý file storage trong Convex.
+
+Thông tin trên được tổng hợp và xác thực từ các nguồn tài liệu chính thức của Convex, bao gồm hướng dẫn về file storage, best practice về cleanup, và các thảo luận thực tế từ cộng đồng Convex.
