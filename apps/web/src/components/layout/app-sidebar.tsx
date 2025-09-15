@@ -14,17 +14,18 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
-        {/* Icon xem trang chu (mo tab moi) */}
-        <div className="px-2 py-2">
+        {/* Icon xem trang chu (mo tab moi) */
+        }
+        <div className="px-2 py-2 flex gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button asChild variant="ghost" size="icon" aria-label="Xem trang chu">
+              <Button asChild variant="ghost" size="icon" aria-label="Xem trang chủ">
                 <Link href="/" target="_blank" rel="noopener noreferrer">
                   <Eye className="size-5" />
                 </Link>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Xem trang chu</TooltipContent>
+            <TooltipContent>Xem trang chủ</TooltipContent>
           </Tooltip>
         </div>
       </SidebarHeader>
@@ -37,4 +38,3 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
-

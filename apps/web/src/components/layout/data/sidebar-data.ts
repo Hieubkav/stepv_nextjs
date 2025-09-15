@@ -39,10 +39,13 @@ export const sidebarData: SidebarData = {
     {
       title: 'Chung',
       items: [
+        { title: 'Tổng quan', url: '/dashboard', icon: LayoutDashboard },
         { title: 'Khối giao diện', url: '/dashboard/home-blocks', icon: LayoutDashboard },
         { title: 'Cài đặt', url: '/dashboard/settings', icon: Settings },
       ],
     },
   ],
 }
+
+
 

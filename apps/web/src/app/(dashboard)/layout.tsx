@@ -8,6 +8,7 @@ import { ProfileDropdown } from "@/components/profile-dropdown";
 
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
   const links = [
+    { title: "Tổng quan", href: "/dashboard" },
     { title: "Khối giao diện", href: "/dashboard/home-blocks" },
     { title: "Cài đặt", href: "/dashboard/settings" },
   ];
@@ -26,3 +27,4 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
     </AuthenticatedLayout>
   );
 }
+
