@@ -1,48 +1,16 @@
 "use client";
 
-// KISS: Quản lý blocks của trang 'home' (không thêm/xóa), có bulk actions, reorder Up/Down, toggle visible, set status, edit JSON
-import { useEffect, useState } from "react";
+// KISS: Quản lý blocks của trang 'home' (không thêm/xóa), có bulk actions, reorder Up/Down, toggle visible
+import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, FileJson, Lightbulb } from "lucide-react";
-
-// Mẫu JSON gợi ý theo kind
-const JSON_TEMPLATES: Record<string, any> = {
-  hero: {
-    titleLines: ["TẠO RA.", "THU HÚT.", "CHUYỂN ĐỔI."],
-    subtitle: "CHUYÊN GIA HÌNH ẢNH 3D...",
-    brandLogos: [{ url: "/images/brands/brand-1.png", alt: "Brand 1" }],
-    videoUrl: "/hero-glass-video.mp4",
-    posterUrl: "/hero-glass.jpg",
-    ctas: [
-      { label: "Xem thêm", url: "#services" },
-      { label: "Tư vấn", url: "#contact" },
-    ],
-  },
-  services: {
-    title: "Dịch vụ",
-    subtitle: "Những gì chúng tôi làm",
-    items: [
-      { icon: "", title: "Render 3D", description: "Mô tả ngắn" },
-    ],
-  },
-  stats: { items: [{ label: "Dự án", value: 120 }] },
-  gallery: { images: [{ url: "/images/sample.jpg", alt: "Mẫu" }] },
-  whyChooseUs: { title: "Vì sao chọn chúng tôi", items: [{ title: "Chất lượng", description: "..." }] },
-  why3DVisuals: { title: "Tại sao 3D?", items: [{ title: "Nổi bật", description: "..." }] },
-  turning: { title: "Chuyển đổi", items: [{ title: "Bước 1", description: "..." }] },
-  weWork: { title: "Quy trình", items: [{ title: "Bước 1", description: "..." }] },
-  stayControl: { title: "Kiểm soát", items: [{ title: "Tối ưu", description: "..." }] },
-  contactForm: { title: "Liên hệ", recipientEmail: "hello@example.com" },
-  wordSlider: { words: ["Từ khóa 1", "Từ khóa 2"] },
-  yourAdvice: { title: "Lời khuyên", content: "..." },
-};
+import { ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import { getTemplate } from "@/components/blocks/block-templates";
 
 type Block = any;
 
@@ -55,18 +23,8 @@ export default function HomeBlocksPage() {
   const toggleVisibility = useMutation(api.pageBlocks.toggleVisibility);
   const update = useMutation(api.pageBlocks.update);
   const bulkToggleVisibility = useMutation(api.pageBlocks.bulkToggleVisibility);
-  // bulk chèn mẫu json: thực hiện trên client bằng update từng id
 
-  // State
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<Block | null>(null);
-  const [jsonText, setJsonText] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (!editing) return;
-    setJsonText(JSON.stringify(editing.data ?? {}, null, 2));
-  }, [editing?._id]);
 
   async function ensureSeed() {
     try {
@@ -93,25 +51,11 @@ export default function HomeBlocksPage() {
     await toggleVisibility({ id: b._id as any, isVisible: !b.isVisible });
   }
 
-  // status không sử dụng
-
-  async function onSaveJson() {
-    if (!editing) return;
-    try {
-      const data = JSON.parse(jsonText || "{}");
-      await update({ id: editing._id as any, data });
-      setOpen(false);
-      toast.success("Đã lưu nội dung block");
-    } catch {
-      toast.error("JSON không hợp lệ");
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Khối giao diện</h1>
-        <p className="text-sm text-muted-foreground mt-1">Quản lý thứ tự, hiển thị, trạng thái và nội dung các block của trang chủ.</p>
+        <p className="text-sm text-muted-foreground mt-1">Quản lý thứ tự, hiển thị và nội dung các block của trang chủ.</p>
       </div>
 
       {!page && (
@@ -128,7 +72,12 @@ export default function HomeBlocksPage() {
       {page && (
         <Card>
           <CardHeader>
-            <CardTitle>Danh sách block</CardTitle>
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle>Danh sách block</CardTitle>
+              <Button asChild>
+                <Link href="/dashboard/home-blocks/new">Thêm block</Link>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             {!blocks && <div className="text-sm text-muted-foreground">Đang tải...</div>}
@@ -174,7 +123,7 @@ export default function HomeBlocksPage() {
                           for (const id of selected) {
                             const b = blocks.find((x) => String(x._id as any) === String(id));
                             if (!b) continue;
-                            const tpl = JSON_TEMPLATES[b.kind];
+                            const tpl = getTemplate(b.kind);
                             if (!tpl) continue;
                             await update({ id: b._id as any, data: tpl });
                           }
@@ -224,15 +173,16 @@ export default function HomeBlocksPage() {
                       <div className="w-8 text-muted-foreground text-sm">{i + 1}</div>
                       <div className="flex-1">
                         <div className="font-medium">{b.kind}</div>
-                        <div className="text-xs text-muted-foreground">order: {b.order} • updated: {new Date(b.updatedAt).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">order: {b.order} · updated: {new Date(b.updatedAt).toLocaleString()}</div>
                       </div>
-                      {/* Không còn cột trạng thái */}
                       <div className="w-28 flex items-center gap-2 text-sm">
                         <Checkbox id={`vis-${b._id}`} checked={b.isVisible} onCheckedChange={() => onToggleVisible(b)} />
                         <label htmlFor={`vis-${b._id}`} className="text-muted-foreground">Visible</label>
                       </div>
                       <div className="w-36 flex items-center gap-1">
-                        <Button variant="outline" size="sm" onClick={() => { setEditing(b); setOpen(true); }}>Edit JSON</Button>
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/dashboard/home-blocks/${String(b._id)}`}>Edit</Link>
+                        </Button>
                         <Button variant="outline" size="icon" onClick={() => move(b._id as any, "up")} disabled={i === 0} title="Lên">
                           <ChevronUp className="size-4" />
                         </Button>
@@ -248,35 +198,7 @@ export default function HomeBlocksPage() {
           </CardContent>
         </Card>
       )}
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileJson className="size-4" /> Edit data: {editing?.kind}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="flex items-start gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const k = editing?.kind || "";
-                const tpl = JSON_TEMPLATES[k];
-                if (!tpl) return toast.message("Chưa có mẫu cho kind này");
-                setJsonText(JSON.stringify(tpl, null, 2));
-              }}
-            >
-              <Lightbulb className="size-4 mr-1" /> Chèn mẫu JSON
-            </Button>
-          </div>
-          <Textarea className="mt-3" rows={16} value={jsonText} onChange={(e) => setJsonText(e.target.value)} />
-          <DialogFooter className="justify-end">
-            <Button onClick={onSaveJson}>Lưu</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
+

@@ -2,6 +2,14 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
+export const getById = query({
+  args: { id: v.id("page_blocks") },
+  handler: async (ctx, { id }) => {
+    const block = await ctx.db.get(id);
+    return block ?? null;
+  },
+});
+
 export const getForPage = query({
   args: { pageId: v.optional(v.id("pages")) },
   handler: async (ctx, { pageId }) => {
