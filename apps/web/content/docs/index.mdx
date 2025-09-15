@@ -1,18 +1,84 @@
 ---
-title: Tài liệu dự án
-description: Hướng dẫn sử dụng và phát triển dự án
+title: Tổng quan hệ thống trang chủ động (Convex CMS)
+description: Mô hình dữ liệu, luồng sử dụng và hướng dẫn tích hợp cho dự án này
 ---
 
-Chào mừng bạn đến với tài liệu dự án. Nội dung tài liệu được viết bằng tiếng Việt, tập trung vào cách làm việc thực tế trong codebase hiện tại (Next.js + shadcn/ui + Tailwind v4 + Convex).
+## Mục tiêu & nguyên tắc
 
-## Bắt đầu
+- Đơn giản (KISS), dễ mở rộng: cấu hình giao diện theo block.
+- Admin sửa tại `/dashboard`, trang chủ cập nhật ngay (Convex realtime).
+- Hạn chế JS trong MDX; nội dung docs thuần Markdown an toàn.
 
-- Xem nhanh kiến trúc: `apps/web` (frontend), `packages/backend` (Convex backend)
-- Biến môi trường Convex: `apps/web/.env` (đang trỏ Convex cloud), có thể chạy local bằng `bun run dev:server`
+## Kiến trúc nhánh
 
-## Hướng dẫn quan trọng
+- Backend (Convex) tại `packages/backend/convex`
+  - Schema: `schema.ts` với 3 bảng `settings`, `pages`, `page_blocks`.
+  - API: `settings.ts`, `pages.ts`, `pageBlocks.ts`, `homepage.ts`, `seed.ts`.
+- Frontend (Next.js) tại `apps/web`
+  - Trang chủ: `src/app/(site)/page.tsx` (ghép từ nhiều section).
+  - Dashboard: `/dashboard` (sẽ nối vào CRUD block + settings).
 
-<Cards>
-  <Card title="Thêm Resource mới với ví dụ Student (CRUD)" href="/docs/huong-dan-them-resource" />
-</Cards>
+## Mô hình dữ liệu (tóm tắt)
+
+- `settings`: cấu hình toàn site theo `key`.
+  - Ví dụ: `key: 'site'`, `value: { siteName, logoUrl, contactEmail, theme }`.
+- `pages`: thông tin trang (ví dụ `slug: 'home'`).
+  - `title`, `status` (`'draft' | 'published'`), `seoOverride?`.
+- `page_blocks`: các khối giao diện thuộc một trang, có thứ tự.
+  - `pageId`, `kind` (ví dụ `'hero'`, `'services'` ...), `order`, `isVisible`, `status`, `data`.
+
+```ts
+// Trích từ schema (rút gọn)
+settings: defineTable({ key: v.string(), value: v.any(), updatedAt: v.number() })
+  .index('by_key', ['key']),
+pages: defineTable({ slug: v.string(), title: v.string(), status: v.union(v.literal('draft'), v.literal('published')), updatedAt: v.number(), publishedAt: v.optional(v.number()), seoOverride: v.optional(v.object({ title: v.optional(v.string()), description: v.optional(v.string()), image: v.optional(v.string()) })) })
+  .index('by_slug', ['slug']),
+page_blocks: defineTable({ pageId: v.id('pages'), kind: v.string(), order: v.number(), isVisible: v.boolean(), status: v.union(v.literal('draft'), v.literal('published')), data: v.any(), locale: v.optional(v.string()), updatedAt: v.number(), updatedBy: v.optional(v.string()) })
+  .index('by_page_order', ['pageId','order'])
+  .index('by_page_kind', ['pageId','kind'])
+```
+
+## API sử dụng
+
+- `api.homepage.getHomepage({ slug: 'home', includeDraft?: boolean })`
+  - Trả về: `settings`, `page`, `blocks` (đã sort theo `order`).
+- `api.settings.upsert({ key, value })`: cập nhật cấu hình site.
+- `api.pages.upsert({ slug, title, status, seoOverride? })` và `api.pages.setStatus({ slug, status })`.
+- `api.pageBlocks.create|update|remove|reorder|toggleVisibility|setStatus`.
+
+## Tích hợp trang chủ
+
+- Trang `src/app/(site)/page.tsx` đọc data từ `api.homepage.getHomepage`.
+- Map `blocks` theo `kind` để truyền props vào từng Section; nếu thiếu `data` thì fallback về giá trị mặc định của component để không vỡ UI.
+
+## Dashboard (/dashboard)
+
+- CRUD `settings` (`key: 'site'`).
+- CRUD block cho page `'home'`: thêm/xóa/sửa, `isVisible`, `status`.
+- Kéo thả reorder (gọi `reorder` với `orderedIds`).
+- Publish nháp: đặt `status` cho toàn page hoặc từng block.
+
+## Bắt đầu nhanh
+
+1) Seed dữ liệu mẫu:
+
+```ts
+// Gọi một lần từ Convex console/endpoint
+await api.seed.seedHome();
+```
+
+2) Codegen Convex (nếu chưa có types):
+
+```bash
+cd packages/backend
+npx convex codegen
+```
+
+3) Frontend: gọi `api.homepage.getHomepage()` và render theo `blocks`.
+
+## Lưu ý MDX (an toàn)
+
+- Bọc mọi ký tự đặc biệt trong inline code bằng backticks: `{ id }`, `[{ _id }]`.
+- Không chèn JS/TS thực thi vào MDX.
+- Dùng Markdown đơn giản; tránh component JSX không tồn tại.
 
