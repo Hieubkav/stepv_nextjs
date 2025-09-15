@@ -3,8 +3,9 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
 export const getForPage = query({
-  args: { pageId: v.id("pages") },
+  args: { pageId: v.optional(v.id("pages")) },
   handler: async (ctx, { pageId }) => {
+    if (!pageId) return [] as const;
     // Lấy toàn bộ block của 1 trang, sort theo order tăng dần
     const blocks = await ctx.db
       .query("page_blocks")
@@ -94,4 +95,3 @@ export const setStatus = mutation({
     return { ok: true } as const;
   },
 });
-

@@ -1,0 +1,154 @@
+---
+title: SAP - HomeBlocks Resource (Convex + Next.js)
+description: Scaffold, Approach, Pattern cho resource HomeBlocks có thể tái sử dụng
+---
+
+## SCAFFOLD
+
+- Bối cảnh: Next.js (app router), shadcn/ui, Convex backend realtime.
+- Mục tiêu: Cho phép admin chỉnh giao diện trang chủ động qua dashboard, dữ liệu lưu trên Convex và có thể tái sử dụng ở dự án khác.
+- Chuẩn mã: TypeScript, KISS, tránh JSX lạ trong MDX, bọc ký tự `{}`, `[]`, `<>` bằng backticks trong văn bản.
+- Data model tối thiểu: `settings`, `pages`, `page_blocks` với index `by_key`, `by_slug`, `by_page_order`.
+- Artifact bắt buộc:
+  - Backend Convex: `settings.ts`, `pages.ts`, `pageBlocks.ts`, `homepage.ts`, `seed.ts`.
+  - Dashboard: `/dashboard/settings`, `/dashboard/home-blocks` (reorder Up/Down, toggle visible, set status, edit JSON).
+  - Ví dụ usage FE: gọi `api.homepage.getHomepage({ slug: 'home' })` và map `blocks` theo `kind`.
+- Ràng buộc:
+  - Ngôn ngữ: TypeScript 5+, Node 18+.
+  - Next 15+ (Turbopack), shadcn/ui, Tailwind v4.
+  - Convex functions giữ interface ổn định; không đổi `schema` breaking khi tái dùng.
+  - Performance: dùng index Convex, hạn chế roundtrip; load tất cả blocks với một query.
+  - Security: mutation chỉ nhận dữ liệu cần thiết; không thực thi JS từ nội dung.
+
+### SetupCommands
+
+```bash
+# Cấu hình Convex (nếu chưa có types)
+cd packages/backend
+npx convex codegen
+
+# Chạy dev
+cd ../../apps/web
+bun run dev
+```
+
+## APPROACH
+
+- Chiến lược: Plan → Act → Reflect
+- Plan (ngắn gọn):
+  - Khai báo 3 bảng và index; viết API `settings/pages/pageBlocks/homepage/seed`.
+  - Scaffold `/dashboard/settings` và `/dashboard/home-blocks` theo KISS.
+  - Seed dữ liệu mẫu; kiểm thử thao tác: reorder, toggle, publish, edit JSON.
+- Tiêu chí dừng: dashboard cập nhật được nội dung và thứ tự block, homepage query trả đúng dữ liệu đã chỉnh.
+- Kiểm tra chất lượng: build FE, `npx convex codegen`, chạy dev và thao tác smoke test dashboard; log lỗi 0.
+
+## PATTERN
+
+```json
+{
+  "AgentManifest": {
+    "name": "sap-homeblocks-resource",
+    "version": "1.0.0",
+    "targetStack": ["nextjs-app", "convex", "shadcn-ui"],
+    "requiresEnv": ["NEXT_PUBLIC_CONVEX_URL"],
+    "setupCommands": [
+      "cd packages/backend && npx convex codegen",
+      "cd ../../apps/web && bun run dev"
+    ],
+    "provides": [
+      "convex schema + api cho homeblocks",
+      "dashboard settings + home-blocks",
+      "seed du lieu mau"
+    ],
+    "dependsOn": [
+      "convex/server",
+      "convex/values",
+      "convex/react",
+      "shadcn/ui"
+    ]
+  }
+}
+```
+
+```text
+FileTree
+apps/web/content/docs/sap-homeblocks.mdx
+packages/backend/convex/schema.ts
+packages/backend/convex/settings.ts
+packages/backend/convex/pages.ts
+packages/backend/convex/pageBlocks.ts
+packages/backend/convex/homepage.ts
+packages/backend/convex/seed.ts
+apps/web/src/app/(dashboard)/dashboard/settings/page.tsx
+apps/web/src/app/(dashboard)/dashboard/home-blocks/page.tsx
+```
+
+```ts
+// packages/backend/convex/schema.ts (trích yếu)
+settings: defineTable({ key: v.string(), value: v.any(), updatedAt: v.number() }).index('by_key', ['key'])
+pages: defineTable({ slug: v.string(), title: v.string(), status: v.union(v.literal('draft'), v.literal('published')), updatedAt: v.number(), publishedAt: v.optional(v.number()), seoOverride: v.optional(v.object({ title: v.optional(v.string()), description: v.optional(v.string()), image: v.optional(v.string()) })) }).index('by_slug', ['slug'])
+page_blocks: defineTable({ pageId: v.id('pages'), kind: v.string(), order: v.number(), isVisible: v.boolean(), status: v.union(v.literal('draft'), v.literal('published')), data: v.any(), locale: v.optional(v.string()), updatedAt: v.number(), updatedBy: v.optional(v.string()) }).index('by_page_order', ['pageId','order']).index('by_page_kind', ['pageId','kind'])
+```
+
+```ts
+// packages/backend/convex/homepage.ts (query tổng hợp)
+export const getHomepage = query({
+  args: { slug: v.optional(v.string()), includeDraft: v.optional(v.boolean()) },
+  handler: async (ctx, { slug = 'home', includeDraft = false }) => {
+    const settings = await ctx.db.query('settings').withIndex('by_key', (q) => q.eq('key', 'site')).first()
+    const page = await ctx.db.query('pages').withIndex('by_slug', (q) => q.eq('slug', slug)).first()
+    if (!page) return { settings, page: null, blocks: [] } as const
+    let blocks = await ctx.db.query('page_blocks').withIndex('by_page_order', (q) => q.eq('pageId', page._id)).collect()
+    if (!includeDraft) blocks = blocks.filter((b) => b.status === 'published' && b.isVisible)
+    blocks.sort((a, b) => a.order - b.order)
+    return { settings, page, blocks } as const
+  },
+})
+```
+
+```tsx
+// apps/web/src/app/(dashboard)/dashboard/home-blocks/page.tsx (trích yếu - KISS)
+const page = useQuery(api.pages.getBySlug, { slug: 'home' })
+const blocks = useQuery(api.pageBlocks.getForPage, page?._id ? { pageId: page._id } : undefined)
+// Reorder Up/Down -> api.pageBlocks.reorder({ pageId, orderedIds })
+// Toggle Visible -> api.pageBlocks.toggleVisibility({ id, isVisible })
+// Set Status -> api.pageBlocks.setStatus({ id, status })
+// Edit JSON -> api.pageBlocks.update({ id, data })
+```
+
+```ts
+// apps/web/src/example/usage-homepage.ts (demo usage FE)
+import { useQuery } from 'convex/react'
+import { api } from '@dohy/backend/convex/_generated/api'
+
+export function useHomepage(slug: string = 'home') {
+  const data = useQuery(api.homepage.getHomepage, { slug })
+  return {
+    settings: data?.settings?.value ?? {},
+    page: data?.page ?? null,
+    blocks: data?.blocks ?? [],
+  }
+}
+```
+
+### TestPlan
+
+- Seed dữ liệu mẫu `api.seed.seedHome()` một lần.
+- `/dashboard/settings`: sửa `siteName` và `logoUrl`, lưu, reload thấy giá trị giữ nguyên.
+- `/dashboard/home-blocks`: reorder Up/Down, toggle `Visible`, chuyển `Draft/Published`, edit `JSON` và lưu.
+- FE đọc `api.homepage.getHomepage({ slug: 'home' })` trả về `blocks` đúng thứ tự và trạng thái đã chỉnh.
+
+### Changelog
+
+- Thêm bảng `settings`, `pages`, `page_blocks` và index liên quan.
+- Thêm API Convex: `settings.ts`, `pages.ts`, `pageBlocks.ts` (hỗ trợ optional `pageId` cho getForPage), `homepage.ts`, `seed.ts`.
+- Tạo dashboard: `/dashboard/settings`, `/dashboard/home-blocks` với UI tối giản (Up/Down, toggle, status, JSON editor).
+
+---
+
+Ghi chú MDX an toàn:
+
+- Bọc ký tự đặc biệt `{}`, `[]`, `<>` bằng backticks trong nội dung văn bản.
+- Không chèn JSX không tồn tại; chỉ dùng Markdown và code block.
+- Frontmatter chỉ gồm `title`, `description` dạng chuỗi đơn giản.
+
