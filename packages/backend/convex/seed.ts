@@ -32,9 +32,8 @@ export const seedHome = mutation({
       const pageId = await ctx.db.insert("pages", {
         slug: "home",
         title: "Trang chủ",
-        status: "published",
+        active: true,
         updatedAt: now,
-        publishedAt: now,
       });
       page = await ctx.db.get(pageId);
     }
@@ -72,7 +71,7 @@ export const seedHome = mutation({
         kind,
         order: i,
         isVisible: true,
-        status: "published",
+        active: true,
         // data tối thiểu; dashboard sẽ chỉnh sau
         data: {},
         updatedAt: now,
@@ -83,3 +82,13 @@ export const seedHome = mutation({
   },
 });
 
+// Xoa toan bo du lieu CMS (pages + page_blocks)
+export const resetCMS = mutation({
+  handler: async (ctx) => {
+    const pages = await ctx.db.query("pages").collect();
+    for (const p of pages) await ctx.db.delete(p._id);
+    const blocks = await ctx.db.query("page_blocks").collect();
+    for (const b of blocks) await ctx.db.delete(b._id);
+    return { ok: true } as const;
+  },
+});

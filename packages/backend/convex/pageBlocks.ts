@@ -21,7 +21,8 @@ export const create = mutation({
     kind: v.string(),
     order: v.number(),
     isVisible: v.boolean(),
-    status: v.union(v.literal("draft"), v.literal("published")),
+    active: v.boolean(),
+    // status removed
     data: v.any(),
     locale: v.optional(v.string()),
     updatedBy: v.optional(v.string()),
@@ -40,7 +41,8 @@ export const update = mutation({
     kind: v.optional(v.string()),
     order: v.optional(v.number()),
     isVisible: v.optional(v.boolean()),
-    status: v.optional(v.union(v.literal("draft"), v.literal("published"))),
+    active: v.optional(v.boolean()),
+    // status removed
     data: v.optional(v.any()),
     locale: v.optional(v.string()),
     updatedBy: v.optional(v.string()),
@@ -85,13 +87,18 @@ export const toggleVisibility = mutation({
   },
 });
 
-export const setStatus = mutation({
-  args: {
-    id: v.id("page_blocks"),
-    status: v.union(v.literal("draft"), v.literal("published")),
-  },
-  handler: async (ctx, { id, status }) => {
-    await ctx.db.patch(id, { status, updatedAt: Date.now() });
-    return { ok: true } as const;
+// setStatus removed
+
+// KISS: bulk actions don gian de giam roundtrip
+export const bulkToggleVisibility = mutation({
+  args: { ids: v.array(v.id("page_blocks")), isVisible: v.boolean() },
+  handler: async (ctx, { ids, isVisible }) => {
+    const now = Date.now();
+    for (const id of ids) {
+      await ctx.db.patch(id, { isVisible, updatedAt: now });
+    }
+    return { ok: true, count: ids.length } as const;
   },
 });
+
+// bulkSetStatus removed

@@ -21,7 +21,7 @@ export default function DashboardSettingsPage() {
   const [logoUrl, setLogoUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [theme, setTheme] = useState("default");
-  // Cho phép chỉnh raw JSON nếu muốn (nâng cao)
+  // Raw JSON (nâng cao)
   const [rawJson, setRawJson] = useState("");
   const [useRaw, setUseRaw] = useState(false);
 
@@ -43,29 +43,29 @@ export default function DashboardSettingsPage() {
         try {
           value = JSON.parse(rawJson || "{}");
         } catch (e: any) {
-          toast.error("JSON khong hop le");
+          toast.error("JSON không hợp lệ");
           return;
         }
       } else {
         value = { siteName, logoUrl, contactEmail, theme };
       }
       await upsert({ key: "site", value });
-      toast.success("Da luu Settings");
+      toast.success("Đã lưu Settings");
     } catch (e: any) {
-      toast.error("Luu that bai");
+      toast.error("Lưu thất bại");
     }
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Cau hinh toan site (key = 'site').</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Cài đặt</h1>
+        <p className="text-sm text-muted-foreground mt-1">Cấu hình toàn site (key = 'site').</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Thong tin co ban</CardTitle>
+          <CardTitle>Thông tin cơ bản</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
@@ -88,17 +88,16 @@ export default function DashboardSettingsPage() {
         <CardFooter className="gap-2 flex-col items-start">
           <div className="flex items-center gap-2 text-sm">
             <input id="useRaw" type="checkbox" checked={useRaw} onChange={(e) => setUseRaw(e.target.checked)} />
-            <label htmlFor="useRaw">Chinh bang JSON</label>
+            <label htmlFor="useRaw">Chỉnh bằng JSON</label>
           </div>
           {useRaw && (
             <Textarea rows={10} value={rawJson} onChange={(e) => setRawJson(e.target.value)} />
           )}
           <div className="mt-3">
-            <Button onClick={onSave}>Luu</Button>
+            <Button onClick={onSave}>Lưu</Button>
           </div>
         </CardFooter>
       </Card>
     </div>
   );
 }
-

@@ -17,7 +17,7 @@ export const upsert = mutation({
   args: {
     slug: v.string(),
     title: v.string(),
-    status: v.union(v.literal("draft"), v.literal("published")),
+    active: v.optional(v.boolean()),
     seoOverride: v.optional(
       v.object({
         title: v.optional(v.string()),
@@ -26,7 +26,7 @@ export const upsert = mutation({
       })
     ),
   },
-  handler: async (ctx, { slug, title, status, seoOverride }) => {
+  handler: async (ctx, { slug, title, active, seoOverride }) => {
     const now = Date.now();
     const existed = await ctx.db
       .query("pages")
@@ -36,10 +36,9 @@ export const upsert = mutation({
     if (existed) {
       await ctx.db.patch(existed._id, {
         title,
-        status,
+        active: active ?? existed.active ?? true,
         seoOverride,
         updatedAt: now,
-        publishedAt: status === "published" ? now : existed.publishedAt,
       });
       return await ctx.db.get(existed._id);
     }
@@ -47,35 +46,13 @@ export const upsert = mutation({
     const id = await ctx.db.insert("pages", {
       slug,
       title,
-      status,
+      active: active ?? true,
       seoOverride,
       updatedAt: now,
-      publishedAt: status === "published" ? now : undefined,
     });
     return await ctx.db.get(id);
   },
 });
 
 // Publish/unpublish nhanh cho page theo slug (không đụng block)
-export const setStatus = mutation({
-  args: {
-    slug: v.string(),
-    status: v.union(v.literal("draft"), v.literal("published")),
-  },
-  handler: async (ctx, { slug, status }) => {
-    const now = Date.now();
-    const page = await ctx.db
-      .query("pages")
-      .withIndex("by_slug", (q) => q.eq("slug", slug))
-      .first();
-    if (!page) return { ok: false, reason: "PAGE_NOT_FOUND" } as const;
-
-    await ctx.db.patch(page._id, {
-      status,
-      updatedAt: now,
-      publishedAt: status === "published" ? now : page.publishedAt,
-    });
-    return { ok: true } as const;
-  },
-});
-
+// setStatus removed: publish/draft khong su dung nua

@@ -37,10 +37,10 @@ export const sidebarData: SidebarData = {
   ],
   navGroups: [
     {
-      title: 'General',
+      title: 'Chung',
       items: [
-        { title: 'Home Blocks', url: '/dashboard/home-blocks', icon: LayoutDashboard },
-        { title: 'Settings', url: '/dashboard/settings', icon: Settings },
+        { title: 'Khối giao diện', url: '/dashboard/home-blocks', icon: LayoutDashboard },
+        { title: 'Cài đặt', url: '/dashboard/settings', icon: Settings },
       ],
     },
   ],

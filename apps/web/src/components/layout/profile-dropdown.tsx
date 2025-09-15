@@ -18,7 +18,7 @@ export function ProfileDropdown() {
       <DropdownMenuContent className='w-56' align='end' forceMount>
         <DropdownMenuLabel className='font-normal'>
           <div className='flex flex-col gap-1.5'>
-            <p className='text-sm leading-none font-medium'>Admin</p>
+            <p className='text-sm leading-none font-medium'>Quản trị viên</p>
             <p className='text-muted-foreground text-xs leading-none'>admin@example.com</p>
           </div>
         </DropdownMenuLabel>
@@ -26,26 +26,26 @@ export function ProfileDropdown() {
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href={'/settings' as any}>
-              Profile
+              Hồ sơ
               <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={'/settings' as any}>
-              Billing
+              Thanh toán
               <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link href={'/settings' as any}>
-              Settings
+              Cài đặt
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
+          <DropdownMenuItem>Đội nhóm mới</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>Sign out</DropdownMenuItem>
+        <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
