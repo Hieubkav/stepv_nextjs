@@ -1,0 +1,175 @@
+---
+title: SAP - JSON → Form cho HomeBlocks
+description: Scaffold, Approach, Pattern để biến JSON block thành Form có thể điền, kèm AgentManifest JSON và giải thích Feynman.
+---
+
+> Lưu ý MDX (theo fumadocs-ai-notes.mdx): mọi `{}`, `[]`, `<>` trong nội dung đều được bọc bằng backticks hoặc đặt trong khối code.
+
+## Mục tiêu
+
+- Biến dữ liệu block dạng JSON thành UI form dễ nhập, không phá vỡ cấu trúc JSON gốc.
+- Giữ 2 chế độ chỉnh sửa: Form và JSON (có thể chuyển qua lại, đồng bộ hai chiều).
+- Tách biệt trang danh sách, trang tạo mới, trang chỉnh sửa (tránh popup khó bảo trì).
+- Dùng shadcn/ui + Tailwind + lucide-react để dễ quản lý và mở rộng.
+
+## Scaffold
+
+- Routes:
+  - List: `/dashboard/home-blocks` (`apps/web/src/app/(dashboard)/dashboard/home-blocks/page.tsx`)
+  - New: `/dashboard/home-blocks/new` (`apps/web/src/app/(dashboard)/dashboard/home-blocks/new/page.tsx`)
+  - Edit: `/dashboard/home-blocks/[id]` (`apps/web/src/app/(dashboard)/dashboard/home-blocks/[id]/page.tsx` + `home-block-editor.client.tsx`)
+- Components:
+  - `apps/web/src/components/blocks/block-form.tsx`: Form schema-driven theo `kind`.
+  - `apps/web/src/components/blocks/block-templates.ts`: Template JSON mẫu cho từng `kind`.
+  - Media picker tích hợp trong field `image` (lấy từ Convex Media).
+- Backend (Convex):
+  - `packages/backend/convex/pageBlocks.ts`: `getForPage`, `getById`, `create`, `update`, `reorder`, `toggleVisibility`, `bulkToggleVisibility`.
+
+## Approach
+
+- Schema-driven form: ánh xạ `kind` → `schema` của các field primitive (`string`, `text`, `number`, `url`, `image`, `stringArray`) và `array` (object lồng).
+- Hai chiều dữ liệu: thay đổi trên Form sẽ cập nhật `jsonText`; sửa `jsonText` có thể “Áp dụng JSON vào form”.
+- Không đổi shape: chỉ chỉnh `data` của block, không đổi key/cấu trúc ở DB; backend vẫn nhận `any` cho `data`.
+- UX: ảnh có picker (đỡ dán link), có re-order item trong array (Up/Down), thêm/xoá item nhanh.
+- List chỉ quản lý thứ tự, hiển thị, bulk, và điều hướng sang trang chi tiết.
+
+## Pattern
+
+- `BlockForm` tránh hard-code UI cho từng `kind`: chỉ cần thêm schema là form tự vẽ.
+- Fallback sang JSON khi `kind` chưa có schema (an toàn mở rộng).
+- Template JSON giúp bootstrap nội dung nhanh (nút “Chèn mẫu”).
+- Tách “Editor page” client khỏi “Page route” server (Next 15): server unwrap `params` bằng `React.use()` rồi truyền `id` xuống client.
+
+## AgentManifest JSON
+
+```json
+{
+  "name": "homeblocks-json-to-form",
+  "version": "1.0.0",
+  "context": ["dashboard.homeBlocks"],
+  "ui": {
+    "stack": ["shadcn/ui", "tailwindcss", "lucide-react"],
+    "modes": ["form", "json"],
+    "form": {
+      "schemaKinds": [
+        "hero",
+        "services",
+        "stats",
+        "gallery",
+        "whyChooseUs",
+        "why3DVisuals",
+        "turning",
+        "weWork",
+        "stayControl",
+        "contactForm",
+        "wordSlider",
+        "yourAdvice"
+      ],
+      "primitives": ["string", "text", "number", "url", "image", "stringArray"],
+      "composite": ["array<object>"]
+    }
+  },
+  "dataFlow": {
+    "source": "convex.page_blocks.data",
+    "twoWaySync": true,
+    "invariants": [
+      "Không đổi cấu trúc key của JSON",
+      "Patch chỉ vào field 'data' + flags 'isVisible'/'active'"
+    ]
+  },
+  "actions": [
+    { "name": "openEditor", "route": "/dashboard/home-blocks/[id]" },
+    { "name": "create", "route": "/dashboard/home-blocks/new" },
+    { "name": "reorder", "mutation": "pageBlocks.reorder" },
+    { "name": "toggleVisibility", "mutation": "pageBlocks.toggleVisibility" },
+    { "name": "bulkToggleVisibility", "mutation": "pageBlocks.bulkToggleVisibility" },
+    { "name": "applyTemplate", "local": true },
+    { "name": "save", "mutation": "pageBlocks.update" },
+    { "name": "pickImage", "query": "media.list(kind=image)" }
+  ],
+  "templates": {
+    "module": "@/components/blocks/block-templates",
+    "function": "getTemplate(kind)"
+  },
+  "routes": {
+    "list": "/dashboard/home-blocks",
+    "new": "/dashboard/home-blocks/new",
+    "edit": "/dashboard/home-blocks/[id]"
+  },
+  "convex": {
+    "queries": ["pages.getBySlug", "pageBlocks.getForPage", "pageBlocks.getById", "media.list"],
+    "mutations": ["pageBlocks.create", "pageBlocks.update", "pageBlocks.reorder", "pageBlocks.toggleVisibility", "pageBlocks.bulkToggleVisibility"]
+  },
+  "successCriteria": [
+    "Form và JSON giữ đồng bộ",
+    "Lưu không đổi shape của JSON",
+    "Chọn ảnh từ Media không phải dán URL"
+  ]
+}
+```
+
+## Ví dụ schema (rút gọn)
+
+```ts
+// apps/web/src/components/blocks/block-form.tsx (trích)
+type PrimitiveType = "string" | "text" | "number" | "url" | "image" | "stringArray";
+type ObjectFieldSchema = { [key: string]: PrimitiveType };
+type FieldSchema =
+  | { type: PrimitiveType; label: string; placeholder?: string }
+  | { type: "array"; label: string; of: ObjectFieldSchema };
+export type BlockSchema = { [key: string]: FieldSchema };
+
+const SCHEMAS: Record<string, BlockSchema> = {
+  hero: {
+    titleLines: { type: "stringArray", label: "Dòng tiêu đề" },
+    subtitle: { type: "text", label: "Mô tả ngắn" },
+    brandLogos: { type: "array", label: "Logo", of: { url: "image", alt: "string" } },
+    videoUrl: { type: "url", label: "URL video" },
+    posterUrl: { type: "image", label: "Ảnh poster" },
+    ctas: { type: "array", label: "CTA", of: { label: "string", url: "url" } },
+  },
+  services: {
+    title: { type: "string", label: "Tiêu đề" },
+    subtitle: { type: "string", label: "Mô tả" },
+    items: { type: "array", label: "Dịch vụ", of: { icon: "string", title: "string", description: "text" } },
+  }
+};
+```
+
+## Feynman (giải thích ngắn gọn, dễ hiểu)
+
+- Hãy tưởng tượng JSON là “tờ phiếu kê khai” nhiều mục, mục nào cũng có tên và giá trị (đôi khi là danh sách mục con).
+- `Schema` chính là “mẫu phiếu”: nói rõ mỗi mục có kiểu gì (chữ, số, ảnh, danh sách...).
+- `Form` là “giao diện điền phiếu” sinh tự động từ `schema`: bạn chỉ việc gõ chữ, chọn ảnh, bấm thêm dòng.
+- Chế độ `JSON` là cách xem/điều chỉnh thẳng “tờ phiếu gốc” bằng chữ, dành cho power user.
+- Nút “Chèn mẫu” đưa vào nội dung gợi ý để khỏi phải điền từ đầu.
+- Đồng bộ 2 chiều nghĩa là sửa ở form sẽ cập nhật “tờ phiếu chữ” và ngược lại, nhưng luôn giữ đúng bố cục.
+- Vì vậy, admin không còn sợ JSON nữa: form lo phần nhập liệu; JSON chỉ là bản gốc để tham khảo/chỉnh khi cần.
+
+## Thêm một kind mới (3 bước)
+
+1) Khai báo `schema` cho kind trong `block-form.tsx` (chỉ định các field và kiểu).
+2) Thêm `template` mẫu trong `block-templates.ts` (để có nút “Chèn mẫu”).
+3) Không cần đổi backend vì `data` ở Convex là `any` (giữ nguyên shape).
+
+## Kiểm tra nhanh
+
+- Tạo block mới, thử cả hai chế độ Form/JSON, Lưu và quay về danh sách.
+- Thử picker ảnh trong các field `image`.
+- Thử “Chèn mẫu”, “Áp dụng JSON vào form”, và Bulk Hiện/Ẩn ở trang danh sách.
+
+## File tham chiếu (đường dẫn)
+
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/page.tsx`
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/new/page.tsx`
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/[id]/page.tsx`
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/[id]/home-block-editor.client.tsx`
+- `apps/web/src/components/blocks/block-form.tsx`
+- `apps/web/src/components/blocks/block-templates.ts`
+- `packages/backend/convex/pageBlocks.ts`
+
+## Ghi chú
+
+- Đảm bảo giữ `order` và `active` trong schema (đã có ở `page_blocks`).
+- Với trang chỉ có 1 record (ví dụ Settings), có thể giữ dạng trang đơn thay vì list/new/edit.
+
