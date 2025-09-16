@@ -62,4 +62,35 @@ export default defineSchema({
     createdAt: v.number(),
     deletedAt: v.optional(v.number()),
   }).index("by_kind", ["kind"]).index("by_deleted", ["deletedAt"]),
+
+  // Visitor tracking sessions
+  visitor_sessions: defineTable({
+    visitorId: v.string(),
+    sessionId: v.string(),
+    userAgent: v.optional(v.string()),
+    ipHash: v.optional(v.string()),
+    firstSeen: v.number(),
+    lastSeen: v.number(),
+    pageCount: v.number(),
+    order: v.number(),
+    active: v.boolean(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_visitor", ["visitorId"])
+    .index("by_lastSeen", ["lastSeen"])
+    .index("by_active", ["active"]),
+
+  // Visitor events (page views + heartbeat)
+  visitor_events: defineTable({
+    sessionId: v.string(),
+    visitorId: v.string(),
+    path: v.string(),
+    referrer: v.optional(v.string()),
+    occurredAt: v.number(),
+    eventType: v.string(),
+    order: v.number(),
+    active: v.boolean(),
+  })
+    .index("by_session_time", ["sessionId", "occurredAt"])
+    .index("by_occurred", ["occurredAt"]),
 });

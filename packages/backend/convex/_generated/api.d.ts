@@ -21,6 +21,7 @@ import type * as pages from "../pages.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
 import type * as todos from "../todos.js";
+import type * as visitors from "../visitors.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   seed: typeof seed;
   settings: typeof settings;
   todos: typeof todos;
+  visitors: typeof visitors;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
