@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,13 +22,21 @@ export function MediaModal({ open, onOpenChange }: Props) {
   const [videoUrl, setVideoUrl] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const createVideo = useMutation(api.media.createVideo);
   const removeMedia = useMutation(api.media.remove);
   const mediaList = useQuery(api.media.list, {});
+  const [visibleCount, setVisibleCount] = useState(12);
+  const recentList = useMemo(() => {
+    const arr = Array.isArray(mediaList) ? [...mediaList] : [];
+    arr.sort((a: any, b: any) => (b?.createdAt ?? 0) - (a?.createdAt ?? 0));
+    return arr;
+  }, [mediaList]);
 
   const canSubmitImage = useMemo(() => !!imageFile, [imageFile]);
-  const canSubmitVideo = useMemo(() => /^https?:\/\//i.test(videoUrl), [videoUrl]);
+  const canSubmitVideo = useMemo(() => /^https?:\/\/.+/i.test(videoUrl), [videoUrl]);
 
   // Preview ảnh đã chọn
   useEffect(() => {
@@ -100,7 +108,47 @@ export function MediaModal({ open, onOpenChange }: Props) {
           <div key="image" className="space-y-3">
             <div className="space-y-2">
               <Label>Chọn ảnh</Label>
-              <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+              <div
+                className={
+                  "flex flex-col items-center justify-center gap-2 rounded border p-6 text-center cursor-pointer select-none " +
+                  (isDragging ? "border-primary bg-primary/5" : "border-dashed")
+                }
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(false);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDragging(false);
+                  const f = e.dataTransfer?.files?.[0];
+                  if (!f) return;
+                  if (!f.type.startsWith("image/")) {
+                    toast.error("Chỉ hỗ trợ kéo-thả ảnh");
+                    return;
+                  }
+                  setImageFile(f);
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                role="button"
+                aria-label="Kéo thả ảnh vào đây hoặc bấm để chọn"
+              >
+                <div className="text-sm text-muted-foreground">
+                  Kéo thả ảnh vào đây hoặc <span className="text-primary underline">bấm để chọn</span>
+                </div>
+              </div>
+              <Input ref={fileInputRef as any} type="file" accept="image/*" className="hidden" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
             {imagePreview && (
               <div className="rounded border p-2">
                 <div className="text-xs text-muted-foreground mb-1">Xem trước</div>
@@ -130,8 +178,8 @@ export function MediaModal({ open, onOpenChange }: Props) {
 
         <div className="mt-6">
           <h3 className="font-medium mb-2">Danh sách gần đây</h3>
-          <div className="grid grid-cols-2 gap-3">
-            {mediaList?.map((m: any) => (
+          <div className="grid grid-cols-2 gap-3 max-h-64 overflow-y-auto pr-1">
+            {recentList.slice(0, visibleCount).map((m: any) => (
               <div key={m._id} className="border rounded p-2 flex items-center gap-2">
                 {m.kind === "image" ? (
                   <img src={m.url} alt={m.title || "image"} className="size-12 object-cover rounded" />
@@ -147,6 +195,15 @@ export function MediaModal({ open, onOpenChange }: Props) {
               </div>
             ))}
           </div>
+          {recentList.length > 12 && (
+            <div className="flex justify-center mt-3">
+              {visibleCount < recentList.length ? (
+                <Button variant="ghost" size="sm" onClick={() => setVisibleCount((c) => Math.min(c + 12, recentList.length))}>Xem th�m</Button>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={() => setVisibleCount(12)}>Thu g?n</Button>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

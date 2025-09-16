@@ -70,7 +70,12 @@ const SCHEMAS: Record<string, BlockSchema> = {
   },
   yourAdvice: {
     title: { type: "string", label: "Tiêu đề" },
-    content: { type: "text", label: "Nội dung" },
+    subtitle: { type: "text", label: "Phụ đề" },
+    buttons: { type: "array", label: "Nút bấm", of: { text: "string", url: "url", style: "string" } },
+    videos: { type: "array", label: "Video", of: { videoId: "string", title: "string", linkUrl: "url" } },
+    mobileHeight: { type: "number", label: "Chiều cao mobile" },
+    // Giữ tương thích cũ
+    content: { type: "text", label: "Nội dung (legacy)" },
   },
 };
 

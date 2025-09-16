@@ -42,7 +42,7 @@ export function HomeBlockEditor({ id }: { id: string }) {
       const data = mode === "form" ? formData ?? {} : JSON.parse(jsonText || "{}");
       await update({ id: block._id as any, data, isVisible, active });
       toast.success("Đã lưu block");
-      router.push("/dashboard/home-blocks");
+      // router.push("/dashboard/home-blocks"); // removed: keep user on the page after save
     } catch (e) {
       toast.error("Không thể lưu. Kiểm tra JSON hoặc dữ liệu.");
     }
@@ -177,4 +177,3 @@ export function HomeBlockEditor({ id }: { id: string }) {
     </div>
   );
 }
-
