@@ -21,6 +21,14 @@ export default function DashboardSettingsPage() {
   const [logoUrl, setLogoUrl] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [theme, setTheme] = useState("default");
+  const [address, setAddress] = useState("");
+  const [zaloUrl, setZaloUrl] = useState("");
+  const [facebookUrl, setFacebookUrl] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [xUrl, setXUrl] = useState("");
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [tiktokUrl, setTiktokUrl] = useState("");
+  const [pinterestUrl, setPinterestUrl] = useState("");
   // Raw JSON (nâng cao)
   const [rawJson, setRawJson] = useState("");
   const [useRaw, setUseRaw] = useState(false);
@@ -33,6 +41,14 @@ export default function DashboardSettingsPage() {
     setLogoUrl(v.logoUrl ?? "");
     setContactEmail(v.contactEmail ?? "");
     setTheme(v.theme ?? "default");
+    setAddress(v.address ?? "");
+    setZaloUrl(v.zaloUrl ?? "");
+    setFacebookUrl(v.facebookUrl ?? "");
+    setInstagramUrl(v.instagramUrl ?? "");
+    setXUrl(v.xUrl ?? "");
+    setYoutubeUrl(v.youtubeUrl ?? "");
+    setTiktokUrl(v.tiktokUrl ?? "");
+    setPinterestUrl(v.pinterestUrl ?? "");
     setRawJson(JSON.stringify(v, null, 2));
   }, [site?._id, site?.updatedAt]);
 
@@ -47,7 +63,7 @@ export default function DashboardSettingsPage() {
           return;
         }
       } else {
-        value = { siteName, logoUrl, contactEmail, theme };
+        value = { siteName, logoUrl, contactEmail, theme, address, zaloUrl, facebookUrl, instagramUrl, xUrl, youtubeUrl, tiktokUrl, pinterestUrl };
       }
       await upsert({ key: "site", value });
       toast.success("Đã lưu Settings");
@@ -83,6 +99,38 @@ export default function DashboardSettingsPage() {
           <div className="space-y-2">
             <Label htmlFor="theme">Theme</Label>
             <Input id="theme" value={theme} onChange={(e) => setTheme(e.target.value)} placeholder="default" />
+          </div>
+          <div className="space-y-2 md:col-span-2">
+            <Label htmlFor="address">Địa chỉ</Label>
+            <Input id="address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Số 1, Đường ABC, Quận 1" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="zaloUrl">Link Zalo</Label>
+            <Input id="zaloUrl" value={zaloUrl} onChange={(e) => setZaloUrl(e.target.value)} placeholder="https://zalo.me/..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="facebookUrl">Link Facebook</Label>
+            <Input id="facebookUrl" value={facebookUrl} onChange={(e) => setFacebookUrl(e.target.value)} placeholder="https://facebook.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="instagramUrl">Link Instagram</Label>
+            <Input id="instagramUrl" value={instagramUrl} onChange={(e) => setInstagramUrl(e.target.value)} placeholder="https://instagram.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="xUrl">Link X</Label>
+            <Input id="xUrl" value={xUrl} onChange={(e) => setXUrl(e.target.value)} placeholder="https://x.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="youtubeUrl">Link YouTube</Label>
+            <Input id="youtubeUrl" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://youtube.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="tiktokUrl">Link TikTok</Label>
+            <Input id="tiktokUrl" value={tiktokUrl} onChange={(e) => setTiktokUrl(e.target.value)} placeholder="https://www.tiktok.com/@..." />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pinterestUrl">Link Pinterest</Label>
+            <Input id="pinterestUrl" value={pinterestUrl} onChange={(e) => setPinterestUrl(e.target.value)} placeholder="https://pinterest.com/..." />
           </div>
         </CardContent>
         <CardFooter className="gap-2 flex-col items-start">

@@ -1,0 +1,104 @@
+---
+title: Quy tắc JSON cho Form Builder HomeBlocks
+description: Hướng dẫn chi tiết cách viết và kiểm tra JSON để tương thích với form builder của dashboard HomeBlocks.
+---
+
+> Mọi dấu ngoặc `{}`, `[]`, `<>` trong nội dung MDX đều nên đặt trong dấu backtick hoặc khối code để tránh lỗi parse.
+
+## Tổng quan
+
+- Mỗi block trong bảng `page_blocks` lưu phần nội dung ở field `data` dạng JSON.
+- `/dashboard/home-blocks/[id]` cho phép chỉnh sửa ở hai chế độ: **Form** (dựa vào schema) và **JSON** (raw).
+- Form builder đọc `kind` của block, ghép với `SCHEMAS` trong `apps/web/src/components/blocks/block-form.tsx` để render trường tương ứng.
+- Nếu thiếu schema cho `kind`, giao diện tự động chuyển sang tab JSON nhằm tránh mất dữ liệu.
+
+## Quy tắc chung khi viết JSON
+
+1. **Giữ nguyên key**: chỉ dùng những key mà schema của `kind` đã định nghĩa. Key lạ sẽ bị form bỏ qua.
+2. **Đúng kiểu dữ liệu**: mỗi field có `type` cố định. Nếu điền sai kiểu, form sẽ hiện rỗng và bạn phải chỉnh trong tab JSON.
+3. **Không đổi cấu trúc cấp cao**: luôn giữ `data` là object. Không được thay `data` bằng string hoặc array.
+4. **Không xóa field hệ thống**: các field Convex khác như `order`, `active`, `isVisible` nằm ngoài `data`, không đụng tới trong JSON này.
+5. **Sau khi sửa JSON thủ công, nhớ bấm “Áp dụng JSON vào form”** để đồng bộ hai chế độ.
+6. **Có thể dùng nút “Chọn mẫu”** để lấy template chuẩn rồi chỉnh sửa tiếp.
+
+## Các kiểu field hỗ trợ
+
+| Kiểu (`type`)    | Ý nghĩa trong form                                                | JSON hợp lệ                               |
+| ---------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| `string`         | Ô input một dòng                                                 | Chuỗi ngắn, ví dụ `"Dohy Media"`         |
+| `text`           | `Textarea` nhiều dòng                                            | Chuỗi dài, có thể xuống dòng               |
+| `number`         | Ô nhập số                                                        | Số hoặc chuỗi số, ví dụ `42`              |
+| `url`            | Ô nhập URL                                                       | Chuỗi dạng URL                            |
+| `image`          | Ô nhập URL kèm nút chọn ảnh từ Media                             | Chuỗi URL ảnh                             |
+| `video`          | Ô nhập URL video, chọn từ Media (loại video)                      | Chuỗi URL video                            |
+| `stringArray`    | Danh sách các ô input, có thể reorder                            | Mảng chuỗi, ví dụ `["slide 1", "slide 2"]` |
+| `array` (object) | Danh sách phần tử. Mỗi phần tử là object với các key primitive   | Mảng object                               |
+
+> **Lưu ý**: Kiểu `array` luôn cần thuộc tính `of` trong schema để mô tả các key con. Ví dụ `items: { type: "array", of: { title: "string", description: "text" } }`.
+
+## Ví dụ: kind `whyChooseUs`
+
+Schema trích từ `block-form.tsx`:
+
+```ts
+whyChooseUs: {
+  title: { type: "string", label: "Ti�u d?" },
+  subtitle: { type: "text", label: "M� t?" },
+  videoUrl: { type: "video", label: "Video" },
+  videoAlt: { type: "string", label: "Video alt" },
+  items: { type: "array", label: "Ly do", of: { title: "string", description: "text" } },
+},
+```
+JSON hợp lệ tương ứng:
+
+```json
+{
+  "title": "TẠI SAO CÁC THƯƠNG HIỆU TIN TƯỞNG DOHY MEDIA",
+  "subtitle": "Chúng tôi chuyên tạo ra những hình ảnh 3D siêu thực và hoạt hình được thiết kế riêng cho ngành nước hoa và làm đẹp...",
+  "videoUrl": "https://cdn.example.com/video.mp4",
+  "videoAlt": "Video gioi thieu",
+  "items": [
+    {
+      "title": "CHUYÊN MÔN CAO CẤP",
+      "description": "Chúng tôi chuyên về nước hoa và làm đẹp, đảm bảo mọi chi tiết phản ánh sự tinh tế của thương hiệu bạn."
+    },
+    {
+      "title": "GIẢI PHÁP TÙY CHỈNH",
+      "description": "Mỗi dự án được tùy chỉnh theo bản sắc riêng của bạn, giúp hình ảnh nổi bật trong thị trường đông đúc."
+    },
+    {
+      "title": "CHẤT LƯỢNG ĐÃ ĐƯỢC CHỨNG MINH",
+      "description": "Danh mục của chúng tôi có các tác phẩm cho thương hiệu cao cấp như GAZZAZ, G'DIVINE và CARON PARIS."
+    }
+  ]
+}
+```
+
+Trong form:
+
+- `title` → ô input một dòng.
+- `subtitle` → textarea nhiều dòng.
+- `items` → danh sách card. Có thể bấm **Thêm lý do**, hoặc dùng mũi tên để đổi thứ tự.
+
+## Quy trình thêm một field mới vào schema
+
+1. Thêm field trong `SCHEMAS[kind]` (file `block-form.tsx`) với `type`, `label`, `placeholder` nếu cần.
+2. Nếu muốn có mẫu gợi ý, thêm field tương ứng vào template trong `block-templates.ts`.
+3. Kiểm tra block trên UI ở cả hai chế độ Form và JSON.
+
+## Kiểm tra lỗi thường gặp
+
+- **Form không hiện field**: JSON đang có key lạ hoặc sai kiểu. Sửa lại key/kiểu hoặc bấm "Chọn mẫu".
+- **JSON bị reset**: Bạn đổi sang template nhưng quên lưu. Nhớ bấm **Lưu** ở cuối card.
+- **Không reorder được item**: Mảng `items` phải là array thuần. Nếu vô tình đặt `null` hoặc string, form sẽ bỏ qua.
+- **Ảnh không preview**: Field `image` cần URL hợp lệ (https). Dùng nút **Chọn ảnh** để đảm bảo đúng dữ liệu.
+
+## Tài liệu liên quan
+
+- `apps/web/src/components/blocks/block-form.tsx`
+- `apps/web/src/components/blocks/block-templates.ts`
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/[id]/home-block-editor.client.tsx`
+- `apps/web/src/app/(dashboard)/dashboard/home-blocks/page.tsx`
+
+
+
