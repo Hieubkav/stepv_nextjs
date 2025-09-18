@@ -1,84 +1,95 @@
 ---
 title: SAP - Block Presets Form Builder
-description: Giai thich Scaffold, Approach, Pattern va Feynman cho giai phap block-presets.ts
+description: Scaffold, Approach, Pattern và Feynman cho kiến trúc block-presets mới (schema + data tách riêng, icon registry)
 ---
 
-## Muc tieu
+## Mục tiêu
 
-- Dong bo hoa cach dinh nghia form cho Home Blocks bang mot registry duy nhat.
-- Cho phep them/chinh sua preset bang JSON Schema (su dung @rjsf) ma khong phai sua nhieu file.
-- Tich hop template JSON de admin bam "Chen mau" la co data mau ngay lap tuc.
+- Chuẩn hóa cách định nghĩa form Home Blocks bằng một registry duy nhất, có thể mở rộng tự động.
+- Tách rõ **schema/ui** và **data mặc định** để không phải copy/paste template giữa nhiều file.
+- Đảm bảo admin chỉ cần chọn preset → có sẵn dữ liệu mẫu, icon chọn nhanh, array dài có thể thu gọn.
 
 ## SAP
 
 ### Scaffold
 
-- File chinh: `apps/web/src/components/blocks/block-presets.ts` (danh sach preset) + `block-form.tsx` (render form tu preset).
-- Hoan doi template: `block-templates.ts` chi lay template tu preset thay vi tu tao.
-- Duong dan doc: `apps/web/content/docs/sap-json-to-form.mdx` (tai lieu cu) + tai lieu nay lam ro them ve preset.
+- `apps/web/src/components/blocks/block-presets.ts`: chứa `BLOCK_PRESETS` mô tả `kind`, `schema`, `uiSchema`, liên kết tới data mặc định bằng `BLOCK_DEFAULT_DATA[kind]`.
+- `apps/web/src/components/blocks/block-defaults.ts`: nguồn dữ liệu mẫu (template) cho từng `kind`, có thể tái sử dụng ở bất kỳ đâu.
+- `apps/web/src/components/blocks/block-form.tsx`: render form (`@rjsf`) + template array có toggle, widget icon/media.
+- `apps/web/src/lib/lucide-icons.ts`: registry Lucide icon phổ biến (Sparkles, Box, Lightbulb, ...), cung cấp `ICON_OPTIONS`, `ICON_ONE_OF`, `getLucideIcon`.
+- `apps/web/src/components/sections/**/*Section.tsx`: các section site sử dụng `getLucideIcon` → icon đồng bộ với preset.
+- Tài liệu liên quan: `sap-json-to-form.mdx` (tổng quan JSON→Form), file này mô tả cụ thể preset.
 
 ### Approach
 
-1. Dong goi moi block vao preset gom `kind`, `name`, `schema`, `uiSchema`, `template`.
-2. Khi render, `BlockForm` tao `Map` tu preset de tra cuu schema va uiSchema dua vao `kind` cua block.
-3. Neu block co template thi `getTemplate(kind)` clone lai data mau cho nut "Chen mau".
-4. Toan bo form duoc sinh boi `@rjsf/core` + widgets tuy chinh (image/video picker, textarea, input).
-5. Them block moi chi can them mot preset moi (khong phai sua nhieu component).
+1. **Preset Schema**: Mỗi block khai báo `schema` + `uiSchema` (RJSF) + `template: BLOCK_DEFAULT_DATA[kind]`. Khi thêm block mới chỉ cần thêm 1 object.
+2. **Data Defaults**: `block-defaults.ts` giữ mọi template JSON. `block-templates.ts` chỉ clone `BLOCK_DEFAULT_DATA[kind]` → không còn duplication.
+3. **Form Engine**: `BlockForm` dựng map `kind → preset`, pass schema/ui vào `<Form>`. Array dài dùng `ArrayFieldTemplate` mới (toggle + header).
+4. **Widgets**: Widget `iconPicker` đọc `ICON_OPTIONS`; media widget bật dialog; các input đều dùng component shadcn.
+5. **Icon Registry**: Mọi icon string (services, why3D, weWork, ...) chuyển sang mã Lucide (Film, Lightbulb, Box, ...). Sections render icon bằng `getLucideIcon` để khớp dữ liệu mới.
+6. **Build Guard**: `bun run --cwd apps/web build` đảm bảo preset + defaults + icon registry đồng bộ (thất bại nếu icon chưa có export).
 
 ### Pattern
 
-- **Registry pattern**: toan bo preset nam trong mot array => convert sang `Map` de tra cuu nhanh, dam bao mot nguon su that.
-- **Schema-driven UI**: su dung JSON Schema + uiSchema de tu sinh form, giam viec code tay component.
-- **Template cloning**: mo hinh `JSON.parse(JSON.stringify(template))` de tao ban copy, tranh mutate preset goc.
-- **Widget reuse**: tat ca truong primitive dung chung widget (Input, Textarea, media picker) thay vi lap lai code.
+- **Single Source Registry**: `BLOCK_PRESETS` + `BLOCK_DEFAULT_DATA` = 1 nguồn sự thật, tránh mất đồng bộ giữa form / template.
+- **Schema-driven UI**: Form được sinh hoàn toàn từ JSON Schema, dễ thêm trường mới mà không code tay.
+- **Data/Schema Separation**: Template rời sang `block-defaults.ts` → có thể tái sử dụng cho seed, preview, tests.
+- **Icon Catalog**: Lucide icon map cung cấp `ICON_ONE_OF` cho JSON schema (`oneOf`) → dropdown icon đẹp + ảnh trực quan.
+- **UX Array Toggle**: Array Field Template mới cho phép thu gọn item (đặc biệt list topCards, CTA...), giảm “bức tường form”.
+- **Media Integration**: Widgets tái sử dụng để mở dialog chọn media, apply nhất quán mọi preset.
 
-## Chi tiet
+## Chi tiết
 
 - `block-presets.ts`
-  - Tra ve `BLOCK_PRESETS`: moi object dinh nghia day du label, format, placeholder cho form.
-  - `template` co du lieu mau de admin co the bootstrap block.
+  - Import `BLOCK_DEFAULT_DATA`, `ICON_ONE_OF`. Mỗi preset bắt buộc template ≈ `BLOCK_DEFAULT_DATA[kind]`.
+  - Icon field dùng `oneOf: ICON_ONE_OF` + `ui:widget = iconPicker`.
+- `block-defaults.ts`
+  - Định nghĩa data mẫu cho từng `kind` (hero, services, stats...). Dùng key Lucide (Film, Box, Lightbulb...).
 - `block-form.tsx`
-  - Doc preset, render `Form` su dung `validator-ajv8`.
-  - Tich hop `FieldTemplate`, `ArrayFieldTemplate`, `ObjectFieldTemplate` tuong thich UI Shadcn.
-  - Widgets `mediaImage`, `mediaVideo` goi Convex media picker.
+  - Array template mới với toggle, `iconPicker` widget, `MediaWidget` dùng dialog Convex.
+  - `BlockForm` clone schema, gắn validator Ajv8, render Field/Object templates.
 - `block-templates.ts`
-  - Lay template tu preset => giam duplicate du lieu.
-- Them block: chi can append preset moi. Form + template + danh sach kind tu dong cap nhat.
+  - `getTemplate(kind)` clone từ `BLOCK_DEFAULT_DATA` → nút “Chèn mẫu” dùng chung.
+- Các section site (Services, WhyChooseUs, Why3DVisuals, WeWork)
+  - Import `getLucideIcon` → icon render đúng theo preset/preview.
+- Pipeline
+  - Build (`bun run --cwd apps/web build`) kiểm tra icon export + type schema.
 
 ## AgentManifest JSON
 
 ```json
 {
   "name": "home-blocks-presets",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "context": ["dashboard.homeBlocks", "components.blockForm"],
   "ui": {
     "stack": ["next", "react-jsonschema-form", "shadcn/ui"],
     "registry": "apps/web/src/components/blocks/block-presets.ts",
-    "widgets": ["mediaImage", "mediaVideo", "textarea", "input"],
+    "widgets": ["iconPicker", "mediaImage", "mediaVideo", "textarea", "input"],
     "templates": {
       "field": "FieldTemplate",
-      "array": "ArrayFieldTemplate",
+      "array": "ArrayFieldTemplate (collapsible)",
       "object": "ObjectFieldTemplate"
     }
   },
   "dataFlow": {
-    "source": "convex.pageBlocks",
-    "props": ["data", "kind", "isVisible", "active"],
     "schema": "preset.schema",
+    "template": "BLOCK_DEFAULT_DATA[kind]",
+    "source": "convex.pageBlocks",
     "twoWaySync": true
   },
   "actions": [
     { "name": "listPresets", "module": "block-presets.ts" },
     { "name": "renderForm", "module": "block-form.tsx" },
     { "name": "applyTemplate", "module": "block-templates.ts" },
-    { "name": "pickMedia", "module": "block-form.tsx", "function": "MediaPickerDialog" },
+    { "name": "pickIcon", "module": "block-form.tsx", "widget": "iconPicker" },
+    { "name": "pickMedia", "module": "block-form.tsx", "widget": "mediaImage/mediaVideo" },
     { "name": "saveBlock", "convex": "pageBlocks.update" }
   ],
   "successCriteria": [
-    "Them preset moi ma khong phai sua block-form",
-    "Form render dung schema preset",
-    "Template mau duoc ap dung qua nut \"Chen mau\""
+    "Thêm preset mới = sửa 1 file (block-presets + block-defaults)",
+    "Icon hiển thị đúng trong form lẫn preview", 
+    "Array dài có thể toggle, form dễ thao tác"
   ],
   "convex": {
     "queries": ["pageBlocks.getById", "media.list"],
@@ -89,9 +100,13 @@ description: Giai thich Scaffold, Approach, Pattern va Feynman cho giai phap blo
 
 ## Feynman
 
-- Tuong tu nhu mot cuon so mau: preset la trang huong dan ghi ro tung muc (kieu du lieu, nhan, placeholder).
-- Khi admin mo form, `@rjsf` doc cuon so nay va bieu dien bang giao dien go chu, them dong, reorder.
-- Neu muon tao mau moi, chi can them mot trang moi vao cuon so (mot preset moi); cac cong cu khac tu dong doc duoc ngay.
-- Template chinh la ban sao mau da dien san, giup admin khong phai bat dau tu trang trong.
-- Widget media hoat dong nhu them ong dung chung: moi preset co truong anh/video la co nut chon media san.
-- Nhung buoc tren giup giam viec lap code va dam bao block nao cung dung chung mot bo quy tac.
+Hãy tưởng tượng hệ thống là **một thư viện LEGO cao cấp**:
+
+- `block-presets.ts` giống **sổ hướng dẫn**: mỗi block là một trang sách mô tả các mảnh ghép (schema) và vị trí của chúng (uiSchema).
+- `block-defaults.ts` là **hộp LEGO mẫu đã ráp sẵn**: mỗi preset có một mô hình mẫu bạn có thể nhấn nút “Chèn mẫu” để dựng ngay.
+- `iconPicker` và `lucide-icons.ts` là **kệ trưng bày các phụ kiện**: tất cả icon đều nằm ở một nơi, chọn icon nào thì hướng dẫn và mô hình đều hiểu giống nhau.
+- `BlockForm` là **bàn ráp LEGO thông minh**: nhìn sách hướng dẫn, tự đặt sẵn khay (field), có công tắc đóng mở (toggle array), có hộp phụ kiện (media picker, icon picker).
+- Khi muốn bổ sung block mới, bạn **tạo thêm một trang hướng dẫn + mô hình mẫu** → bàn ráp tự hiểu, không cần xây lại hệ thống.
+- Build pipeline đóng vai trò **người quản thư viện**: nếu bạn tham chiếu phụ kiện chưa có (icon không tồn tại), sẽ báo ngay để bổ sung vào kệ.
+
+Nhờ vậy đội admin vừa ráp nhanh (vì có mẫu), vừa an tâm (icon, dữ liệu, schema luôn khớp), còn dev mở rộng dễ dàng (tất cả tập trung vào 2 nguồn dữ liệu rõ ràng).
