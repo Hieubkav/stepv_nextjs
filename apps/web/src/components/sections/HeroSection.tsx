@@ -125,6 +125,36 @@ const HeroSection = ({
     setShowVideo(true);
   };
 
+  const logos = brandLogos.filter((logo) => logo.url.trim().length > 0);
+  const shouldLoopLogos = logos.length > 3;
+  const scrollContainerClass = shouldLoopLogos
+    ? 'flex animate-scroll'
+    : 'flex flex-wrap justify-center gap-12 md:gap-16';
+
+  const renderLogo = (brand: BrandLogo, key: string) => {
+    const altText = brand.alt.trim().length > 0 ? brand.alt : 'Brand logo';
+    return (
+      <div
+        key={key}
+        className="flex-shrink-0 mx-8 md:mx-10 lg:mx-12 xl:mx-14"
+      >
+        <div className="h-16 md:h-20 lg:h-24 xl:h-28 w-auto flex items-center justify-center">
+          <Image
+            src={brand.url}
+            alt={altText}
+            width={160}
+            height={100}
+            className="h-full w-auto object-contain filter brightness-0 invert opacity-70 md:opacity-70 hover:opacity-100 transition-opacity duration-300"
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.style.display = 'none';
+            }}
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex flex-col overflow-hidden pt-[110px]">
       {/* Background với poster image luôn hiển thị trước */}
@@ -257,59 +287,19 @@ const HeroSection = ({
         </div>
       </div>
 
-      {/* Brand Logos Scrolling Section */}
-      <div className="relative z-20 w-full bg-black/25 md:bg-black/20 backdrop-blur-md py-8 md:py-8 lg:py-10 overflow-hidden">
-        <div className="relative">
-          {/* Scrolling container */}
-          <div className="flex animate-scroll">
-            {/* First set of logos */}
-            {brandLogos.map((brand, index) => (
-              <div
-                key={`first-${index}`}
-                className="flex-shrink-0 mx-8 md:mx-10 lg:mx-12 xl:mx-14"
-              >
-                <div className="h-16 md:h-20 lg:h-24 xl:h-28 w-auto flex items-center justify-center">
-                  <Image
-                    src={brand.url}
-                    alt={brand.alt}
-                    width={160}
-                    height={100}
-                    className="h-full w-auto object-contain filter brightness-0 invert opacity-70 md:opacity-70 hover:opacity-100 transition-opacity duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            {/* Duplicate set for seamless loop */}
-            {brandLogos.map((brand, index) => (
-              <div
-                key={`second-${index}`}
-                className="flex-shrink-0 mx-8 md:mx-10 lg:mx-12 xl:mx-14"
-              >
-                <div className="h-16 md:h-20 lg:h-24 xl:h-28 w-auto flex items-center justify-center">
-                  <Image
-                    src={brand.url}
-                    alt={brand.alt}
-                    width={160}
-                    height={100}
-                    className="h-full w-auto object-contain filter brightness-0 invert opacity-70 md:opacity-70 hover:opacity-100 transition-opacity duration-300"
-                    loading="lazy"
-                    onError={(e) => {
-                      // Fallback to placeholder if image fails to load
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+      {/* Brand Logos */}
+      {logos.length > 0 ? (
+        <div className="relative z-20 w-full bg-black/25 md:bg-black/20 backdrop-blur-md py-8 md:py-8 lg:py-10 overflow-hidden">
+          <div className="relative">
+            <div className={scrollContainerClass}>
+              {logos.map((brand, index) => renderLogo(brand, `hero-logo-${index}`))}
+              {shouldLoopLogos
+                ? logos.map((brand, index) => renderLogo(brand, `hero-loop-${index}`))
+                : null}
+            </div>
           </div>
         </div>
-      </div>
-
+      ) : null}
       {/* Custom Styles */}
       <style jsx>{`
         .video-background iframe {
@@ -554,3 +544,5 @@ const HeroSection = ({
 };
 
 export default HeroSection;
+
+
