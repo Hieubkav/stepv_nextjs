@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getLucideIcon } from '@/lib/lucide-icons';
 
 interface WorkStep {
   title: string;
@@ -21,32 +22,32 @@ const WeWorkSection = ({
     {
       title: 'KHỞI ĐỘNG & LÊN KẾ HOẠCH',
       description: 'Chúng tôi bắt đầu với buổi tư vấn miễn phí để hiểu rõ tầm nhìn, mục tiêu và yêu cầu của bạn. Mỗi dự án đều bắt đầu với lộ trình rõ ràng được thiết kế riêng cho nhu cầu của bạn',
-      icon: 'fa-lightbulb'
+      icon: 'Lightbulb'
     },
     {
       title: 'PHÁT TRIỂN Ý TƯỞNG',
       description: 'Đội ngũ sáng tạo của chúng tôi phát triển các ý tưởng đổi mới và trình bày những ý tưởng ban đầu phù hợp với tầm nhìn thương hiệu và mục tiêu dự án của bạn',
-      icon: 'fa-pencil-ruler'
+      icon: 'PenTool'
     },
     {
       title: 'MÔ HÌNH HÓA & THIẾT KẾ',
       description: 'Sử dụng các công cụ tiên tiến, chúng tôi tạo ra các mô hình 3D chi tiết, kết cấu và thiết lập ánh sáng để biến ý tưởng của bạn thành hiện thực',
-      icon: 'fa-cube'
+      icon: 'Cube'
     },
     {
       title: 'HOẠT HÌNH & HIỆU ỨNG',
       description: 'Chúng tôi thêm hoạt hình động, hiệu ứng hình ảnh và đồ họa chuyển động để tạo ra nội dung hấp dẫn và cuốn hút',
-      icon: 'fa-play-circle'
+      icon: 'PlayCircle'
     },
     {
       title: 'ĐÁNH GIÁ & HOÀN THIỆN',
       description: 'Chúng tôi làm việc chặt chẽ với bạn để đánh giá tiến độ, thu thập phản hồi và thực hiện các điều chỉnh cần thiết để đảm bảo sự hoàn hảo',
-      icon: 'fa-search'
+      icon: 'Search'
     },
     {
       title: 'BÀN GIAO CUỐI CÙNG',
       description: 'Sản phẩm cuối cùng chất lượng cao được bàn giao theo định dạng bạn yêu cầu, sẵn sàng sử dụng trên tất cả các kênh marketing của bạn',
-      icon: 'fa-check-circle'
+      icon: 'CheckCircle2'
     }
   ]
 }: WeWorkSectionProps) => {
@@ -91,6 +92,7 @@ const WeWorkSection = ({
   };
 
   const { circleSize, buttonSize } = getResponsiveDimensions();
+  const ActiveIcon = getLucideIcon(steps[activeStep]?.icon);
 
   return (
     <section id="more" className="py-12 sm:py-16 md:py-20 bg-black text-white min-h-screen">
@@ -136,7 +138,7 @@ const WeWorkSection = ({
             >
               {/* Active Step Content */}
               <div className="mb-3 sm:mb-4 md:mb-6 text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-                <i className={`fa ${steps[activeStep]?.icon || 'fa-star'}`}></i>
+                <ActiveIcon className="text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
               </div>
               <h3 className="text-[#FFD700] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl uppercase font-medium mb-3 sm:mb-4 md:mb-6 leading-tight px-2">
                 {steps[activeStep]?.title || 'Step Title'}
@@ -175,27 +177,30 @@ const WeWorkSection = ({
             })}
 
             {/* Hidden Content for Other Steps */}
-            {steps.map((step, index) => (
-              index !== activeStep && (
-                <div
-                  key={`hidden-${index}`}
-                  className="absolute inset-0 opacity-0 invisible"
-                  style={{ transition: 'opacity 0.3s ease, visibility 0.3s ease' }}
-                >
-                  <div className="w-full h-full flex flex-col justify-center items-center text-center p-4 sm:p-6 md:p-8 lg:p-12">
-                    <div className="mb-3 sm:mb-4 md:mb-6 text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
-                      <i className={`fa ${step.icon}`}></i>
+            {steps.map((step, index) => {
+              const StepIcon = getLucideIcon(step.icon);
+              return (
+                index !== activeStep && (
+                  <div
+                    key={`hidden-${index}`}
+                    className="absolute inset-0 opacity-0 invisible"
+                    style={{ transition: 'opacity 0.3s ease, visibility 0.3s ease' }}
+                  >
+                    <div className="w-full h-full flex flex-col justify-center items-center text-center p-4 sm:p-6 md:p-8 lg:p-12">
+                      <div className="mb-3 sm:mb-4 md:mb-6 text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                        <StepIcon className="text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
+                      </div>
+                      <h3 className="text-[#FFD700] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl uppercase font-medium mb-3 sm:mb-4 md:mb-6 leading-tight px-2">
+                        {step.title}
+                      </h3>
+                      <p className="text-white font-light text-xs sm:text-sm md:text-base leading-relaxed px-2">
+                        {step.description}
+                      </p>
                     </div>
-                    <h3 className="text-[#FFD700] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl uppercase font-medium mb-3 sm:mb-4 md:mb-6 leading-tight px-2">
-                      {step.title}
-                    </h3>
-                    <p className="text-white font-light text-xs sm:text-sm md:text-base leading-relaxed px-2">
-                      {step.description}
-                    </p>
                   </div>
-                </div>
-              )
-            ))}
+                )
+              );
+            })}
             </div>
           </div>
         </div>

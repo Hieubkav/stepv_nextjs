@@ -1,4 +1,7 @@
 import type { RJSFSchema, UiSchema } from "@rjsf/utils";
+import { BLOCK_DEFAULT_DATA } from "./block-defaults";
+import { ICON_ONE_OF } from "@/lib/lucide-icons";
+
 
 export type BlockPreset = {
   kind: string;
@@ -88,17 +91,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       },
       videoUrl: { "ui:placeholder": "https://..." },
     } satisfies UiSchema,
-    template: {
-      titleLines: ["TẠO RA.", "THU HÚT.", "CHUYỂN ĐỔI."],
-      subtitle: "CHUYÊN GIA HÌNH ẢNH 3D...",
-      brandLogos: [{ url: "/images/brands/brand-1.png", alt: "Brand 1" }],
-      videoUrl: "/hero-glass-video.mp4",
-      posterUrl: "/hero-glass.jpg",
-      ctas: [
-        { label: "Xem thêm", url: "#services" },
-        { label: "Tư vấn", url: "#contact" },
-      ],
-    },
+        template: BLOCK_DEFAULT_DATA["hero"],
   },
   {
     kind: "services",
@@ -106,18 +99,21 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tiêu đề" },
-        subtitle: { type: "string", title: "Mô tả" },
+        title: { type: "string", title: "Tieu de" },
+        subtitle: { type: "string", title: "Mo ta" },
         items: {
           type: "array",
-          title: "Dịch vụ",
+          title: "Dich vu",
           items: {
             type: "object",
             properties: {
-              icon: { type: "string", title: "Icon" },
-              title: { type: "string", title: "Tiêu đề" },
-              description: { type: "string", title: "Mô tả" },
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              title: { type: "string", title: "Tieu de" },
+              description: { type: "string", title: "Mo ta" },
+              image: { type: "string", title: "Anh" },
+              linkUrl: { type: "string", title: "Lien ket", format: "uri" },
             },
+            required: ["title"],
           },
         },
       },
@@ -125,50 +121,58 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     uiSchema: {
       subtitle: { "ui:widget": "textarea" },
       items: {
-        "ui:options": { addButtonLabel: "Thêm dịch vụ" },
+        "ui:options": { addButtonLabel: "Them dich vu" },
         items: {
+          icon: { "ui:widget": "iconPicker" },
           description: { "ui:widget": "textarea" },
+          image: { "ui:widget": "mediaImage" },
+          linkUrl: { "ui:placeholder": "https://..." },
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "Dịch vụ",
-      subtitle: "Những gì chúng tôi làm",
-      items: [{ icon: "", title: "Render 3D", description: "Mô tả ngắn" }],
-    },
+    template: BLOCK_DEFAULT_DATA["services"],
   },
-  {
+
+    {
     kind: "stats",
     name: "Stats",
     schema: {
       type: "object",
       properties: {
+        backgroundColor: { type: "string", title: "Mau nen" },
         items: {
           type: "array",
-          title: "Chỉ số",
+          title: "Chi so",
+          minItems: 4,
+          maxItems: 4,
+          default: BLOCK_DEFAULT_DATA["stats"].items,
           items: {
             type: "object",
             properties: {
-              label: { type: "string", title: "Nhãn" },
-              value: { type: "number", title: "Giá trị" },
+              number: { type: "string", title: "Gia tri" },
+              label: { type: "string", title: "Nhan" },
+              delay: { type: "number", title: "Do tre (ms)" },
             },
+            required: ["number", "label"],
           },
         },
       },
+      required: ["items"],
     },
     uiSchema: {
       items: {
-        "ui:options": { addButtonLabel: "Thêm chỉ số" },
+        "ui:options": { addable: false, orderable: false, removable: false },
         items: {
-          label: { "ui:placeholder": "Dự án" },
-          value: { "ui:placeholder": "120" },
+          number: { "ui:placeholder": "5+" },
+          label: { "ui:placeholder": "Years of Experience" },
+          delay: { "ui:placeholder": "100" },
         },
       },
+      backgroundColor: { "ui:placeholder": "bg-gray-900" },
     } satisfies UiSchema,
-    template: {
-      items: [{ label: "Dự án", value: 120 }],
-    },
+    template: BLOCK_DEFAULT_DATA["stats"],
   },
+
   {
     kind: "gallery",
     name: "Gallery",
@@ -198,29 +202,29 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         },
       },
     } satisfies UiSchema,
-    template: {
-      images: [{ url: "/images/sample.jpg", alt: "Mẫu" }],
-    },
+        template: BLOCK_DEFAULT_DATA["gallery"],
   },
-  {
+    {
     kind: "whyChooseUs",
     name: "Why Choose Us",
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tiêu đề" },
-        subtitle: { type: "string", title: "Mô tả" },
+        title: { type: "string", title: "Tiêu d?" },
+        subtitle: { type: "string", title: "Mô t?" },
         videoUrl: { type: "string", title: "Video" },
         videoAlt: { type: "string", title: "Video alt" },
         items: {
           type: "array",
-          title: "Lý do",
+          title: "Ly do",
           items: {
             type: "object",
             properties: {
-              title: { type: "string", title: "Tiêu đề" },
-              description: { type: "string", title: "Mô tả" },
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              title: { type: "string", title: "Tiêu d?" },
+              description: { type: "string", title: "Mô t?" },
             },
+            required: ["title", "description"],
           },
         },
       },
@@ -229,20 +233,16 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       subtitle: { "ui:widget": "textarea" },
       videoUrl: { "ui:widget": "mediaVideo" },
       items: {
-        "ui:options": { addButtonLabel: "Thêm lý do" },
+        "ui:options": { addButtonLabel: "Thêm ly do" },
         items: {
+          icon: { "ui:widget": "iconPicker" },
           description: { "ui:widget": "textarea" },
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "Vì sao chọn chúng tôi",
-      subtitle: "Mô tả ngắn",
-      videoUrl: "",
-      videoAlt: "",
-      items: [{ title: "Chất lượng", description: "..." }],
-    },
+    template: BLOCK_DEFAULT_DATA["whyChooseUs"],
   },
+
   {
     kind: "why3DVisuals",
     name: "Why 3D Visuals",
@@ -250,31 +250,94 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       type: "object",
       properties: {
         title: { type: "string", title: "Tiêu đề" },
-        items: {
+        subtitle: { type: "string", title: "Phụ đề" },
+        buttonText: { type: "string", title: "Nút CTA" },
+        buttonLink: { type: "string", title: "Liên kết CTA" },
+        topCards: {
           type: "array",
-          title: "Điểm nổi bật",
+          title: "Thẻ hàng trên",
           items: {
             type: "object",
             properties: {
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
               title: { type: "string", title: "Tiêu đề" },
-              description: { type: "string", title: "Mô tả" },
+              items: {
+                type: "array",
+                title: "Accordion",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string", title: "Tiêu đề" },
+                    content: { type: "string", title: "Nội dung" },
+                  },
+                  required: ["title", "content"],
+                },
+              },
+            },
+            required: ["title", "items"],
+          },
+        },
+        bottomCards: {
+          type: "array",
+          title: "Thẻ hàng dưới",
+          items: {
+            type: "object",
+            properties: {
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              title: { type: "string", title: "Tiêu đề" },
+              items: {
+                type: "array",
+                title: "Accordion",
+                items: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string", title: "Tiêu đề" },
+                    content: { type: "string", title: "Nội dung" },
+                  },
+                  required: ["title", "content"],
+                },
+              },
+            },
+            required: ["title", "items"],
+          },
+        },
+      },
+      required: ["title", "buttonText", "buttonLink"],
+    },
+    uiSchema: {
+      subtitle: { "ui:widget": "textarea" },
+      buttonText: { "ui:placeholder": "LIÊN HỆ CHÚNG TÔI" },
+      buttonLink: { "ui:placeholder": "#contact" },
+      topCards: {
+        "ui:options": { addButtonLabel: "Thêm thẻ hàng trên" },
+        items: {
+          icon: { "ui:widget": "iconPicker" },
+          title: { "ui:placeholder": "Tiêu đề thẻ" },
+          items: {
+            "ui:options": { addButtonLabel: "Thêm nội dung" },
+            items: {
+              title: { "ui:placeholder": "Tiêu đề mục" },
+              content: { "ui:widget": "textarea", "ui:placeholder": "Mô tả chi tiết" },
             },
           },
         },
       },
-    },
-    uiSchema: {
-      items: {
-        "ui:options": { addButtonLabel: "Thêm điểm" },
+      bottomCards: {
+        "ui:options": { addButtonLabel: "Thêm thẻ hàng dưới" },
         items: {
-          description: { "ui:widget": "textarea" },
+          icon: { "ui:widget": "iconPicker" },
+          title: { "ui:placeholder": "Tiêu đề thẻ" },
+          items: {
+            "ui:options": { addButtonLabel: "Thêm nội dung" },
+            items: {
+              title: { "ui:placeholder": "Tiêu đề mục" },
+              content: { "ui:widget": "textarea", "ui:placeholder": "Mô tả chi tiết" },
+            },
+          },
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "Tại sao 3D?",
-      items: [{ title: "Nổi bật", description: "..." }],
-    },
+        template: BLOCK_DEFAULT_DATA["why3DVisuals"],
   },
   {
     kind: "turning",
@@ -318,46 +381,24 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "BIẾN ĐAM MÊ THÀNH HOÀN HẢO",
-      description:
-        "Tại DOHY Media, mỗi thứ chúng tôi tạo ra đều bắt đầu từ niềm đam mê kể chuyện và đổi mới. Được thành lập tại Stuttgart, Đức, studio của chúng tôi ra đời từ mong muốn biến những ý tưởng táo bạo thành hình ảnh 3D và hoạt hình tuyệt đẹp. Những gì bắt đầu như một giấc mơ vượt qua ranh giới của thiết kế 3D đã phát triển thành đối tác sáng tạo đáng tin cậy cho các thương hiệu cao cấp và những người có tầm nhìn trên toàn thế giới. Mỗi dự án chúng tôi thực hiện đều là một sự hợp tác-tầm nhìn của bạn, được hiện thực hóa thông qua chuyên môn của chúng tôi.",
-      buttonText: "LIÊN HỆ",
-      buttonUrl: "#contact",
-      backgroundColor: "bg-black",
-      textSize: "text-[60.8px]",
-      signatureImage: "https://stepv.studio/wp-content/uploads/2025/04/signaturewhite.png",
-      founderName: "VASILII GUREV",
-      founderTitle: "CEO & FOUNDER OF STEP V STUDIO",
-      clientLogos: [
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/wn-x.png", alt: "WN-X Logo", client_name: "WN-X" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/dna.png", alt: "DNA Logo", client_name: "DNA" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/gdivine.png", alt: "G'DIVINE Logo", client_name: "G'DIVINE" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/hyaluronce.png", alt: "Hyaluronce Logo", client_name: "HYALURONCE" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/fivo.png", alt: "FIVO Logo", client_name: "FIVO" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/thedarkages.png", alt: "The Dark Ages Logo", client_name: "THE DARK AGES" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/gazzaz.png", alt: "GAZZAZ Logo", client_name: "GAZZAZ" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/sdvstudios.png", alt: "SDV Studios Logo", client_name: "SDV STUDIOS" },
-        { image: "https://stepv.studio/wp-content/uploads/2025/04/caronparis.png", alt: "CARON PARIS Logo", client_name: "CARON PARIS" }
-      ],
-    },
+        template: BLOCK_DEFAULT_DATA["turning"],
   },
-  {
+    {
     kind: "weWork",
     name: "We Work",
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tiêu đề" },
-        subtitle: { type: "string", title: "Mô tả" },
+        title: { type: "string", title: "Tiêu d?" },
+        subtitle: { type: "string", title: "Mô t?" },
         ctas: {
           type: "array",
           title: "CTA",
           items: {
             type: "object",
             properties: {
-              label: { type: "string", title: "Nhãn nút" },
-              url: { type: "string", title: "Đường dẫn", format: "uri" },
+              label: { type: "string", title: "Nhan nút" },
+              url: { type: "string", title: "Du?ng d?n", format: "uri" },
             },
           },
         },
@@ -367,9 +408,11 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           items: {
             type: "object",
             properties: {
-              title: { type: "string", title: "Tiêu đề" },
-              description: { type: "string", title: "Mô tả" },
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              title: { type: "string", title: "Tiêu d?" },
+              description: { type: "string", title: "Mô t?" },
             },
+            required: ["title", "description"],
           },
         },
       },
@@ -379,30 +422,21 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       ctas: {
         "ui:options": { addButtonLabel: "Thêm CTA" },
         items: {
-          label: { "ui:placeholder": "Bắt đầu" },
+          label: { "ui:placeholder": "B?t d?u" },
           url: { "ui:placeholder": "https://..." },
         },
       },
       items: {
         "ui:options": { addButtonLabel: "Thêm bước" },
         items: {
+          icon: { "ui:widget": "iconPicker" },
           description: { "ui:widget": "textarea" },
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "Cách chúng tôi làm việc",
-      subtitle: "Quy trình rõ ràng giúp bạn yên tâm",
-      ctas: [
-        { label: "Bắt đầu dự án", url: "#contact" }
-      ],
-      items: [
-        { title: "Khởi động", description: "Trao đổi yêu cầu, mục tiêu" },
-        { title: "Sáng tạo", description: "Xây dựng concept và storyboard" },
-        { title: "Sản xuất", description: "Render, hoàn thiện, bàn giao" }
-      ],
-    },
+    template: BLOCK_DEFAULT_DATA["weWork"],
   },
+
   {
     kind: "stayControl",
     name: "Stay Control",
@@ -433,28 +467,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "KIỂM SOÁT HOÀN TOÀN VỚI BẢNG ĐIỀU KHIỂN KHÁCH HÀNG",
-      subtitle: "Chúng tôi đã giúp bạn dễ dàng kết nối và kiểm soát mọi thứ!",
-      items: [
-        {
-          title: "Truy cập tất cả file của bạn",
-          description: "Tải xuống file dự án, sản phẩm bàn giao và phiên bản chỉnh sửa bất cứ lúc nào trong một nơi bảo mật.",
-        },
-        {
-          title: "Theo dõi tiến độ dự án",
-          description: "Cập nhật thời gian thực về tiến độ, cột mốc và deadline để bạn luôn nắm được tình hình.",
-        },
-        {
-          title: "Giao tiếp dễ dàng",
-          description: "Gửi phản hồi, đặt câu hỏi trực tiếp trong dashboard — không còn chuỗi email rườm rà.",
-        },
-        {
-          title: "Tổ chức tốt cho dự án tương lai",
-          description: "Kho lưu trữ dài hạn giúp xem lại dự án cũ hoặc bắt đầu dự án mới mà không mất thông tin.",
-        },
-      ],
-    },
+        template: BLOCK_DEFAULT_DATA["stayControl"],
   },
   {
     kind: "contactForm",
@@ -530,7 +543,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             properties: {
               platform: { type: "string", title: "Nen tang" },
               url: { type: "string", title: "Duong dan", format: "uri" },
-              icon: { type: "string", title: "Icon" }
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
         }
@@ -564,47 +577,11 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       socialLinks: {
         "ui:options": { addButtonLabel: "Them social" },
         items: {
-          icon: { "ui:placeholder": "lucide-youtube" }
+          icon: { "ui:widget": "iconPicker" }
         }
       }
     } satisfies UiSchema,
-    template: {
-      title: "CUNG HIEN THUC HOA TAM NHIN CUA BAN",
-      subtitle: "Chung toi o day de giup ban tao ra nhung hinh anh va hoat hinh tuyet dep, thu hut khan gia va nang tam thuong hieu cua ban. Du ban co cau hoi, can bao gia, hay muon thao luan ve du an tiep theo, chung toi rat mong duoc lang nghe tu ban.",
-      socialIntro: "Theo doi chung toi tren mang xa hoi de cap nhat tin tuc moi nhat, du an va noi dung hau truong",
-      cta: {
-        label: "DICH VU CUA CHUNG TOI",
-        url: "#services"
-      },
-      contactTitle: "CACH LIEN HE VOI CHUNG TOI",
-      contactDescription: "Hoac gui tin nhan cho chung toi. Dien vao bieu mau ben duoi, chung toi se phan hoi ban trong vong 24 gio.",
-      contactLinks: [
-        { label: "Email", value: "contact@stepv.studio", href: "mailto:contact@stepv.studio" },
-        { label: "Phone", value: "+49-176-21129718", href: "tel:+4917621129718" }
-      ],
-      formTitle: "Gui tin nhan",
-      formDescription: "Dien thong tin de chung toi co the tu van nhanh nhat.",
-      fields: [
-        { name: "name", label: "Ho va ten*", type: "text", placeholder: "Ten cua ban", required: true },
-        { name: "email", label: "E-Mail*", type: "email", placeholder: "name@example.com", required: true },
-        { name: "service", label: "Danh muc dich vu", type: "select", placeholder: "Chon dich vu", required: false, options: [
-          { label: "3D Product Animation", value: "product-animation" },
-          { label: "3D Still Image", value: "still-image" },
-          { label: "Consulting", value: "consulting" }
-        ] },
-        { name: "message", label: "Tin nhan", type: "textarea", placeholder: "Ban muon chung toi ho tro dieu gi?", required: false }
-      ],
-      privacyText: "Toi dong y voi CHINH SACH BAO MAT",
-      submitLabel: "GUI",
-      promiseHighlight: "Chung toi se phan hoi trong 24 gio lam viec.",
-      socialLinks: [
-        { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "youtube" },
-        { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "tiktok" },
-        { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "facebook" },
-        { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "instagram" }
-      ]
-    }
-  },
+        template: BLOCK_DEFAULT_DATA["contactForm"],},
   {
     kind: "siteHeader",
     name: "Site Header",
@@ -633,7 +610,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             properties: {
               platform: { type: "string", title: "Nen tang" },
               url: { type: "string", title: "Duong dan", format: "uri" },
-              icon: { type: "string", title: "Icon" }
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
         },
@@ -658,32 +635,11 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       socials: {
         "ui:options": { addButtonLabel: "Them social" },
         items: {
-          icon: { "ui:placeholder": "youtube" }
+          icon: { "ui:widget": "iconPicker" }
         }
       }
     } satisfies UiSchema,
-    template: {
-      logo: "/images/logo-gold.png",
-      backgroundImage: "/images/header-bg.jpg",
-      menuItems: [
-        { label: "TRANG CHU", url: "/", highlight: true },
-        { label: "KHOA HOC", url: "/courses" },
-        { label: "DU AN", url: "/projects" },
-        { label: "VE CHUNG TOI", url: "/about" },
-        { label: "THU VIEN", url: "/library" },
-        { label: "THEM", url: "/more" }
-      ],
-      socials: [
-        { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "youtube" },
-        { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "tiktok" },
-        { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "facebook" },
-        { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "instagram" },
-        { platform: "Pinterest", url: "https://pinterest.com/stepvstudio", icon: "pinterest" },
-        { platform: "X", url: "https://x.com/stepvstudio", icon: "twitter" }
-      ],
-      cta: { label: "LIEN HE", url: "#contact" }
-    }
-  },
+        template: BLOCK_DEFAULT_DATA["siteHeader"],},
   {
     kind: "careSection",
     name: "Care Section",
@@ -705,12 +661,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     uiSchema: {
       description: { "ui:widget": "textarea" }
     } satisfies UiSchema,
-    template: {
-      title: "HAY DE CHUNG TOI CHAM SOC BAN",
-      description: "Step V Studio - Doi tac cua ban cho cac du an hinh anh 3D cao cap, hoat hinh va giai phap marketing. Hien thuc hoa tam nhin cua ban voi do chinh xac, sang tao va doi moi.",
-      button: { label: "DAT LICH HEN", url: "#booking" }
-    }
-  },
+        template: BLOCK_DEFAULT_DATA["careSection"],},
   {
     kind: "siteFooter",
     name: "Site Footer",
@@ -749,7 +700,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             properties: {
               platform: { type: "string", title: "Nen tang" },
               url: { type: "string", title: "Duong dan", format: "uri" },
-              icon: { type: "string", title: "Icon" }
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
         },
@@ -779,56 +730,14 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       socialLinks: {
         "ui:options": { addButtonLabel: "Them social" },
         items: {
-          icon: { "ui:placeholder": "youtube" }
+          icon: { "ui:widget": "iconPicker" }
         }
       },
       locationLines: {
         "ui:options": { addButtonLabel: "Them dong" }
       }
     } satisfies UiSchema,
-    template: {
-      logo: "/images/logo-gold.png",
-      columns: [
-        {
-          title: "STUDIO CUA CHUNG TOI",
-          links: [
-            { label: "Trang chu", url: "/", highlight: true },
-            { label: "Gioi thieu", url: "/about" },
-            { label: "Dich vu", url: "/services" },
-            { label: "Tuyen dung", url: "/careers" }
-          ]
-        },
-        {
-          title: "DICH VU CUA CHUNG TOI",
-          links: [
-            { label: "Marketing", url: "/services/marketing" },
-            { label: "Hinh anh kien truc", url: "/services/architecture" },
-            { label: "Hinh anh san pham", url: "/services/product" },
-            { label: "Hoat hinh 3D", url: "/services/animation" }
-          ]
-        },
-        {
-          title: "DIEU KHOAN CHUNG",
-          links: [
-            { label: "Dieu khoan su dung", url: "/terms" },
-            { label: "Chinh sach bao mat", url: "/privacy" }
-          ]
-        }
-      ],
-      socialTitle: "THEO DOI CHUNG TOI",
-      socialLinks: [
-        { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "youtube" },
-        { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "tiktok" },
-        { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "facebook" },
-        { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "instagram" }
-      ],
-      locationTitle: "TRU SO TAI",
-      locationLines: ["Stuttgart, Duc", "+49-176-21129718"],
-      contactTitle: "LIEN HE",
-      contactEmail: "contact@stepv.studio",
-      copyright: "© Ban quyen 2025 - Step V Studio. Tat ca quyen duoc bao luu"
-    }
-  },
+        template: BLOCK_DEFAULT_DATA["siteFooter"],},
   {
     kind: "wordSlider",
     name: "Word Slider",
@@ -851,10 +760,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         items: { "ui:placeholder": "Tu khoa" }
       }
     } satisfies UiSchema,
-    template: {
-      words: ["Tu khoa 1", "Tu khoa 2"]
-    }
-  },
+        template: BLOCK_DEFAULT_DATA["wordSlider"],},
   {
     kind: "yourAdvice",
     name: "Your Advice",
@@ -907,23 +813,10 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         },
       },
     } satisfies UiSchema,
-    template: {
-      title: "QUẢNG CÁO CỦA BẠN CÓ THỂ TRÔNG NHƯ THẾ NÀY",
-      subtitle:
-        "Khám phá cách chúng tôi đã giúp các thương hiệu cao cấp và ngành công nghiệp sáng tạo biến tầm nhìn của họ thành hiện thực với những hình ảnh 3D tuyệt đẹp và được thiết kế riêng.",
-      buttons: [
-        { text: "KHÁM PHÁ THÊM DỰ ÁN", url: "/projects", style: "primary" },
-        { text: "LIÊN HỆ CHÚNG TÔI", url: "#contact", style: "secondary" },
-      ],
-      videos: [
-        { videoId: "EZwwRmLAg90", title: "Oro Bianco | BOIS 1920 | Step V Studio | 3D Animation", linkUrl: "/projects" },
-        { videoId: "M7lc1UVf-VE", title: "3D Product Animation - Perfume Bottle", linkUrl: "/projects" },
-      ],
-      mobileHeight: 400,
-      content: "",
-    },
+        template: BLOCK_DEFAULT_DATA["yourAdvice"],
   },
 ];
+
 
 
 

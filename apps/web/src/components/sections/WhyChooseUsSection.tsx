@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { getLucideIcon } from '@/lib/lucide-icons';
 
 interface WhyChooseUsSectionProps {
   title?: string;
@@ -19,17 +20,17 @@ const WhyChooseUsSection = ({
 
   const features = [
     {
-      icon: 'fas fa-gem',
+      icon: 'Gem',
       title: 'CHUYÊN MÔN CAO CẤP',
       desc: 'Chúng tôi chuyên về nước hoa và làm đẹp, đảm bảo mọi chi tiết phản ánh sự tinh tế của thương hiệu bạn.'
     },
     {
-      icon: 'fas fa-cogs',
+      icon: 'Cog',
       title: 'GIẢI PHÁP TÙY CHỈNH',
       desc: 'Mỗi dự án được tùy chỉnh theo bản sắc riêng của bạn, vì vậy hình ảnh của bạn nổi bật trong thị trường đông đúc.'
     },
     {
-      icon: 'fas fa-award',
+      icon: 'Award',
       title: 'CHẤT LƯỢNG ĐÃ ĐƯỢC CHỨNG MINH',
       desc: 'Danh mục của chúng tôi bao gồm các tác phẩm cho các thương hiệu cao cấp như GAZZAZ, G\'DIVINE và CARON PARIS, thể hiện khả năng mang lại kết quả đẳng cấp thế giới.'
     }
@@ -115,11 +116,12 @@ const WhyChooseUsSection = ({
 
           {/* Right Features */}
           <div className="space-y-6">
-            {features.map((feature, index) => (
-              <div key={index} className="bg-gray-800 rounded-2xl p-6 hover:bg-gray-700 transition-all duration-300">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <i className={`${feature.icon} text-2xl text-yellow-400`}></i>
+            {features.map((feature, index) => {
+              const FeatureIcon = getLucideIcon(feature.icon);
+              return (
+                <div key={index} className="bg-gray-800 rounded-2xl p-6 hover:bg-gray-700 transition-all duration-300">
+                  <div className="flex items-start space-x-4">
+                    <FeatureIcon className="text-2xl text-yellow-400" />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-wide">
@@ -130,8 +132,8 @@ const WhyChooseUsSection = ({
                     </p>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

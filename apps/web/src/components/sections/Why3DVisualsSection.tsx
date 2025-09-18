@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getLucideIcon } from '@/lib/lucide-icons';
 
 interface AccordionItem {
   title: string;
@@ -146,13 +147,15 @@ const Why3DVisualsSection = ({
 
         {/* Top Cards - 3 columns */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mb-8">
-          {topCards.map((card, cardIndex) => (
+          {topCards.map((card, cardIndex) => {
+            const CardIcon = getLucideIcon(card.icon);
+            return (
             <div 
               key={cardIndex}
               className="flex w-full flex-col gap-5 rounded-3xl border border-gray-800 bg-gradient-to-b from-black to-gray-900 p-6 transition-transform duration-300 hover:scale-[1.02]"
             >
               <div className="flex items-center gap-5">
-                <i className={`${card.icon} text-3xl text-yellow-400`}></i>
+                <CardIcon className="text-3xl text-yellow-400" />
                 <h3 className="text-2xl font-semibold uppercase text-white">{card.title}</h3>
               </div>
 
@@ -191,20 +194,22 @@ const Why3DVisualsSection = ({
                 ))}
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
 
         {/* Bottom Cards - 2 columns */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {bottomCards.map((card, cardIndex) => {
-            const adjustedCardIndex = cardIndex + topCards.length; // Để tránh conflict với top cards
+            const adjustedCardIndex = cardIndex + topCards.length; // D? tr?nh conflict với top cards
+            const CardIcon = getLucideIcon(card.icon);
             return (
               <div 
                 key={adjustedCardIndex}
                 className="flex w-full flex-col gap-5 rounded-3xl border border-gray-800 bg-gradient-to-b from-black to-gray-900 p-6 transition-transform duration-300 hover:scale-[1.02]"
               >
                 <div className="flex items-center gap-5">
-                  <i className={`${card.icon} text-3xl text-yellow-400`}></i>
+                  <CardIcon className="text-3xl text-yellow-400" />
                   <h3 className="text-2xl font-semibold uppercase text-white">{card.title}</h3>
                 </div>
 
