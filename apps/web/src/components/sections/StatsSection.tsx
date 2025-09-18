@@ -9,12 +9,12 @@ interface StatItem {
 }
 
 interface StatsSectionProps {
-  stats?: StatItem[];
+  items?: StatItem[];
   backgroundColor?: string;
 }
 
 const StatsSection = ({
-  stats = [
+  items = [
     { number: '5+', label: 'Years of Experience', delay: 100 },
     { number: '100+', label: 'Completed Projects', delay: 200 },
     { number: '50+', label: 'Supporters Worldwide', delay: 300 },
@@ -26,7 +26,7 @@ const StatsSection = ({
   const sectionRef = useRef<HTMLElement>(null);
 
   // Calculate grid columns based on stats count
-  const statsCount = stats.length;
+  const statsCount = items.length;
   const getGridCols = () => {
     switch (statsCount) {
       case 1: return 'grid-cols-1';
@@ -72,7 +72,7 @@ const StatsSection = ({
     >
       <div className="container mx-auto px-4">
         <div className={`grid ${getGridCols()} gap-8 text-center`}>
-          {stats.map((stat, index) => (
+          {items.map((stat, index) => (
             <div
               key={index}
               className={`transform transition-all duration-1000 ${

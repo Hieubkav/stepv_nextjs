@@ -1,10 +1,14 @@
 'use client';
 
-const WordSliderSection = () => {
-  const words = ['MÊ HOẶC', 'TRAO QUYỀN', 'NÂNG TẦM'];
+interface WordSliderSectionProps {
+  words?: string[];
+  repeatCount?: number;
+}
 
-  // Create many copies for seamless loop on wide screens
-  const repeatedWords = Array(20).fill(words).flat();
+const DEFAULT_WORDS = ['MÊ HOẶC', 'TRAO QUYỀN', 'NÂNG TẦM'];
+
+const WordSliderSection = ({ words = DEFAULT_WORDS, repeatCount = 20 }: WordSliderSectionProps) => {
+  const repeatedWords = Array.from({ length: repeatCount }, () => words).flat();
 
   return (
     <div className="overflow-hidden bg-gradient-to-r from-gray-900 via-black to-gray-900">
@@ -17,20 +21,19 @@ const WordSliderSection = () => {
               className="inline-block text-white text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-black mx-4 md:mx-6 lg:mx-8 hover:scale-110 transition-transform duration-300"
               style={{
                 textShadow: '0 0 30px rgba(255,255,255,0.5)',
-                letterSpacing: '0.1em'
+                letterSpacing: '0.1em',
               }}
             >
               {word}
             </span>
           ))}
-          {/* Duplicate for seamless loop */}
           {repeatedWords.map((word, index) => (
             <span
               key={`right-dup-${index}`}
               className="inline-block text-white text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-black mx-4 md:mx-6 lg:mx-8 hover:scale-110 transition-transform duration-300"
               style={{
                 textShadow: '0 0 30px rgba(255,255,255,0.5)',
-                letterSpacing: '0.1em'
+                letterSpacing: '0.1em',
               }}
             >
               {word}
@@ -48,20 +51,19 @@ const WordSliderSection = () => {
               className="inline-block text-gray-300 text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-black mx-4 md:mx-6 lg:mx-8 hover:scale-110 transition-transform duration-300"
               style={{
                 textShadow: '0 0 20px rgba(156,163,175,0.4)',
-                letterSpacing: '0.1em'
+                letterSpacing: '0.1em',
               }}
             >
               {word}
             </span>
           ))}
-          {/* Duplicate for seamless loop */}
           {repeatedWords.map((word, index) => (
             <span
               key={`left-dup-${index}`}
               className="inline-block text-gray-300 text-4xl md:text-6xl lg:text-8xl xl:text-9xl font-black mx-4 md:mx-6 lg:mx-8 hover:scale-110 transition-transform duration-300"
               style={{
                 textShadow: '0 0 20px rgba(156,163,175,0.4)',
-                letterSpacing: '0.1em'
+                letterSpacing: '0.1em',
               }}
             >
               {word}

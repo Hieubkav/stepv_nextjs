@@ -1,0 +1,2 @@
+I'll rewrite the HeroSection component according to your requirements. Let me first check the current implementation to understand the structure.
+

@@ -1,0 +1,87 @@
+---
+title: SAP - Homepage Data Binding
+description: Scaffold, Approach, Pattern để liên kết dữ liệu Convex với giao diện trang chủ
+---
+
+## SCAFFOLD
+
+- **Bối cảnh**: Next.js app router (client page), shadcn/ui, Convex realtime.
+- **Mục tiêu**: Giao diện trang chủ đọc block từ `api.homepage.getHomepage` và truyền dữ liệu theo từng section.
+- **Tập tin chính**: `apps/web/src/app/(site)/page.tsx` + các section trong `apps/web/src/components/sections/*`.
+- **Chuyển đổi props**: mỗi block map qua helper (`mapHeroProps`, `mapServicesProps`, ...). Chỉ truyền field có giá trị thật để giữ fallback component.
+- **Thông báo rỗng**: Khi không có block, hiển thị message hướng dẫn seed từ dashboard.
+
+## APPROACH
+
+1. **Query duy nhất**: `useQuery(api.homepage.getHomepage, { slug: 'home' })` → lấy settings, page, blocks realtime.
+2. **Chuẩn hoá dữ liệu**: viết các hàm `map*Props` để ép kiểu nhẹ, đổi tên field (ví dụ `description` → `desc` cho services) và bỏ `undefined/null`.
+3. **Render động**: switch theo `block.kind`, truyền props đã map vào component tương ứng. Giữ key = `_id` để tránh remount khi reorder.
+4. **Fallback an toàn**: nếu `homepage === undefined` → đang loading, nếu `blocks` rỗng → hiển thị cảnh báo, tránh render rỗng.
+5. **Mở rộng**: thêm section mới chỉ cần tạo `mapNewProps` + case trong switch.
+
+## PATTERN
+
+```json
+{
+  "AgentManifest": {
+    "name": "sap-homepage-data-binding",
+    "version": "1.0.0",
+    "targetStack": ["nextjs-app", "convex", "shadcn-ui"],
+    "requiresEnv": ["NEXT_PUBLIC_CONVEX_URL"],
+    "setupCommands": [
+      "cd apps/web && bun run dev"
+    ],
+    "provides": [
+      "map Convex homepage blocks -> UI sections",
+      "fallback UI khi thiếu dữ liệu",
+      "guide mở rộng section mới"
+    ],
+    "dependsOn": [
+      "convex/react",
+      "@dohy/backend/convex/_generated/api",
+      "next/dynamic"
+    ]
+  }
+}
+```
+
+```text
+FileTree
+apps/web/src/app/(site)/page.tsx
+apps/web/src/components/sections/HeroSection.tsx
+apps/web/src/components/sections/WordSliderSection.tsx
+apps/web/src/components/sections/StatsSection.tsx
+apps/web/src/components/sections/WhyChooseUsSection.tsx
+agent/homepage-data-integration.md
+```
+
+```ts title="page.tsx (trích đoạn)" {1,8,24}
+const homepage = useQuery(api.homepage.getHomepage, { slug: 'home' });
+const blocks = (homepage?.blocks ?? []) as HomeBlock[];
+
+const renderedBlocks = blocks
+  .map((block) => {
+    const key = String(block._id ?? block.kind);
+    switch (block.kind) {
+      case 'hero':
+        return <HeroSection key={key} {...mapHeroProps(block.data)} />;
+      case 'services':
+        return <ServicesSection key={key} {...mapServicesProps(block.data)} />;
+      // ...
+      default:
+        return null;
+    }
+  })
+  .filter(Boolean);
+```
+
+### TestPlan
+
+- Seed dữ liệu qua dashboard `home-blocks` → xem UI cập nhật realtime (thêm/sửa hero, services).
+- Tắt/tạm 1 block (`isVisible = false`) → component biến mất không reload.
+- Xoá sạch block → trang báo thiếu dữ liệu.
+- Thêm block kind mới → thêm mapper + case, verify props mapping.
+
+---
+
+Ghi chú: Khi Convex thay đổi schema (thêm field mới) cần cập nhật mapper tương ứng để props không bị rỗng.
