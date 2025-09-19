@@ -14,3 +14,4 @@
 - 2025-09-18: ContactForm section restyled to match dark+gold palette (gradient background, glass cards, consistent inputs/buttons).
 - 2025-09-18: Added careSection block (glass gradient hero) + removed hardcoded footer CTA.
 - 2025-09-18: Layout footer component now null-rendered; block-based footer handles all content (layout acts as fallback only if re-enabled).
+- 2025-09-18: careSection component+template now rely solely on dashboard data (no hardcoded title/description/button).

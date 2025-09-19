@@ -324,11 +324,7 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
           ],
           cta: { label: "LIEN HE", url: "#contact" }
         },
-  "careSection":     {
-          title: "HAY DE CHUNG TOI CHAM SOC BAN",
-          description: "Step V Studio - Doi tac cua ban cho cac du an hinh anh 3D cao cap, hoat hinh va giai phap marketing. Hien thuc hoa tam nhin cua ban voi do chinh xac, sang tao va doi moi.",
-          button: { label: "DAT LICH HEN", url: "#booking" }
-        },
+  "careSection":     {},
   "siteFooter":     {
           logo: "/images/logo-gold.png",
           columns: [
