@@ -14,3 +14,16 @@
 ## Next time nho
 - Dao tao data se can mutation update createdAt/updatedAt/assignedAt dung thong so timestamp.
 - Khi render UI co the de y isDownloadVisible de quyet dinh hien nut tai.
+
+## API mutations/queries
+- listResources + getResourceDetail ho tro bo loc active, pricingType va join software/anh.
+- CRUD resource: createResource, updateResource, setResourceActive, deleteResource (xoa ca image va mapping).
+- CRUD software: createSoftware, updateSoftware, setSoftwareActive, deleteSoftware (don mapping lien quan).
+- Resource images: listResourceImages, createResourceImage (auto order neu ko truyen), updateResourceImage, deleteResourceImage, reorderResourceImages.
+- Mapping n-n: listResourceSoftwares, assignSoftwareToResource (update neu ton tai), updateResourceSoftware, removeResourceSoftware.
+- Helpers dam bao slug duy nhat va chuan hoa features (loai bo chuoi rong, unique).
+
+## Dashboard library admin
+- Trang /dashboard/library (list) + /dashboard/library/new và /dashboard/library/[id]/edit dùng form riêng cho create/update (features nhập mỗi dòng, order swap bằng patch hai record).
+- Sidebar/topnav có link 'Thu vien' và 'Phan mem'; command palette tự cập nhật từ sidebarData.
+- CRUD phan mem: /dashboard/library/software (list) + routes /software/new, /software/[id]/edit (api.library.listSoftwares...).

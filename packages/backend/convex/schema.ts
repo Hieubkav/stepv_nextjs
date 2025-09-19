@@ -123,6 +123,7 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
+
   // Visitor tracking sessions
   visitor_sessions: defineTable({
     visitorId: v.string(),
