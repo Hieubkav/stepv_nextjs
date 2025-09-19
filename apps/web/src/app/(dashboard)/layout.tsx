@@ -8,7 +8,7 @@ import { MediaTopbarActions, MediaModalMount } from "@/components/media/media-to
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
   const links = [
     { title: "Tổng quan", href: "/dashboard" },
-    { title: "Thư viện", href: "/dashboard/media" },
+    { title: "Media", href: "/dashboard/media" },
     { title: "Khối giao diện", href: "/dashboard/home-blocks" },
     { title: "Cài đặt", href: "/dashboard/settings" },
   ];

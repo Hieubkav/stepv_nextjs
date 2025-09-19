@@ -2,45 +2,11 @@
 
 import Image from 'next/image';
 import { getLucideIcon } from '@/lib/lucide-icons';
+import type { SiteFooterColumn, SiteFooterProps, SiteFooterSocialLink } from '@/lib/site-layout';
 
-type FooterLink = {
-  label?: string;
-  url?: string;
-  highlight?: boolean;
-};
+type SiteFooterSectionProps = SiteFooterProps;
 
-type FooterColumn = {
-  title?: string;
-  links?: FooterLink[];
-};
-
-type FooterSocialLink = {
-  platform?: string;
-  url?: string;
-  icon?: string;
-};
-
-type FooterButton = {
-  label?: string;
-  url?: string;
-};
-
-type SiteFooterSectionProps = {
-  logo?: string;
-  title?: string;
-  description?: string;
-  button?: FooterButton;
-  columns?: FooterColumn[];
-  socialTitle?: string;
-  socialLinks?: FooterSocialLink[];
-  locationTitle?: string;
-  locationLines?: string[];
-  contactTitle?: string;
-  contactEmail?: string;
-  copyright?: string;
-};
-
-const DEFAULT_COLUMNS: FooterColumn[] = [
+const DEFAULT_COLUMNS: SiteFooterColumn[] = [
   {
     title: 'Studio',
     links: [
@@ -57,7 +23,7 @@ const DEFAULT_COLUMNS: FooterColumn[] = [
   },
 ];
 
-const DEFAULT_SOCIALS: FooterSocialLink[] = [
+const DEFAULT_SOCIALS: SiteFooterSocialLink[] = [
   { platform: 'YouTube', url: 'https://youtube.com', icon: 'Youtube' },
   { platform: 'TikTok', url: 'https://tiktok.com', icon: 'Music4' },
 ];

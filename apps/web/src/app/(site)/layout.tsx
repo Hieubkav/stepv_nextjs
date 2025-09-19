@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 // import Footer from "@/components/layout/footer";
 import "@/index.css";
-
+import SiteLayoutClient from './site-layout-client';
 
 export const metadata: Metadata = {
   title: "DOHY Media - Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp",
@@ -50,10 +50,5 @@ export const metadata: Metadata = {
 export default function SiteLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="flex flex-col min-h-screen font-sans antialiased">
-      <main className="flex-1">{children}</main>
-      {/* <Footer /> */}
-    </div>
-  );
+  return <SiteLayoutClient>{children}</SiteLayoutClient>;
 }

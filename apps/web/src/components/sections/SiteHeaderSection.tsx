@@ -6,31 +6,9 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import XIcon from '@/components/ui/XIcon';
 import { getLucideIcon } from '@/lib/lucide-icons';
+import type { SiteHeaderCta, SiteHeaderMenuItem, SiteHeaderProps, SiteHeaderSocial } from '@/lib/site-layout';
 
-interface SiteHeaderMenuItem {
-  label?: string;
-  url?: string;
-  highlight?: boolean;
-}
-
-interface SiteHeaderSocial {
-  platform?: string;
-  url?: string;
-  icon?: string;
-}
-
-interface SiteHeaderCta {
-  label?: string;
-  url?: string;
-}
-
-interface SiteHeaderSectionProps {
-  logo?: string;
-  backgroundImage?: string;
-  menuItems?: SiteHeaderMenuItem[];
-  socials?: SiteHeaderSocial[];
-  cta?: SiteHeaderCta;
-}
+type SiteHeaderSectionProps = SiteHeaderProps;
 
 const DEFAULT_MENU: SiteHeaderMenuItem[] = [
   { label: 'TRANG CHU', url: '/', highlight: true },
