@@ -43,10 +43,10 @@ export default defineSchema({
     updatedAt: v.number(),
     updatedBy: v.optional(v.string()),
   })
-    .index("by_page_order", ["pageId", "order"]) 
+    .index("by_page_order", ["pageId", "order"])
     .index("by_page_kind", ["pageId", "kind"]),
 
-  // Media: ảnh (upload vào Convex storage) và video (link ngoài)
+  // Media: anh (upload vao Convex storage) va video (link ngoai)
   media: defineTable({
     kind: v.union(v.literal("image"), v.literal("video")),
     title: v.optional(v.string()),
@@ -62,6 +62,66 @@ export default defineSchema({
     createdAt: v.number(),
     deletedAt: v.optional(v.number()),
   }).index("by_kind", ["kind"]).index("by_deleted", ["deletedAt"]),
+
+  // Library resources (digital assets cho trang /thu-vien)
+  library_resources: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    features: v.optional(v.array(v.string())),
+    pricingType: v.union(v.literal("free"), v.literal("paid")),
+    coverImageId: v.optional(v.id("media")),
+    downloadUrl: v.optional(v.string()),
+    isDownloadVisible: v.boolean(),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_pricing_order", ["pricingType", "order"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Library resource detail images
+  library_resource_images: defineTable({
+    resourceId: v.id("library_resources"),
+    mediaId: v.id("media"),
+    caption: v.optional(v.string()),
+    altText: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_resource_order", ["resourceId", "order"])
+    .index("by_media", ["mediaId"]),
+
+  // Library softwares (danh sach phan mem lien quan)
+  library_softwares: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    iconImageId: v.optional(v.id("media")),
+    officialUrl: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Library resource to software mapping
+  library_resource_softwares: defineTable({
+    resourceId: v.id("library_resources"),
+    softwareId: v.id("library_softwares"),
+    note: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    assignedAt: v.number(),
+  })
+    .index("by_resource_order", ["resourceId", "order"])
+    .index("by_software", ["softwareId"])
+    .index("by_pair", ["resourceId", "softwareId"]),
 
   // Visitor tracking sessions
   visitor_sessions: defineTable({
