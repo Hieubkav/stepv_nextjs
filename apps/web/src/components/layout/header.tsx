@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       }}
                       className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
                         item.isActive
-                          ? 'text-white border-b-2 border-white'
+                          ? 'text-white  border-white'
                           : 'text-white hover:text-gray-300'
                       }`}
                     >
@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       href={item.href as any}
                       className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
                         item.isActive
-                          ? 'text-white border-b-2 border-white'
+                          ? 'text-white  border-white'
                           : 'text-white hover:text-gray-300'
                       }`}
                     >
@@ -222,7 +222,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                       href={item.href as any}
                       className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
                         item.isActive
-                          ? 'text-white border-b-2 border-white'
+                          ? 'text-white  border-white'
                           : 'text-white hover:text-gray-300'
                       }`}
                     >

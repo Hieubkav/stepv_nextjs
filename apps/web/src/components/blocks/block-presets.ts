@@ -625,7 +625,14 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       }
     },
     uiSchema: {
-      backgroundImage: { "ui:placeholder": "/images/header-bg.jpg" },
+      logo: {
+        "ui:widget": "mediaImage",
+        "ui:options": { placeholder: "https://..." }
+      },
+      backgroundImage: {
+        "ui:widget": "mediaImage",
+        "ui:options": { placeholder: "/images/header-bg.jpg" }
+      },
       menuItems: {
         "ui:options": { addButtonLabel: "Them menu" },
         items: {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { getLucideIcon } from '@/lib/lucide-icons';
 
 interface AccordionItem {
@@ -8,7 +8,7 @@ interface AccordionItem {
   content: string;
 }
 
-interface Card {
+interface Why3DCard {
   icon: string;
   title: string;
   items: AccordionItem[];
@@ -19,112 +19,179 @@ interface Why3DVisualsSectionProps {
   subtitle?: string;
   buttonText?: string;
   buttonLink?: string;
+  topCards?: Why3DCard[];
+  bottomCards?: Why3DCard[];
 }
 
-const Why3DVisualsSection = ({
-  title = 'TẠI SAO HÌNH ẢNH 3D LÀ LỰA CHỌN THÔNG MINH CHO THƯƠNG HIỆU CỦA BẠN',
-  subtitle = '',
-  buttonText = 'LIÊN HỆ CHÚNG TÔI',
-  buttonLink = '#contact'
-}: Why3DVisualsSectionProps) => {
-  const [openAccordions, setOpenAccordions] = useState<{[key: string]: number | null}>({});
+const DEFAULT_TOP_CARDS: Why3DCard[] = [
+  {
+    icon: 'DollarSign',
+    title: 'HIEU QUA CHI PHI',
+    items: [
+      {
+        title: 'Tiet kiem chi phi san xuat',
+        content: 'Loai bo chi phi chup anh va setup nhieu lan; tai san 3D tao mot lan co the tai su dung.',
+      },
+      {
+        title: 'Tai san su dung lai',
+        content: 'Tai su dung model va scene cho nhung chien dich tiep theo de tiet kiem thoi gian.',
+      },
+      {
+        title: 'Than thien moi truong',
+        content: 'Giam vat tu va di chuyen, gop phan vao quy trinh quang cao ben vung hon.',
+      },
+    ],
+  },
+  {
+    icon: 'Video',
+    title: 'CHAT LUONG STUDIO',
+    items: [
+      {
+        title: 'Do chi tiet cao',
+        content: 'Cong nghe render hien dai tao ra hinh anh sieu thuc tu moi goc nhin.',
+      },
+      {
+        title: 'Tu do sang tao',
+        content: 'Khong bi gioi han boi vat ly, de dang tao khong gian va hien ung doc dao.',
+      },
+      {
+        title: 'Xu ly da nen tang',
+        content: 'Toi uu cho web, social, in an va video tu cung mot bo tai san 3D.',
+      },
+    ],
+  },
+  {
+    icon: 'Clock',
+    title: 'TOC DO VA LINH HOAT',
+    items: [
+      {
+        title: 'Ra mat nhanh hon',
+        content: 'Bo qua khoan logistics phuc tap, du an co the hoan tat chi trong vai ngay.',
+      },
+      {
+        title: 'Dieu chinh nhanh',
+        content: 'Cap nhat mau sac, vat lieu hay lenh thuc thi chi trong vai phut.',
+      },
+    ],
+  },
+];
 
-  const toggleAccordion = (cardIndex: number, itemIndex: number) => {
-    const key = `card-${cardIndex}`;
-    setOpenAccordions(prev => ({
+const DEFAULT_BOTTOM_CARDS: Why3DCard[] = [
+  {
+    icon: 'Gem',
+    title: 'DANH RIENG CHO CAO CAP',
+    items: [
+      {
+        title: 'Ton vinh ban sac thuong hieu',
+        content: 'Moi du an duoc thiet ke de pho dien su tinh te va phong cach rieng cua ban.',
+      },
+      {
+        title: 'Quy trinh dong hanh',
+        content: 'Lam viec chinh chu voi doi ngu chuyen gia tu giai doan y tuong den ban giao.',
+      },
+    ],
+  },
+  {
+    icon: 'Lightbulb',
+    title: 'GIAI PHAP TUONG LAI',
+    items: [
+      {
+        title: 'Mo rong de dang',
+        content: 'Tai san 3D co the cap nhat lien tuc khi ban ra mat san pham moi.',
+      },
+      {
+        title: 'Cong nghe moi nhat',
+        content: 'Theo sat xu huong cong nghe de du an luon noi bat.',
+      },
+    ],
+  },
+];
+
+const Why3DVisualsSection = ({
+  title = 'TAI SAO HINH ANH 3D LA LUA CHON THONG MINH CHO THUONG HIEU CUA BAN',
+  subtitle = '',
+  buttonText = 'LIEN HE CHUNG TOI',
+  buttonLink = '#contact',
+  topCards,
+  bottomCards,
+}: Why3DVisualsSectionProps) => {
+  const resolvedTopCards = useMemo(
+    () => (topCards && topCards.length > 0 ? topCards : DEFAULT_TOP_CARDS),
+    [topCards],
+  );
+  const resolvedBottomCards = useMemo(
+    () => (bottomCards && bottomCards.length > 0 ? bottomCards : DEFAULT_BOTTOM_CARDS),
+    [bottomCards],
+  );
+
+  const [openAccordions, setOpenAccordions] = useState<Record<string, number | null>>({});
+
+  const toggleAccordion = (cardKey: string, itemIndex: number) => {
+    setOpenAccordions((prev) => ({
       ...prev,
-      [key]: prev[key] === itemIndex ? null : itemIndex
+      [cardKey]: prev[cardKey] === itemIndex ? null : itemIndex,
     }));
   };
 
-  const topCards: Card[] = [
-    {
-      icon: 'fas fa-dollar-sign',
-      title: 'HIỆU QUẢ CHI PHÍ',
-      items: [
-        {
-          title: 'Tiết Kiệm Chi Phí Sản Xuất',
-          content: 'Không cần chụp ảnh đắt tiền, tạo mẫu thử hay thiết lập vật lý—hình ảnh 3D của chúng tôi mang lại kết quả cao cấp với chi phí chỉ bằng một phần nhỏ.'
-        },
-        {
-          title: 'Tài Sản Có Thể Tái Sử Dụng',
-          content: 'Hình ảnh 3D của bạn có thể được sử dụng lại cho nhiều chiến dịch, tiết kiệm thời gian và tiền bạc cho các dự án tương lai.'
-        },
-        {
-          title: 'Tính Bền Vững',
-          content: 'Giảm lãng phí và tác động môi trường bằng cách loại bỏ nhu cầu sử dụng vật liệu vật lý.'
-        }
-      ]
-    },
-    {
-      icon: 'fas fa-video',
-      title: 'CHẤT LƯỢNG STUDIO ĐIỆN ẢNH',
-      items: [
-        {
-          title: 'Hoàn Hảo Siêu Thực',
-          content: 'Công nghệ kết xuất tiên tiến tạo ra hình ảnh không thể phân biệt với nhiếp ảnh thực tế.'
-        },
-        {
-          title: 'Tự Do Sáng Tạo Vô Hạn',
-          content: 'Không bị giới hạn bởi vật lý—tạo ra những góc nhìn, hiệu ứng ánh sáng và môi trường không thể thực hiện trong thực tế.'
-        },
-        {
-          title: 'Tính Linh Hoạt Trên Nhiều Nền Tảng',
-          content: 'Tối ưu hóa cho web, in ấn, video và thực tế ảo từ cùng một tài sản 3D.'
-        }
-      ]
-    },
-    {
-      icon: 'fas fa-clock',
-      title: 'TỐC ĐỘ VÀ LINH HOẠT',
-      items: [
-        {
-          title: 'Thời Gian Ra Thị Trường Nhanh Hơn',
-          content: 'Bỏ qua các khâu logistics phức tạp của chụp ảnh truyền thống và nhận được hình ảnh hoàn thiện trong vài ngày.'
-        },
-        {
-          title: 'Chỉnh Sửa Dễ Dàng',
-          content: 'Thực hiện thay đổi nhanh chóng đối với màu sắc, vật liệu hoặc thiết kế mà không cần chụp lại.'
-        }
-      ]
-    }
-  ];
+  const renderCard = (card: Why3DCard, cardKey: string) => {
+    const IconComponent = getLucideIcon(card.icon) ?? getLucideIcon('Info');
 
-  const bottomCards: Card[] = [
-    {
-      icon: 'fas fa-gem',
-      title: 'ĐƯỢC THIẾT KẾ CHO HÀNG CAO CẤP',
-      items: [
-        {
-          title: 'Tập Trung Độc Quyền Vào Nước Hoa & Làm Đẹp',
-          content: 'Mỗi dự án được thiết kế để phản ánh sự tinh tế và thanh lịch của thương hiệu bạn.'
-        },
-        {
-          title: 'Quy Trình Hợp Tác',
-          content: 'Làm việc chặt chẽ với đội ngũ của chúng tôi để đảm bảo tầm nhìn của bạn được hiện thực hóa chính xác như bạn tưởng tượng.'
-        }
-      ]
-    },
-    {
-      icon: 'fas fa-lightbulb',
-      title: 'GIẢI PHÁP HƯỚNG TƯƠNG LAI',
-      items: [
-        {
-          title: 'Tài Sản Có Thể Mở Rộng',
-          content: 'Hình ảnh 3D phát triển cùng thương hiệu của bạn, cho phép cập nhật và điều chỉnh khi dòng sản phẩm của bạn phát triển.'
-        },
-        {
-          title: 'Công Nghệ Tiên Tiến',
-          content: 'Luôn dẫn đầu xu hướng với hình ảnh được tạo bằng các kỹ thuật kết xuất 3D mới nhất.'
-        }
-      ]
-    }
-  ];
+    return (
+      <div
+        key={cardKey}
+        className="flex w-full flex-col gap-5 rounded-3xl border border-gray-800 bg-gradient-to-b from-black to-gray-900 p-6 transition-transform duration-300 hover:scale-[1.02]"
+      >
+        <div className="flex items-center gap-5">
+          <IconComponent className="text-3xl text-yellow-400" />
+          <h3 className="text-2xl font-semibold uppercase text-white">{card.title}</h3>
+        </div>
+
+        <div className="flex flex-col">
+          {card.items.map((item, itemIndex) => {
+            const itemKey = `${cardKey}-item-${itemIndex}`;
+            const isOpen = openAccordions[cardKey] === itemIndex;
+            return (
+              <div key={itemKey} className="border-t border-white/20 first:border-t-0">
+                <button
+                  type="button"
+                  onClick={() => toggleAccordion(cardKey, itemIndex)}
+                  className="flex w-full cursor-pointer items-center justify-between py-4 focus:outline-none"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`text-yellow-400 text-sm transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`}
+                    >
+                      &#9656;
+                    </span>
+                    <span
+                      className={`text-lg font-light transition-colors duration-300 ${isOpen ? 'text-white' : 'text-white/80'}`}
+                    >
+                      {item.title}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-lg font-light transition-colors duration-300 ${isOpen ? 'text-yellow-400' : 'text-white/60'}`}
+                  >
+                    {isOpen ? '-' : '+'}
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div className="pb-4 text-gray-300 leading-relaxed animate-fade-in">
+                    {item.content}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <section className="bg-black text-white py-20">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Header */}
         <div className="mb-16">
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-light uppercase text-white leading-tight mb-8">
             {title}
@@ -134,7 +201,7 @@ const Why3DVisualsSection = ({
               {subtitle}
             </p>
           )}
-          <a 
+          <a
             href={buttonLink}
             className="inline-flex items-center gap-3 px-8 py-3 border border-white rounded-2xl text-white text-sm uppercase font-medium hover:bg-white hover:text-black transition-all duration-300"
           >
@@ -145,115 +212,31 @@ const Why3DVisualsSection = ({
           </a>
         </div>
 
-        {/* Top Cards - 3 columns */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 mb-8">
-          {topCards.map((card, cardIndex) => {
-            const CardIcon = getLucideIcon(card.icon);
-            return (
-            <div 
-              key={cardIndex}
-              className="flex w-full flex-col gap-5 rounded-3xl border border-gray-800 bg-gradient-to-b from-black to-gray-900 p-6 transition-transform duration-300 hover:scale-[1.02]"
-            >
-              <div className="flex items-center gap-5">
-                <CardIcon className="text-3xl text-yellow-400" />
-                <h3 className="text-2xl font-semibold uppercase text-white">{card.title}</h3>
-              </div>
-
-              <div className="flex flex-col">
-                {card.items.map((item, itemIndex) => (
-                  <div key={itemIndex} className="border-t border-white/20 first:border-t-0">
-                    <div 
-                      onClick={() => toggleAccordion(cardIndex, itemIndex)}
-                      className="flex cursor-pointer items-center justify-between py-4"
-                    >
-                      <div className="flex items-center gap-3">
-                        <i className="fas fa-chevron-right text-yellow-400 text-sm"></i>
-                        <span 
-                          className={`text-lg font-light text-white transition-colors duration-300 ${
-                            openAccordions[`card-${cardIndex}`] === itemIndex ? '!text-yellow-400' : ''
-                          }`}
-                        >
-                          {item.title}
-                        </span>
-                      </div>
-                      <span 
-                        className={`text-lg text-white transition-colors duration-300 ${
-                          openAccordions[`card-${cardIndex}`] === itemIndex ? '!text-yellow-400' : ''
-                        }`}
-                      >
-                        {openAccordions[`card-${cardIndex}`] === itemIndex ? '−' : '+'}
-                      </span>
-                    </div>
-                    
-                    {openAccordions[`card-${cardIndex}`] === itemIndex && (
-                      <div className="pb-4 text-gray-300 leading-relaxed animate-fade-in">
-                        {item.content}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
+          {resolvedTopCards.map((card, index) => renderCard(card, `top-${index}`))}
         </div>
 
-        {/* Bottom Cards - 2 columns */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          {bottomCards.map((card, cardIndex) => {
-            const adjustedCardIndex = cardIndex + topCards.length; // D? tr?nh conflict với top cards
-            const CardIcon = getLucideIcon(card.icon);
-            return (
-              <div 
-                key={adjustedCardIndex}
-                className="flex w-full flex-col gap-5 rounded-3xl border border-gray-800 bg-gradient-to-b from-black to-gray-900 p-6 transition-transform duration-300 hover:scale-[1.02]"
-              >
-                <div className="flex items-center gap-5">
-                  <CardIcon className="text-3xl text-yellow-400" />
-                  <h3 className="text-2xl font-semibold uppercase text-white">{card.title}</h3>
-                </div>
-
-                <div className="flex flex-col">
-                  {card.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="border-t border-white/20 first:border-t-0">
-                      <div 
-                        onClick={() => toggleAccordion(adjustedCardIndex, itemIndex)}
-                        className="flex cursor-pointer items-center justify-between py-4"
-                      >
-                        <div className="flex items-center gap-3">
-                          <i className="fas fa-chevron-right text-yellow-400 text-sm"></i>
-                          <span 
-                            className={`text-lg font-light text-white transition-colors duration-300 ${
-                              openAccordions[`card-${adjustedCardIndex}`] === itemIndex ? '!text-yellow-400' : ''
-                            }`}
-                          >
-                            {item.title}
-                          </span>
-                        </div>
-                        <span 
-                          className={`text-lg text-white transition-colors duration-300 ${
-                            openAccordions[`card-${adjustedCardIndex}`] === itemIndex ? '!text-yellow-400' : ''
-                          }`}
-                        >
-                          {openAccordions[`card-${adjustedCardIndex}`] === itemIndex ? '−' : '+'}
-                        </span>
-                      </div>
-                      
-                      {openAccordions[`card-${adjustedCardIndex}`] === itemIndex && (
-                        <div className="pb-4 text-gray-300 leading-relaxed animate-fade-in">
-                          {item.content}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          {resolvedBottomCards.map((card, index) => renderCard(card, `bottom-${index}`))}
         </div>
       </div>
 
-      {/* Custom styles removed to fix parsing issues */}
+      <style jsx>{`
+        .animate-fade-in {
+          animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </section>
   );
 };

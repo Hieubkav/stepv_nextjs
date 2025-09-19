@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
+// import Footer from "@/components/layout/footer";
 import "@/index.css";
 
 
@@ -53,9 +52,8 @@ export default function SiteLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="flex flex-col min-h-screen font-sans antialiased">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <main className="flex-1">{children}</main>
+      {/* <Footer /> */}
     </div>
   );
 }
