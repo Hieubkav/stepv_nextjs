@@ -297,10 +297,14 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
           submitLabel: "GUI",
           promiseHighlight: "Chung toi se phan hoi trong 24 gio lam viec.",
           socialLinks: [
-            { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "Youtube" },
-            { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "Music4" },
-            { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "Facebook" },
-            { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "Instagram" }
+            { platform: "YouTube", url: "https://www.youtube.com/@stepv", icon: "Youtube" },
+            { platform: "Facebook", url: "https://www.facebook.com/stepvstudio", icon: "Facebook" },
+            { platform: "Instagram", url: "https://www.instagram.com/stepvstudio", icon: "Instagram" },
+            { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Tiktok" },
+            { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" },
+            { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
+            { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
+            { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
           ]
         },
   "siteHeader":     {
@@ -315,12 +319,14 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
             { label: "THEM", url: "/more" }
           ],
           socials: [
-            { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "Youtube" },
-            { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "Music4" },
-            { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "Facebook" },
-            { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "Instagram" },
-            { platform: "Pinterest", url: "https://pinterest.com/stepvstudio", icon: "Palette" },
-            { platform: "X", url: "https://x.com/stepvstudio", icon: "Twitter" }
+            { platform: "YouTube", url: "https://www.youtube.com/@stepv", icon: "Youtube" },
+            { platform: "Facebook", url: "https://www.facebook.com/stepvstudio", icon: "Facebook" },
+            { platform: "Instagram", url: "https://www.instagram.com/stepvstudio", icon: "Instagram" },
+            { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Tiktok" },
+            { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" },
+            { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
+            { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
+            { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
           ],
           cta: { label: "LIEN HE", url: "#contact" }
         },
@@ -356,10 +362,14 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
           ],
           socialTitle: "THEO DOI CHUNG TOI",
           socialLinks: [
-            { platform: "YouTube", url: "https://youtube.com/@stepv", icon: "Youtube" },
-            { platform: "TikTok", url: "https://tiktok.com/@stepv", icon: "Music4" },
-            { platform: "Facebook", url: "https://facebook.com/stepvstudio", icon: "Facebook" },
-            { platform: "Instagram", url: "https://instagram.com/stepvstudio", icon: "Instagram" }
+            { platform: "YouTube", url: "https://www.youtube.com/@stepv", icon: "Youtube" },
+            { platform: "Facebook", url: "https://www.facebook.com/stepvstudio", icon: "Facebook" },
+            { platform: "Instagram", url: "https://www.instagram.com/stepvstudio", icon: "Instagram" },
+            { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Tiktok" },
+            { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" },
+            { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
+            { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
+            { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
           ],
           locationTitle: "TRU SO TAI",
           locationLines: ["Stuttgart, Duc", "+49-176-21129718"],

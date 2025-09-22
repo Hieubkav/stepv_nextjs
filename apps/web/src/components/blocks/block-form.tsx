@@ -399,13 +399,13 @@ function IconPickerWidget({ value, onChange, disabled, readonly, options }: Widg
       {isOpen ? (
         <div className="rounded-md border bg-card">
           <div className="grid grid-cols-3 gap-2 p-3">
-            {iconOptions.map((option) => {
+            {iconOptions.map((option, index) => {
               const IconComponent = option.Icon;
               const isActive = option.value === value;
 
               return (
                 <button
-                  key={option.value}
+                  key={`${option.value}-${index}`}
                   type="button"
                   className={cn(
                     "flex flex-col items-center gap-1 rounded-md border px-3 py-2 text-xs transition",
