@@ -95,8 +95,6 @@ const StayControlSection = ({
   }, [resolvedFeatures, layout]);
 
   const headlineSubtitle = subtitle ?? description ?? DEFAULT_DESCRIPTION;
-  const supportingDescription = description ?? subtitle ?? DEFAULT_DESCRIPTION;
-
   const getWidthClass = (feature: Feature, rowLength: number) => {
     if (layout === 'single-column') return 'w-full';
     if (feature.width === '40%') return 'w-full md:w-[40%]';
@@ -125,7 +123,7 @@ const StayControlSection = ({
             </div>
           </div>
 
-          <div className="w-full flex flex-col gap-5 mt-10 mb-[10%]" style={{ perspective: '1200px' }}>
+          <div className="w-full flex flex-col gap-5 mt-10 lg:mt-12 mb-8 lg:mb-12" style={{ perspective: '1200px' }}>
             {featureRows.map((featureRow, rowIndex) => {
               const isFirstRow = rowIndex === 0;
               const gradientDirection = isFirstRow
@@ -171,11 +169,6 @@ const StayControlSection = ({
             })}
           </div>
 
-          {supportingDescription && (
-            <p className="text-white/70 font-light text-lg leading-relaxed lg:w-[60%]">
-              {supportingDescription}
-            </p>
-          )}
         </div>
       </div>
 
