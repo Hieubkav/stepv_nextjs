@@ -123,6 +123,86 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
+  // Courses (khoa hoc chinh)
+  courses: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    subtitle: v.optional(v.string()),
+    description: v.optional(v.string()),
+    thumbnailMediaId: v.optional(v.id("media")),
+    introVideoUrl: v.optional(v.string()),
+    pricingType: v.union(v.literal("free"), v.literal("paid")),
+    priceAmount: v.optional(v.number()),
+    priceNote: v.optional(v.string()),
+    isPriceVisible: v.boolean(),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Course chapters (chuong cua khoa hoc)
+  course_chapters: defineTable({
+    courseId: v.id("courses"),
+    title: v.string(),
+    summary: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_course_order", ["courseId", "order"]),
+
+  // Course lessons (video tung bai hoc)
+  course_lessons: defineTable({
+    courseId: v.id("courses"),
+    chapterId: v.id("course_chapters"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    youtubeUrl: v.string(),
+    durationSeconds: v.optional(v.number()),
+    isPreview: v.optional(v.boolean()),
+    exerciseLink: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_chapter_order", ["chapterId", "order"])
+    .index("by_course_order", ["courseId", "order"]),
+
+
+  // Students (hoc vien)
+  students: defineTable({
+    account: v.string(),
+    password: v.string(),
+    fullName: v.string(),
+    email: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_account", ["account"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Course enrollments (quan he user - khoa hoc)
+  course_enrollments: defineTable({
+    courseId: v.id("courses"),
+    userId: v.string(),
+    enrolledAt: v.number(),
+    progressPercent: v.optional(v.number()),
+    lastViewedLessonId: v.optional(v.id("course_lessons")),
+    order: v.number(),
+    active: v.boolean(),
+  })
+    .index("by_course_user", ["courseId", "userId"])
+    .index("by_user", ["userId"])
+    .index("by_course", ["courseId"]),
 
   // Visitor tracking sessions
   visitor_sessions: defineTable({

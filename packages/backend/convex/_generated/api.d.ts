@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as courses from "../courses.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as homepage from "../homepage.js";
 import type * as library from "../library.js";
@@ -21,6 +22,7 @@ import type * as pageBlocks from "../pageBlocks.js";
 import type * as pages from "../pages.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
+import type * as students from "../students.js";
 import type * as todos from "../todos.js";
 import type * as visitors from "../visitors.js";
 
@@ -33,6 +35,7 @@ import type * as visitors from "../visitors.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  courses: typeof courses;
   healthCheck: typeof healthCheck;
   homepage: typeof homepage;
   library: typeof library;
@@ -41,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   pages: typeof pages;
   seed: typeof seed;
   settings: typeof settings;
+  students: typeof students;
   todos: typeof todos;
   visitors: typeof visitors;
 }>;

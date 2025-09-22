@@ -9,8 +9,10 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
   const links = [
     { title: "Tổng quan", href: "/dashboard" },
     { title: "Media", href: "/dashboard/media" },
-    { title: "Thu vien", href: "/dashboard/library" },
-    { title: "Phan mem", href: "/dashboard/library/software" },
+    { title: "Thu viện", href: "/dashboard/library" },
+    { title: "Phần mềm", href: "/dashboard/library/software" },
+    { title: "Khóa học", href: "/dashboard/courses" },
+    { title: "Học viên", href: "/dashboard/students" },
     { title: "Khối giao diện", href: "/dashboard/home-blocks" },
     { title: "Cài đặt", href: "/dashboard/settings" },
   ];
