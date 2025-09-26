@@ -22,6 +22,34 @@ type StudentDoc = {
   updatedAt: number;
 };
 
+type PublicStudent = {
+  _id: StudentId;
+  account: string;
+  fullName: string;
+  email?: string;
+  phone?: string;
+  notes?: string;
+  tags: string[];
+  order: number;
+  active: boolean;
+  createdAt: number;
+  updatedAt: number;
+};
+
+const toPublicStudent = (student: StudentDoc): PublicStudent => ({
+  _id: student._id,
+  account: student.account,
+  fullName: student.fullName,
+  email: student.email ?? undefined,
+  phone: student.phone ?? undefined,
+  notes: student.notes ?? undefined,
+  tags: student.tags ?? [],
+  order: student.order,
+  active: student.active,
+  createdAt: student.createdAt,
+  updatedAt: student.updatedAt,
+});
+
 const requireUniqueAccount = async (
   ctx: AnyCtx,
   account: string,
@@ -77,6 +105,42 @@ export const getStudent = query({
   args: { id: v.id("students") },
   handler: async (ctx, { id }) => {
     return (await ctx.db.get(id)) ?? null;
+  },
+});
+
+export const getStudentProfile = query({
+  args: { id: v.id("students") },
+  handler: async (ctx, { id }) => {
+    const student = await ctx.db.get(id);
+    if (!student) return null;
+    return toPublicStudent(student as StudentDoc);
+  },
+});
+
+export const authenticateStudent = mutation({
+  args: {
+    account: v.string(),
+    password: v.string(),
+  },
+  handler: async (ctx, { account, password }) => {
+    const normalizedAccount = account.trim();
+    const normalizedPassword = password.trim();
+    if (!normalizedAccount || !normalizedPassword) {
+      return null;
+    }
+
+    const student = await ctx.db
+      .query("students")
+      .withIndex("by_account", (q) => q.eq("account", normalizedAccount))
+      .first();
+
+    if (!student) return null;
+
+    const doc = student as StudentDoc;
+    if (!doc.active) return null;
+    if (doc.password !== normalizedPassword) return null;
+
+    return toPublicStudent(doc);
   },
 });
 
@@ -216,3 +280,6 @@ export const deleteStudent = mutation({
     return { ok: true } as const;
   },
 });
+
+
+

@@ -48,6 +48,52 @@ type LessonDoc = {
   order: number;
 };
 
+const normalizeCourseSlug = (input: string) => {
+  const trimmed = input.trim();
+  if (!trimmed) return trimmed;
+  return trimmed
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
+const uniqueSlugCandidates = (slug?: string) => {
+  if (!slug) return [] as string[];
+  const trimmed = slug.trim();
+  if (!trimmed) return [] as string[];
+  const normalized = normalizeCourseSlug(trimmed);
+  const candidates = new Set<string>();
+  candidates.add(trimmed);
+  if (normalized) candidates.add(normalized);
+  return Array.from(candidates);
+};
+
+const findCourseBySlug = async (ctx: AnyCtx, slug: string) => {
+  for (const candidate of uniqueSlugCandidates(slug)) {
+    const result = await ctx.db
+      .query('courses')
+      .withIndex('by_slug', (q) => q.eq('slug', candidate))
+      .first();
+    if (result) {
+      return result as CourseDoc;
+    }
+  }
+  return null;
+};
+
+type EnrollmentDoc = {
+  _id: Id<"course_enrollments">;
+  courseId: CourseId;
+  userId: string;
+  enrolledAt: number;
+  progressPercent?: number;
+  lastViewedLessonId?: LessonId;
+  order: number;
+  active: boolean;
+};
+
 const assertCourseSlugUnique = async (
   ctx: AnyCtx,
   slug: string,
@@ -119,6 +165,118 @@ const clampProgress = (value?: number) => {
   return Math.min(100, Math.max(0, value));
 };
 
+type CourseChapterWithLessons = ChapterDoc & {
+  lessons: LessonDoc[];
+};
+
+type CourseStructure = {
+  course: CourseDoc;
+  chapters: CourseChapterWithLessons[];
+  visibleLessons: LessonDoc[];
+  lessonLookup: Map<string, LessonDoc>;
+};
+
+const collectCourseStructure = async (
+  ctx: AnyCtx,
+  course: CourseDoc,
+  includeInactive: boolean,
+): Promise<CourseStructure> => {
+  const chapters = (await ctx.db
+    .query("course_chapters")
+    .withIndex("by_course_order", (q) => q.eq("courseId", course._id))
+    .collect()) as ChapterDoc[];
+
+  const lessons = (await ctx.db
+    .query("course_lessons")
+    .withIndex("by_course_order", (q) => q.eq("courseId", course._id))
+    .collect()) as LessonDoc[];
+
+  const lessonLookup = new Map<string, LessonDoc>();
+  for (const lesson of lessons) {
+    lessonLookup.set(lesson._id as string, lesson);
+  }
+
+  const lessonsByChapter: Record<string, LessonDoc[]> = {};
+  for (const lesson of lessons) {
+    if (!includeInactive && !lesson.active) continue;
+    const key = lesson.chapterId as string;
+    if (!lessonsByChapter[key]) {
+      lessonsByChapter[key] = [];
+    }
+    lessonsByChapter[key].push(lesson);
+  }
+  Object.values(lessonsByChapter).forEach((items) =>
+    items.sort((a, b) => a.order - b.order),
+  );
+
+  const filteredChapters = includeInactive
+    ? chapters
+    : chapters.filter((chapter) => chapter.active);
+  filteredChapters.sort((a, b) => a.order - b.order);
+
+  const detail = filteredChapters.map((chapter) => ({
+    ...chapter,
+    lessons: lessonsByChapter[chapter._id as string] ?? [],
+  }));
+
+  const visibleLessons = detail.flatMap((chapter) => chapter.lessons);
+
+  return {
+    course,
+    chapters: detail,
+    visibleLessons,
+    lessonLookup,
+  };
+};
+
+const computeEnrollmentProgress = (
+  structure: CourseStructure,
+  enrollment: {
+    progressPercent?: number;
+    lastViewedLessonId?: LessonId;
+  },
+) => {
+  const lessons = structure.visibleLessons;
+  const totalLessons = lessons.length;
+
+  let lastLesson: LessonDoc | null = null;
+  let lastIndex = -1;
+  if (enrollment.lastViewedLessonId) {
+    const id = enrollment.lastViewedLessonId as string;
+    lastIndex = lessons.findIndex((lesson) => lesson._id === id);
+    lastLesson =
+      (lastIndex >= 0 ? lessons[lastIndex] : null) ??
+      structure.lessonLookup.get(id) ??
+      null;
+  }
+
+  const completedLessons = lastIndex >= 0 ? lastIndex + 1 : 0;
+  const computedPercent =
+    totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
+  const storedPercent = clampProgress(enrollment.progressPercent);
+  const percent =
+    storedPercent === undefined
+      ? computedPercent
+      : Math.max(storedPercent, computedPercent);
+
+  let nextLesson: LessonDoc | null = null;
+  if (totalLessons > 0) {
+    if (lastIndex >= 0) {
+      nextLesson = lastIndex + 1 < totalLessons ? lessons[lastIndex + 1] : null;
+    } else {
+      nextLesson = lessons[0];
+    }
+  }
+
+  return {
+    totalLessons,
+    completedLessons,
+    percent,
+    lastLesson,
+    nextLesson,
+  } as const;
+};
+
 export const listCourses = query({
   args: { includeInactive: v.optional(v.boolean()) },
   handler: async (ctx, { includeInactive = false }) => {
@@ -148,51 +306,211 @@ export const getCourseDetail = query({
       course = (found as CourseDoc) ?? null;
     }
     if (!course && slug) {
-      const found = await ctx.db
-        .query("courses")
-        .withIndex("by_slug", (q) => q.eq("slug", slug))
-        .first();
-      course = (found as CourseDoc) ?? null;
+      course = await findCourseBySlug(ctx, slug);
     }
 
     if (!course) return null;
     if (!includeInactive && !course.active) return null;
 
-    const chapters = (await ctx.db
-      .query("course_chapters")
-      .withIndex("by_course_order", (q) => q.eq("courseId", course._id))
-      .collect()) as ChapterDoc[];
+    const structure = await collectCourseStructure(ctx, course, includeInactive);
 
-    const lessons = (await ctx.db
-      .query("course_lessons")
-      .withIndex("by_course_order", (q) => q.eq("courseId", course._id))
-      .collect()) as LessonDoc[];
-
-    const lessonsByChapter: Record<string, LessonDoc[]> = {};
-    for (const lesson of lessons) {
-      if (!includeInactive && !lesson.active) continue;
-      const key = lesson.chapterId as string;
-      if (!lessonsByChapter[key]) lessonsByChapter[key] = [];
-      lessonsByChapter[key].push(lesson);
-    }
-    Object.values(lessonsByChapter).forEach((items) =>
-      items.sort((a, b) => a.order - b.order),
-    );
-
-    const filteredChapters = includeInactive
-      ? chapters
-      : chapters.filter((chapter) => chapter.active);
-    filteredChapters.sort((a, b) => a.order - b.order);
-
-    const detail = filteredChapters.map((chapter) => ({
-      ...chapter,
-      lessons: lessonsByChapter[chapter._id as string] ?? [],
-    }));
-
-    return { course, chapters: detail } as const;
+    return {
+      course: structure.course,
+      chapters: structure.chapters,
+    } as const;
   },
 });
 
+export const listLearnerCourses = query({
+  args: {
+    userId: v.string(),
+    includeInactive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { userId, includeInactive = false }) => {
+    const enrollmentsRaw = await ctx.db
+      .query("course_enrollments")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const enrollments = (includeInactive
+      ? (enrollmentsRaw as EnrollmentDoc[])
+      : (enrollmentsRaw as EnrollmentDoc[]).filter((item) => item.active)) as EnrollmentDoc[];
+
+    enrollments.sort((a, b) => a.order - b.order);
+
+    const results: {
+      course: CourseDoc;
+      enrollment: EnrollmentDoc;
+      progress: {
+        totalLessons: number;
+        completedLessons: number;
+        percent: number;
+        lastViewedLessonId: LessonId | null;
+      };
+      counts: {
+        chapters: number;
+        lessons: number;
+      };
+      firstLesson: LessonDoc | null;
+      nextLesson: LessonDoc | null;
+      lastLesson: LessonDoc | null;
+    }[] = [];
+
+    for (const enrollment of enrollments) {
+      const courseDoc = await ctx.db.get(enrollment.courseId);
+      if (!courseDoc) continue;
+      const course = courseDoc as CourseDoc;
+      if (!includeInactive && !course.active) continue;
+
+      const structure = await collectCourseStructure(ctx, course, includeInactive);
+      const progress = computeEnrollmentProgress(structure, enrollment);
+
+      const firstLesson = structure.visibleLessons[0] ?? null;
+      const lastLesson = progress.lastLesson ?? null;
+      const nextLesson =
+        progress.nextLesson ?? (lastLesson ? null : firstLesson);
+
+      results.push({
+        course: structure.course,
+        enrollment,
+        progress: {
+          totalLessons: progress.totalLessons,
+          completedLessons: progress.completedLessons,
+          percent: progress.percent,
+          lastViewedLessonId: enrollment.lastViewedLessonId ?? null,
+        },
+        counts: {
+          chapters: structure.chapters.length,
+          lessons: structure.visibleLessons.length,
+        },
+        firstLesson,
+        nextLesson,
+        lastLesson,
+      });
+    }
+
+    return results;
+  },
+});
+
+export const getLearnerCourseDetail = query({
+  args: {
+    userId: v.string(),
+    slug: v.string(),
+    includeInactive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { userId, slug, includeInactive = false }) => {
+    const courseDoc = await findCourseBySlug(ctx, slug);
+    if (!courseDoc) return null;
+
+    const course = courseDoc as CourseDoc;
+    if (!includeInactive && !course.active) return null;
+
+    const enrollment = (await getEnrollmentByCourseAndUser(
+      ctx,
+      course._id,
+      userId,
+    )) as EnrollmentDoc | null;
+
+    if (!enrollment || (!includeInactive && !enrollment.active)) {
+      return null;
+    }
+
+    const structure = await collectCourseStructure(ctx, course, includeInactive);
+    const progress = computeEnrollmentProgress(structure, enrollment);
+
+    const firstLesson = structure.visibleLessons[0] ?? null;
+
+    return {
+      course: structure.course,
+      chapters: structure.chapters,
+      enrollment,
+      progress: {
+        totalLessons: progress.totalLessons,
+        completedLessons: progress.completedLessons,
+        percent: progress.percent,
+        lastLesson: progress.lastLesson ?? null,
+        nextLesson: progress.nextLesson ?? null,
+        firstLesson,
+      },
+    } as const;
+  },
+});
+
+export const recordLessonProgress = mutation({
+  args: {
+    courseId: v.id("courses"),
+    userId: v.string(),
+    lessonId: v.id("course_lessons"),
+  },
+  handler: async (ctx, { courseId, userId, lessonId }) => {
+    const enrollment = (await getEnrollmentByCourseAndUser(
+      ctx,
+      courseId,
+      userId,
+    )) as EnrollmentDoc | null;
+    if (!enrollment) {
+      throw new Error("Enrollment not found");
+    }
+
+    const course = await ensureCourse(ctx, courseId);
+    const lesson = await ensureLessonInCourse(ctx, lessonId, courseId);
+    if (!lesson.active) {
+      throw new Error("Lesson is inactive");
+    }
+
+    const structure = await collectCourseStructure(ctx, course, false);
+    const lessons = structure.visibleLessons;
+    if (!lessons.length) {
+      await ctx.db.patch(enrollment._id, {
+        lastViewedLessonId: lessonId,
+        progressPercent: 0,
+      } as any);
+      const updated = (await ctx.db.get(enrollment._id)) as EnrollmentDoc | null;
+      return {
+        enrollment: updated,
+        progress: {
+          totalLessons: 0,
+          completedLessons: 0,
+          percent: 0,
+          lastLesson: null,
+          nextLesson: null,
+        },
+      } as const;
+    }
+
+    const index = lessons.findIndex((item) => item._id === lessonId);
+    if (index === -1) {
+      throw new Error("Lesson not accessible");
+    }
+
+    const completedLessons = index + 1;
+    const totalLessons = lessons.length;
+    const percent = Math.min(
+      100,
+      Math.round((completedLessons / totalLessons) * 100),
+    );
+
+    await ctx.db.patch(enrollment._id, {
+      lastViewedLessonId: lessonId,
+      progressPercent: percent,
+    } as any);
+
+    const updated = (await ctx.db.get(enrollment._id)) as EnrollmentDoc | null;
+    const nextLesson = index + 1 < lessons.length ? lessons[index + 1] : null;
+
+    return {
+      enrollment: updated,
+      progress: {
+        totalLessons,
+        completedLessons,
+        percent,
+        lastLesson: lessons[index],
+        nextLesson,
+      },
+    } as const;
+  },
+});
 export const createCourse = mutation({
   args: {
     slug: v.string(),
@@ -749,3 +1067,9 @@ export const removeEnrollment = mutation({
     return { ok: true } as const;
   },
 });
+
+
+
+
+
+
