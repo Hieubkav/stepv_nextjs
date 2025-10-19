@@ -162,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 e.preventDefault();
                 handleLinkClick('#contact');
               }}
-              className="hidden lg:inline-block uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
+              className="hidden lg:inline-flex min-w-[110px] items-center justify-center whitespace-nowrap rounded-full bg-white px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-black transition-transform hover:scale-105"
             >
               Liên hệ
             </Link>
@@ -268,7 +268,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                 e.preventDefault();
                 handleLinkClick('#contact');
               }}
-              className="hidden lg:inline-block uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
+              className="hidden lg:inline-block whitespace-nowrap uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
             >
               Liên hệ
             </Link>
@@ -360,7 +360,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   e.preventDefault();
                   handleLinkClick('#contact');
                 }}
-                className="block w-full text-center uppercase text-sm font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
+                className="block w-full text-center uppercase text-[13px] font-semibold tracking-[0.25em] text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105"
               >
                 Liên hệ
               </Link>
