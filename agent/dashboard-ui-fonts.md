@@ -1,0 +1,51 @@
+# Dashboard UI Fonts Fixes
+
+## Fixed Vietnamese Diacritics
+
+### Course Edit Page (/dashboard/courses/[courseId]/edit)
+
+#### Toast Messages
+- "Can nhap title va slug" → "Cần nhập title và slug"
+- "Da cap nhat khoa hoc" → "Đã cập nhật khóa học"
+- "Khong the cap nhat" → "Không thể cập nhật"
+- "Khong the cap nhat trang thai" → "Không thể cập nhật trạng thái"
+- "Xoa khoa hoc" → "Xóa khóa học"
+- "Khong the xoa khoa hoc" → "Không thể xóa khóa học"
+- "Da xoa khoa hoc" → "Đã xóa khóa học"
+- "Can nhap ten chuong" → "Cần nhập tên chương"
+- "Da cap nhat chuong" → "Đã cập nhật chương"
+- "Da tao chuong" → "Đã tạo chương"
+- "Khong the luu chuong" → "Không thể lưu chương"
+- "Khong the cap nhat chuong" → "Không thể cập nhật chương"
+- "Khong the doi thu tu" → "Không thể đổi thứ tự"
+- "Xoa chuong" → "Xóa chương"
+- "Khong the xoa chuong" → "Không thể xóa chương"
+- "Da xoa chuong" → "Đã xóa chương"
+- "Can nhap ten va YouTube URL" → "Cần nhập tên và YouTube URL"
+- "Da cap nhat bai hoc" → "Đã cập nhật bài học"
+- "Da tao bai hoc" → "Đã tạo bài học"
+- "Khong the luu bai hoc" → "Không thể lưu bài học"
+- "Khong the cap nhat bai hoc" → "Không thể cập nhật bài học"
+- "Khong the cap nhat preview" → "Không thể cập nhật preview"
+- "Xoa bai hoc" → "Xóa bài học"
+- "Khong the xoa bai hoc" → "Không thể xóa bài học"
+- "Da xoa bai hoc" → "Đã xóa bài học"
+- "Vui long chon hoc vien" → "Vui lòng chọn học viên"
+- "Khong tim thay thong tin hoc vien" → "Không tìm thấy thông tin học viên"
+- "a them {name} vao khoa hoc" → "Đã thêm {name} vào khóa học"
+- "Khong the them hoc vien" → "Không thể thêm học viên"
+- "Da mo quyen cho {name}" → "Đã mở quyền cho {name}"
+- "Da khoa quyen cua {name}" → "Đã khóa quyền của {name}"
+- "Khong the cap nhat enrollment" → "Không thể cập nhật enrollment"
+- "Progress phai trong khoang 0-100" → "Progress phải trong khoảng 0-100"
+- "Da cap nhat progress" → "Đã cập nhật progress"
+- "Khong the cap nhat progress" → "Không thể cập nhật progress"
+- "Xoa quyen cua {name}" → "Xóa quyền của {name}"
+- "Khong the xoa enrollment" → "Không thể xóa enrollment"
+- "a xoa quyen hoc cua {name}" → "Đã xóa quyền học của {name}"
+
+#### Page Labels
+- "Quan ly khoa hoc" → "Quản lý khóa học"
+- "Chinh sua thong tin, chuong va bai hoc" → "Chỉnh sửa thông tin, chương và bài học"
+- "Dang tai khoa hoc..." → "Đang tải khóa học..."
+- "Khong tim thay khoa hoc." → "Không tìm thấy khóa học."

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
@@ -175,6 +176,17 @@ export default function CourseEditPage() {
   const [enrollmentEditForm, setEnrollmentEditForm] = useState({ progress: "", lessonId: "" });
 
   const course = detail?.course;
+  const courseDetailHref = useMemo(() => {
+    if (!course) return null;
+    if (!Number.isFinite(course.order)) {
+      return "/khoa-hoc" as const;
+    }
+    const base = `/khoa-hoc/${course.order}` as const;
+    if (course.active) {
+      return base;
+    }
+    return `${base}?preview=1` as const;
+  }, [course]);
   const chapters = useMemo(() => {
     if (!detail?.chapters) return [] as ChapterDoc[];
     return [...detail.chapters].sort((a, b) => a.order - b.order);
@@ -219,7 +231,7 @@ export default function CourseEditPage() {
     const title = values.title.trim();
     const slug = values.slug.trim();
     if (!title || !slug) {
-      toast.error("Can nhap title va slug");
+      toast.error("Cần nhập title và slug");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -242,9 +254,9 @@ export default function CourseEditPage() {
         order,
         active: values.active,
       } as any);
-      toast.success("Da cap nhat khoa hoc");
+      toast.success("Đã cập nhật khóa học");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat");
+      toast.error(error?.message ?? "Không thể cập nhật");
     } finally {
       setCourseSubmitting(false);
     }
@@ -255,23 +267,23 @@ export default function CourseEditPage() {
     try {
       await setCourseActive({ id: course._id, active: !course.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
     }
   }
 
   async function handleDeleteCourse() {
     if (!course) return;
-    if (!window.confirm(`Xoa khoa hoc "${course.title}"?`)) return;
+    if (!window.confirm(`Xóa khóa học "${course.title}"?`)) return;
     try {
       const result = await deleteCourse({ id: course._id });
       if (!result?.ok) {
-        toast.error("Khong the xoa khoa hoc");
+        toast.error("Không thể xóa khóa học");
         return;
       }
-      toast.success("Da xoa khoa hoc");
+      toast.success("Đã xóa khóa học");
       router.push("/dashboard/courses");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa khoa hoc");
+      toast.error(error?.message ?? "Không thể xóa khóa học");
     }
   }
 
@@ -288,7 +300,7 @@ export default function CourseEditPage() {
   async function handleChapterSubmit(values: ChapterFormValues) {
     const title = values.title.trim();
     if (!title) {
-      toast.error("Can nhap ten chuong");
+      toast.error("Cần nhập tên chương");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -303,7 +315,7 @@ export default function CourseEditPage() {
           order,
           active: values.active,
         } as any);
-        toast.success("Da cap nhat chuong");
+        toast.success("Đã cập nhật chương");
       } else {
         await createChapter({
           courseId,
@@ -312,11 +324,11 @@ export default function CourseEditPage() {
           order,
           active: values.active,
         });
-        toast.success("Da tao chuong");
+        toast.success("Đã tạo chương");
       }
       setChapterDialogOpen(false);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the luu chuong");
+      toast.error(error?.message ?? "Không thể lưu chương");
     } finally {
       setChapterSubmitting(false);
     }
@@ -326,7 +338,7 @@ export default function CourseEditPage() {
     try {
       await setChapterActive({ id: chapter._id, active: !chapter.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat chuong");
+      toast.error(error?.message ?? "Không thể cập nhật chương");
     }
   }
 
@@ -340,21 +352,21 @@ export default function CourseEditPage() {
       await updateChapter({ id: chapter._id, order: target.order });
       await updateChapter({ id: target._id, order: chapter.order });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the doi thu tu");
+      toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
   async function removeChapter(chapter: ChapterDoc) {
-    if (!window.confirm(`Xoa chuong "${chapter.title}"?`)) return;
+    if (!window.confirm(`Xóa chương "${chapter.title}"?`)) return;
     try {
       const result = await deleteChapter({ id: chapter._id });
       if (!result?.ok) {
-        toast.error("Khong the xoa chuong");
+        toast.error("Không thể xóa chương");
         return;
       }
-      toast.success("Da xoa chuong");
+      toast.success("Đã xóa chương");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa chuong");
+      toast.error(error?.message ?? "Không thể xóa chương");
     }
   }
 
@@ -373,7 +385,7 @@ export default function CourseEditPage() {
     const title = values.title.trim();
     const youtubeUrl = values.youtubeUrl.trim();
     if (!title || !youtubeUrl) {
-      toast.error("Can nhap ten va YouTube URL");
+      toast.error("Cần nhập tên và YouTube URL");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -395,7 +407,7 @@ export default function CourseEditPage() {
           order,
           active: values.active,
         } as any);
-        toast.success("Da cap nhat bai hoc");
+        toast.success("Đã cập nhật bài học");
       } else {
         await createLesson({
           courseId,
@@ -408,11 +420,11 @@ export default function CourseEditPage() {
           order,
           active: values.active,
         });
-        toast.success("Da tao bai hoc");
+        toast.success("Đã tạo bài học");
       }
       setLessonDialogOpen(false);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the luu bai hoc");
+      toast.error(error?.message ?? "Không thể lưu bài học");
     } finally {
       setLessonSubmitting(false);
     }
@@ -422,7 +434,7 @@ export default function CourseEditPage() {
     try {
       await setLessonActive({ id: lesson._id, active: !lesson.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat bai hoc");
+      toast.error(error?.message ?? "Không thể cập nhật bài học");
     }
   }
 
@@ -430,7 +442,7 @@ export default function CourseEditPage() {
     try {
       await updateLesson({ id: lesson._id, isPreview: !lesson.isPreview });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat preview");
+      toast.error(error?.message ?? "Không thể cập nhật preview");
     }
   }
 
@@ -445,21 +457,21 @@ export default function CourseEditPage() {
       await updateLesson({ id: lesson._id, order: target.order });
       await updateLesson({ id: target._id, order: lesson.order });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the doi thu tu");
+      toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
   async function removeLesson(lesson: LessonDoc) {
-    if (!window.confirm(`Xoa bai hoc "${lesson.title}"?`)) return;
+    if (!window.confirm(`Xóa bài học "${lesson.title}"?`)) return;
     try {
       const result = await deleteLesson({ id: lesson._id });
       if (!result?.ok) {
-        toast.error("Khong the xoa bai hoc");
+        toast.error("Không thể xóa bài học");
         return;
       }
-      toast.success("Da xoa bai hoc");
+      toast.success("Đã xóa bài học");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa bai hoc");
+      toast.error(error?.message ?? "Không thể xóa bài học");
     }
   }
 
@@ -467,12 +479,12 @@ export default function CourseEditPage() {
     event.preventDefault();
     const userId = enrollForm.userId;
     if (!userId) {
-      toast.error("Vui long chon hoc vien");
+      toast.error("Vui lòng chọn học viên");
       return;
     }
     const studentInfo = studentMap.get(userId);
     if (!studentInfo) {
-      toast.error("Khong tim thay thong tin hoc vien");
+      toast.error("Không tìm thấy thông tin học viên");
       return;
     }
     const orderNumber = Number.parseInt(enrollForm.order, 10);
@@ -488,10 +500,10 @@ export default function CourseEditPage() {
         order,
         lastViewedLessonId: lessonId ? (lessonId as Id<"course_lessons">) : null,
       } as any);
-      toast.success(`a them ${studentInfo.fullName} vao khoa hoc`);
+      toast.success(`Đã thêm ${studentInfo.fullName} vào khóa học`);
       setEnrollForm({ userId: "", order: "", lessonId: "" });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the them hoc vien");
+      toast.error(error?.message ?? "Không thể thêm học viên");
     } finally {
       setEnrollSubmitting(false);
     }
@@ -502,9 +514,9 @@ export default function CourseEditPage() {
     const studentLabel = studentInfo ? `${studentInfo.fullName} (${studentInfo.account})` : enrollment.userId;
     try {
       await setEnrollmentActive({ courseId, userId: enrollment.userId, active: !enrollment.active });
-      toast.success(!enrollment.active ? `Da mo quyen cho ${studentLabel}` : `Da khoa quyen cua ${studentLabel}`);
+      toast.success(!enrollment.active ? `Đã mở quyền cho ${studentLabel}` : `Đã khóa quyền của ${studentLabel}`);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat enrollment");
+      toast.error(error?.message ?? "Không thể cập nhật enrollment");
     }
   }
 
@@ -533,7 +545,7 @@ export default function CourseEditPage() {
     const progressNumber = progressTrim ? Number(progressTrim) : undefined;
     if (progressNumber !== undefined) {
       if (!Number.isFinite(progressNumber) || progressNumber < 0 || progressNumber > 100) {
-        toast.error("Progress phai trong khoang 0-100");
+        toast.error("Progress phải trong khoảng 0-100");
         return;
       }
     }
@@ -547,10 +559,10 @@ export default function CourseEditPage() {
           ? (enrollmentEditForm.lessonId as Id<"course_lessons">)
           : null,
       } as any);
-      toast.success("Da cap nhat progress");
+      toast.success("Đã cập nhật progress");
       closeEnrollmentDialog();
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat progress");
+      toast.error(error?.message ?? "Không thể cập nhật progress");
     } finally {
       setEnrollmentEditSubmitting(false);
     }
@@ -560,36 +572,43 @@ export default function CourseEditPage() {
   async function removeEnrollmentEntry(enrollment: EnrollmentDoc) {
     const studentInfo = studentMap.get(enrollment.userId);
     const studentLabel = studentInfo ? `${studentInfo.fullName} (${studentInfo.account})` : enrollment.userId;
-    if (!window.confirm(`Xoa quyen cua ${studentLabel}?`)) return;
+    if (!window.confirm(`Xóa quyền của ${studentLabel}?`)) return;
     try {
       const result = await removeEnrollment({ courseId, userId: enrollment.userId });
       if (!result?.ok) {
-        toast.error("Khong the xoa enrollment");
+        toast.error("Không thể xóa enrollment");
         return;
       }
-      toast.success(`a xoa quyen hoc cua ${studentLabel}`);
+      toast.success(`Đã xóa quyền học của ${studentLabel}`);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa enrollment");
+      toast.error(error?.message ?? "Không thể xóa enrollment");
     }
   }
 
   if (detail === undefined) {
-    return <div className="p-6 text-sm text-muted-foreground">Dang tai khoa hoc...</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Đang tải khóa học...</div>;
   }
 
   if (!course) {
-    return <div className="p-6 text-sm text-muted-foreground">Khong tim thay khoa hoc.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Không tìm thấy khóa học.</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Quan ly khoa hoc</h1>
-          <p className="text-sm text-muted-foreground">Chinh sua thong tin, chuong va bai hoc.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Quản lý khóa học</h1>
+          <p className="text-sm text-muted-foreground">Chỉnh sửa thông tin, chương và bài học.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => router.push("/dashboard/courses")}>Quay lai</Button>
+          {courseDetailHref && (
+            <Button variant="outline" asChild>
+              <Link href={courseDetailHref} target="_blank" rel="noopener noreferrer">
+                Mo trang cong khai
+              </Link>
+            </Button>
+          )}
           <Button variant="secondary" onClick={toggleCourseActive}>
             {course.active ? "Dang hien" : "Dang an"}
           </Button>

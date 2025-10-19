@@ -59,13 +59,30 @@ const normalizeCourseSlug = (input: string) => {
     .replace(/^-+|-+$/g, '');
 };
 
+const collectUnicodeSlugVariants = (value: string) => {
+  const variants = new Set<string>();
+  const normalizedForms = [
+    value,
+    value.normalize('NFC'),
+    value.normalize('NFD'),
+    value.normalize('NFKC'),
+    value.normalize('NFKD'),
+  ];
+  for (const form of normalizedForms) {
+    const trimmed = form.trim();
+    if (trimmed) {
+      variants.add(trimmed);
+    }
+  }
+  return variants;
+};
+
 const uniqueSlugCandidates = (slug?: string) => {
   if (!slug) return [] as string[];
   const trimmed = slug.trim();
   if (!trimmed) return [] as string[];
+  const candidates = collectUnicodeSlugVariants(trimmed);
   const normalized = normalizeCourseSlug(trimmed);
-  const candidates = new Set<string>();
-  candidates.add(trimmed);
   if (normalized) candidates.add(normalized);
   return Array.from(candidates);
 };
@@ -78,6 +95,16 @@ const findCourseBySlug = async (ctx: AnyCtx, slug: string) => {
       .first();
     if (result) {
       return result as CourseDoc;
+    }
+  }
+  const normalizedTarget = normalizeCourseSlug(slug);
+  if (normalizedTarget) {
+    const allCourses = await ctx.db.query('courses').collect();
+    for (const item of allCourses) {
+      const course = item as CourseDoc;
+      if (normalizeCourseSlug(course.slug) === normalizedTarget) {
+        return course;
+      }
     }
   }
   return null;
@@ -99,12 +126,25 @@ const assertCourseSlugUnique = async (
   slug: string,
   excludeId?: CourseId,
 ) => {
-  const existed = await ctx.db
-    .query("courses")
-    .withIndex("by_slug", (q) => q.eq("slug", slug))
-    .first();
-  if (existed && (!excludeId || existed._id !== excludeId)) {
-    throw new Error("Course slug already exists");
+  for (const candidate of uniqueSlugCandidates(slug)) {
+    const existed = await ctx.db
+      .query("courses")
+      .withIndex("by_slug", (q) => q.eq("slug", candidate))
+      .first();
+    if (existed && (!excludeId || existed._id !== excludeId)) {
+      throw new Error("Course slug already exists");
+    }
+  }
+  const normalizedTarget = normalizeCourseSlug(slug);
+  if (normalizedTarget) {
+    const allCourses = await ctx.db.query("courses").collect();
+    for (const item of allCourses) {
+      const course = item as CourseDoc;
+      if (excludeId && course._id === excludeId) continue;
+      if (normalizeCourseSlug(course.slug) === normalizedTarget) {
+        throw new Error("Course slug already exists");
+      }
+    }
   }
 };
 
@@ -1065,6 +1105,51 @@ export const removeEnrollment = mutation({
     }
     await ctx.db.delete(enrollment._id);
     return { ok: true } as const;
+  },
+});
+
+export const seedSampleCourse = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Create a sample course
+    const courseId = await ctx.db.insert("courses", {
+      slug: "khoa-hoc-mau",
+      title: "Khóa học mẫu",
+      subtitle: "Khóa học demo để kiểm tra",
+      description: "Đây là khóa học mẫu để kiểm tra tính năng trang chi tiết khóa học.",
+      pricingType: "free",
+      isPriceVisible: true,
+      order: 1,
+      active: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Create a chapter
+    const chapterId = await ctx.db.insert("course_chapters", {
+      courseId: courseId,
+      title: "Chương 1: Giới thiệu",
+      order: 1,
+      active: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    // Create a lesson
+    const lessonId = await ctx.db.insert("course_lessons", {
+      courseId: courseId,
+      chapterId: chapterId,
+      title: "Bài 1: Lời mở đầu",
+      description: "Giới thiệu tổng quan về khóa học",
+      youtubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      isPreview: true,
+      order: 1,
+      active: true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return { courseId, chapterId, lessonId };
   },
 });
 
