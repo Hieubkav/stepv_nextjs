@@ -42,7 +42,7 @@ export default function CoursesListPage() {
     try {
       await setCourseActive({ id: course._id, active: !course.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
     }
   }
 
@@ -56,21 +56,21 @@ export default function CoursesListPage() {
       await updateCourse({ id: course._id, order: target.order });
       await updateCourse({ id: target._id, order: course.order });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the doi thu tu");
+      toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
   async function remove(course: CourseDoc) {
-    if (!window.confirm(`Xoa khoa hoc "${course.title}"?`)) return;
+    if (!window.confirm(`Xóa khóa học "${course.title}"?`)) return;
     try {
       const result = await deleteCourse({ id: course._id });
       if (!result?.ok) {
-        toast.error("Khong the xoa khoa hoc");
+        toast.error("Không thể xóa khóa học");
         return;
       }
-      toast.success("Da xoa khoa hoc");
+      toast.success("Đã xóa khóa học");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa khoa hoc");
+      toast.error(error?.message ?? "Không thể xóa khóa học");
     }
   }
 
@@ -78,24 +78,24 @@ export default function CoursesListPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Khoa hoc</h1>
-          <p className="text-sm text-muted-foreground">Quan ly danh sach khoa hoc KISS.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Khóa học</h1>
+          <p className="text-sm text-muted-foreground">Quản lý danh sách khóa học KISS.</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/courses/new">
             <Plus className="mr-2 size-4" />
-            Them khoa hoc
+            Thêm khóa học
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sach khoa hoc</CardTitle>
+          <CardTitle>Danh sách khóa học</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {!courses && <div className="text-sm text-muted-foreground">Dang tai...</div>}
-          {courses && sorted.length === 0 && <div className="text-sm text-muted-foreground">Chua co khoa hoc nao.</div>}
+          {!courses && <div className="text-sm text-muted-foreground">Đang tải...</div>}
+          {courses && sorted.length === 0 && <div className="text-sm text-muted-foreground">Chưa có khóa học nào.</div>}
           {courses && sorted.length > 0 && (
             <div className="space-y-3">
               {sorted.map((course, index) => (
@@ -121,11 +121,11 @@ export default function CoursesListPage() {
                       <div className="text-xs text-muted-foreground">Intro: {course.introVideoUrl}</div>
                     )}
                     <div className="text-xs text-muted-foreground">
-                      Gia: {course.pricingType === "free"
-                        ? "Mien phi"
+                      Giá: {course.pricingType === "free"
+                        ? "Miễn phí"
                         : course.isPriceVisible && course.priceAmount !== undefined
                         ? `${course.priceAmount.toLocaleString()} VND`
-                        : "(an)"}
+                        : "(ẩn)"}
                     </div>
                     {course.priceNote && (
                       <div className="text-xs text-muted-foreground">{course.priceNote}</div>
@@ -134,13 +134,13 @@ export default function CoursesListPage() {
                   <div className="flex items-center gap-3">
                     <label className="inline-flex items-center gap-2 text-sm">
                       <Checkbox checked={course.active} onCheckedChange={() => toggleActive(course)} />
-                      <span>{course.active ? "Dang hien" : "Dang an"}</span>
+                      <span>{course.active ? "Đang hiện" : "Đang ẩn"}</span>
                     </label>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/dashboard/courses/${course._id}/edit`}>
                           <Pencil className="mr-2 size-4" />
-                          Quan ly
+                          Quản lý
                         </Link>
                       </Button>
                       <Button
@@ -148,7 +148,7 @@ export default function CoursesListPage() {
                         size="icon"
                         onClick={() => move(course, "up")}
                         disabled={index === 0}
-                        title="Len thu tu"
+                        title="Lên thứ tự"
                       >
                         <ChevronUp className="size-4" />
                       </Button>
@@ -157,11 +157,11 @@ export default function CoursesListPage() {
                         size="icon"
                         onClick={() => move(course, "down")}
                         disabled={index === sorted.length - 1}
-                        title="Xuong thu tu"
+                        title="Xuống thứ tự"
                       >
                         <ChevronDown className="size-4" />
                       </Button>
-                      <Button variant="destructive" size="icon" onClick={() => remove(course)} title="Xoa">
+                      <Button variant="destructive" size="icon" onClick={() => remove(course)} title="Xóa">
                         <Trash2 className="size-4" />
                       </Button>
                     </div>

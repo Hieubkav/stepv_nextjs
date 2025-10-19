@@ -41,11 +41,11 @@ export default function CourseCreatePage() {
     const title = values.title.trim();
     const slug = values.slug.trim();
     if (!title || !slug) {
-      toast.error("Can nhap tieu de va slug");
+      toast.error("Cần nhập tiêu đề và slug");
       return;
     }
     if (values.pricingType === "paid" && !values.priceAmount.trim()) {
-      toast.error("Khoa hoc tra phi can nhap gia");
+      toast.error("Khóa học trả phí cần nhập giá");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -67,10 +67,10 @@ export default function CourseCreatePage() {
         order: parsedOrder,
         active: values.active,
       });
-      toast.success("Da tao khoa hoc");
+      toast.success("Đã tạo khóa học");
       router.push("/dashboard/courses");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the tao khoa hoc");
+      toast.error(error?.message ?? "Không thể tạo khóa học");
     } finally {
       setSubmitting(false);
     }
@@ -80,13 +80,13 @@ export default function CourseCreatePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Them khoa hoc</CardTitle>
+          <CardTitle>Thêm khóa học</CardTitle>
         </CardHeader>
         <CardContent>
           <CourseForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Tao"
+            submitLabel="Tạo"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/courses")}
           />

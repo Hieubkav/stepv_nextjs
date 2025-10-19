@@ -88,7 +88,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Tieu de</label>
+          <label className="text-sm font-medium">Tiêu đề</label>
           <Input
             value={values.title}
             onChange={(event) => {
@@ -98,7 +98,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
                 update("slug", slugify(title));
               }
             }}
-            placeholder="Vi du: Figma cho nguoi moi"
+            placeholder="Ví dụ: Figma cho người mới"
           />
         </div>
         <div className="space-y-2">
@@ -110,11 +110,11 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Phu de</label>
+          <label className="text-sm font-medium">Phụ đề</label>
           <Input
             value={values.subtitle}
             onChange={(event) => update("subtitle", event.target.value)}
-            placeholder="Mo ta ngan ve khoa hoc"
+            placeholder="Mô tả ngắn về khóa học"
           />
         </div>
         <div className="space-y-2">
@@ -126,7 +126,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           />
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <label className="text-sm font-medium">Mo ta</label>
+          <label className="text-sm font-medium">Mô tả</label>
           <Textarea
             value={values.description}
             onChange={(event) => update("description", event.target.value)}
@@ -134,7 +134,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Loai gia</label>
+          <label className="text-sm font-medium">Loại giá</label>
           <select
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             value={values.pricingType}
@@ -145,7 +145,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           </select>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Gia (VND)</label>
+          <label className="text-sm font-medium">Giá (VND)</label>
           <Input
             type="number"
             value={values.priceAmount}
@@ -156,19 +156,19 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
             step="1000"
           />
           {values.pricingType === "paid" && values.priceAmount && (
-            <p className="text-xs text-muted-foreground">Hien thi: {formatCurrency(values.priceAmount)} VND</p>
+            <p className="text-xs text-muted-foreground">Hiển thị: {formatCurrency(values.priceAmount)} VND</p>
           )}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Ghi chu ve gia</label>
+          <label className="text-sm font-medium">Ghi chú về giá</label>
           <Input
             value={values.priceNote}
             onChange={(event) => update("priceNote", event.target.value)}
-            placeholder="Vi du: Giam 20% den 01/10"
+            placeholder="Ví dụ: Giảm 20% đến 01/10"
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Thu tu</label>
+          <label className="text-sm font-medium">Thứ tự</label>
           <Input
             value={values.order}
             onChange={(event) => update("order", event.target.value)}
@@ -176,31 +176,31 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Trang thai khoa hoc</label>
+          <label className="text-sm font-medium">Trạng thái khóa học</label>
           <label className="inline-flex items-center gap-2 text-sm">
             <Checkbox
               checked={values.active}
               onCheckedChange={(checked) => update("active", Boolean(checked))}
             />
-            <span>{values.active ? "Dang hien" : "Dang an"}</span>
+            <span>{values.active ? "Đang hiện" : "Đang ẩn"}</span>
           </label>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Hien gia</label>
+          <label className="text-sm font-medium">Hiện giá</label>
           <label className="inline-flex items-center gap-2 text-sm">
             <Checkbox
               checked={values.isPriceVisible}
               onCheckedChange={(checked) => update("isPriceVisible", Boolean(checked))}
               disabled={values.pricingType === "free"}
             />
-            <span>{values.isPriceVisible ? "Hien gia" : "An gia"}</span>
+            <span>{values.isPriceVisible ? "Hiện giá" : "Ẩn giá"}</span>
           </label>
         </div>
         <div className="space-y-2 sm:col-span-2">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-medium">Thumbnail (tu media)</div>
-              <p className="text-xs text-muted-foreground">Co the bo trong neu chua co anh.</p>
+              <p className="text-xs text-muted-foreground">Có thể bỏ trống nếu chưa có ảnh.</p>
             </div>
             <div className="flex items-center gap-2">
               {values.thumbnailMediaId && (
@@ -243,7 +243,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Chon anh thumbnail</DialogTitle>
+            <DialogTitle>Chọn ảnh thumbnail</DialogTitle>
           </DialogHeader>
           <div className="grid max-h-[65vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4">
             {(images ?? []).map((image) => {
@@ -275,7 +275,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
             })}
             {(images ?? []).length === 0 && (
               <div className="col-span-full rounded border border-dashed p-4 text-sm text-muted-foreground">
-                Chua co anh nao trong media. Hay tai anh tai trang Media.
+                Chưa có ảnh nào trong media. Hãy tải ảnh tại trang Media.
               </div>
             )}
           </div>

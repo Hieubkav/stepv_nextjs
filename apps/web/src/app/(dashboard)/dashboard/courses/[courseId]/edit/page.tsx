@@ -601,20 +601,20 @@ export default function CourseEditPage() {
           <p className="text-sm text-muted-foreground">Chỉnh sửa thông tin, chương và bài học.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" onClick={() => router.push("/dashboard/courses")}>Quay lai</Button>
+          <Button variant="outline" onClick={() => router.push("/dashboard/courses")}>Quay lại</Button>
           {courseDetailHref && (
             <Button variant="outline" asChild>
               <Link href={courseDetailHref} target="_blank" rel="noopener noreferrer">
-                Mo trang cong khai
+                Mở trang công khai
               </Link>
             </Button>
           )}
           <Button variant="secondary" onClick={toggleCourseActive}>
-            {course.active ? "Dang hien" : "Dang an"}
+            {course.active ? "Đang hiện" : "Đang ẩn"}
           </Button>
           <Button variant="destructive" onClick={handleDeleteCourse}>
             <Trash2 className="mr-2 size-4" />
-            Xoa khoa hoc
+            Xóa khóa học
           </Button>
         </div>
       </div>
@@ -627,7 +627,7 @@ export default function CourseEditPage() {
           <CourseForm
             initialValues={buildCourseInitial(course)}
             submitting={courseSubmitting}
-            submitLabel="Luu"
+            submitLabel="Lưu"
             onSubmit={handleCourseSubmit}
           />
         </CardContent>
@@ -635,14 +635,14 @@ export default function CourseEditPage() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-3">
-          <CardTitle>Chuong</CardTitle>
+          <CardTitle>Chương</CardTitle>
           <Button size="sm" onClick={openCreateChapter}>
             <Plus className="mr-2 size-4" />
-            Them chuong
+            Thêm chương
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          {chapters.length === 0 && <div className="text-sm text-muted-foreground">Chua co chuong nao.</div>}
+          {chapters.length === 0 && <div className="text-sm text-muted-foreground">Chưa có chương nào.</div>}
           {chapters.map((chapter, index) => (
             <div key={String(chapter._id)} className="rounded-md border">
               <div className="flex flex-col gap-3 p-3 sm:flex-row sm:items-start sm:justify-between">
@@ -659,20 +659,20 @@ export default function CourseEditPage() {
                   )}
                   <label className="inline-flex items-center gap-2 text-sm">
                     <Checkbox checked={chapter.active} onCheckedChange={() => toggleChapterActive(chapter)} />
-                    <span>{chapter.active ? "Dang hien" : "Dang an"}</span>
+                    <span>{chapter.active ? "Đang hiện" : "Đang ẩn"}</span>
                   </label>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => openEditChapter(chapter)}>
                     <Pencil className="mr-2 size-4" />
-                    Sua
+                    Sửa
                   </Button>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => moveChapter(chapter, "up")}
                     disabled={index === 0}
-                    title="Len thu tu"
+                    title="Lên thứ tự"
                   >
                     <ChevronUp className="size-4" />
                   </Button>
@@ -681,15 +681,15 @@ export default function CourseEditPage() {
                     size="icon"
                     onClick={() => moveChapter(chapter, "down")}
                     disabled={index === chapters.length - 1}
-                    title="Xuong thu tu"
+                    title="Xuống thứ tự"
                   >
                     <ChevronDown className="size-4" />
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => openCreateLesson(chapter._id)}>
                     <Plus className="mr-2 size-4" />
-                    Them bai hoc
+                    Thêm bài học
                   </Button>
-                  <Button variant="destructive" size="icon" onClick={() => removeChapter(chapter)} title="Xoa">
+                  <Button variant="destructive" size="icon" onClick={() => removeChapter(chapter)} title="Xóa">
                     <Trash2 className="size-4" />
                   </Button>
                 </div>
@@ -723,13 +723,13 @@ export default function CourseEditPage() {
                           )}
                           {lesson.exerciseLink && (
                             <div className="text-xs text-muted-foreground">
-                              Bai tap: <a className="text-primary hover:underline" href={lesson.exerciseLink} target="_blank" rel="noreferrer">{lesson.exerciseLink}</a>
+                              Bài tập: <a className="text-primary hover:underline" href={lesson.exerciseLink} target="_blank" rel="noreferrer">{lesson.exerciseLink}</a>
                             </div>
                           )}
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                             <label className="inline-flex items-center gap-1">
                               <Checkbox checked={lesson.active} onCheckedChange={() => toggleLessonActive(lesson)} />
-                              <span>Dang hien</span>
+                              <span>Đang hiện</span>
                             </label>
                             <label className="inline-flex items-center gap-1">
                               <Checkbox checked={lesson.isPreview ?? false} onCheckedChange={() => toggleLessonPreview(lesson)} />
@@ -740,14 +740,14 @@ export default function CourseEditPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <Button variant="outline" size="sm" onClick={() => openEditLesson(chapter._id, lesson)}>
                             <Pencil className="mr-2 size-4" />
-                            Sua
+                            Sửa
                           </Button>
                           <Button
                             variant="outline"
                             size="icon"
                             onClick={() => moveLesson(chapter, lesson, "up")}
                             disabled={lessonIndex === 0}
-                            title="Len"
+                            title="Lên"
                           >
                             <ChevronUp className="size-4" />
                           </Button>
@@ -756,11 +756,11 @@ export default function CourseEditPage() {
                             size="icon"
                             onClick={() => moveLesson(chapter, lesson, "down")}
                             disabled={lessonIndex === chapter.lessons.length - 1}
-                            title="Xuong"
+                            title="Xuống"
                           >
                             <ChevronDown className="size-4" />
                           </Button>
-                          <Button variant="destructive" size="icon" onClick={() => removeLesson(lesson)} title="Xoa">
+                          <Button variant="destructive" size="icon" onClick={() => removeLesson(lesson)} title="Xóa">
                             <Trash2 className="size-4" />
                           </Button>
                         </div>
@@ -780,18 +780,18 @@ export default function CourseEditPage() {
         <CardContent className="space-y-4">
           <form className="grid gap-3 sm:grid-cols-4" onSubmit={handleAddEnrollment}>
             <div className="sm:col-span-2">
-              <label className="text-sm font-medium">Hoc vien</label>
+              <label className="text-sm font-medium">Học viên</label>
               {students === undefined ? (
-                <div className="text-xs text-muted-foreground">ang tai danh sach hoc vien...</div>
+                <div className="text-xs text-muted-foreground">Đang tải danh sách học viên...</div>
               ) : studentOptions.length === 0 ? (
-                <div className="text-xs text-muted-foreground">Chua co hoc vien e gan.</div>
+                <div className="text-xs text-muted-foreground">Chưa có học viên để gán.</div>
               ) : (
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   value={enrollForm.userId}
                   onChange={(event) => setEnrollForm((prev) => ({ ...prev, userId: event.target.value }))}
                 >
-                  <option value="">-- Chon hoc vien --</option>
+                  <option value="">-- Chọn học viên --</option>
                   {studentOptions.map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.label}
@@ -801,21 +801,21 @@ export default function CourseEditPage() {
               )}
             </div>
             <div>
-              <label className="text-sm font-medium">Thu tu (tuy chon)</label>
+              <label className="text-sm font-medium">Thứ tự (tùy chọn)</label>
               <Input
                 value={enrollForm.order}
                 onChange={(event) => setEnrollForm((prev) => ({ ...prev, order: event.target.value }))}
-                placeholder="Tu ong"
+                placeholder="Tự động"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Bai hoc cuoi (tuy chon)</label>
+              <label className="text-sm font-medium">Bài học cuối (tùy chọn)</label>
               <select
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                 value={enrollForm.lessonId}
                 onChange={(event) => setEnrollForm((prev) => ({ ...prev, lessonId: event.target.value }))}
               >
-                <option value="">Chua chon</option>
+                <option value="">Chưa chọn</option>
                 {lessonOptions.map((lesson) => (
                   <option key={lesson.id} value={lesson.id}>
                     {lesson.label}
@@ -825,14 +825,14 @@ export default function CourseEditPage() {
             </div>
             <div className="sm:col-span-4 flex justify-end">
               <Button type="submit" disabled={enrollSubmitting || studentOptions.length === 0}>
-                {enrollSubmitting ? "ang luu..." : "Gan hoc vien"}
+                {enrollSubmitting ? "Đang lưu..." : "Gán học viên"}
               </Button>
             </div>
           </form>
           <Separator />
-          {!enrollments && <div className="text-sm text-muted-foreground">Dang tai enrollment...</div>}
+          {!enrollments && <div className="text-sm text-muted-foreground">Đang tải enrollment...</div>}
           {enrollments && enrollments.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chua co enrollment nao.</div>
+            <div className="text-sm text-muted-foreground">Chưa có enrollment nào.</div>
           )}
           {enrollments && enrollments.length > 0 && (
             <div className="space-y-2">
@@ -852,23 +852,23 @@ export default function CourseEditPage() {
                           : enrollment.userId;
                         return (
                           <>
-                            <div className="font-medium">Hoc vien: {studentLabel}</div>
+                            <div className="font-medium">Học viên: {studentLabel}</div>
                             <div className="text-xs text-muted-foreground">order #{enrollment.order}</div>
                             <div className="text-xs text-muted-foreground">
                               Progress: {enrollment.progressPercent ?? 0}%
                             </div>
                             <div className="text-xs text-muted-foreground">
-                              Bai hoc cuoi:
+                              Bài học cuối:
                               {enrollment.lastViewedLessonId
                                 ? lessonOptions.find((lesson) => lesson.id === String(enrollment.lastViewedLessonId))?.label ?? String(enrollment.lastViewedLessonId)
-                                : " (chua xem)"}
+                                : " (chưa xem)"}
                             </div>
                             <label className="inline-flex items-center gap-2 text-sm">
                               <Checkbox
                                 checked={enrollment.active}
                                 onCheckedChange={() => toggleEnrollmentActive(enrollment)}
                               />
-                              <span>{enrollment.active ? "ang hoat ong" : "Bi khoa"}</span>
+                              <span>{enrollment.active ? "Đang hoạt động" : "Bị khóa"}</span>
                             </label>
                           </>
                         );
@@ -877,7 +877,7 @@ export default function CourseEditPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => editEnrollment(enrollment)}>
                         <Pencil className="mr-2 size-4" />
-                        Cap nhat
+                        Cập nhật
                       </Button>
                       <Button variant="destructive" size="icon" onClick={() => removeEnrollmentEntry(enrollment)}>
                         <Trash2 className="size-4" />
@@ -893,12 +893,12 @@ export default function CourseEditPage() {
       <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>{editingChapter ? "Sua chuong" : "Them chuong"}</DialogTitle>
+            <DialogTitle>{editingChapter ? "Sửa chương" : "Thêm chương"}</DialogTitle>
           </DialogHeader>
           <ChapterForm
             initialValues={buildChapterInitial(editingChapter ?? undefined)}
             submitting={chapterSubmitting}
-            submitLabel={editingChapter ? "Luu" : "Tao"}
+            submitLabel={editingChapter ? "Lưu" : "Tạo"}
             onSubmit={handleChapterSubmit}
             onCancel={() => setChapterDialogOpen(false)}
           />
@@ -915,32 +915,32 @@ export default function CourseEditPage() {
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Cap nhat enrollment</DialogTitle>
+            <DialogTitle>Cập nhật enrollment</DialogTitle>
           </DialogHeader>
           {editingEnrollment ? (
             <form className="space-y-4" onSubmit={handleEnrollmentEditSubmit}>
               <div className="space-y-2">
                 <div className="text-sm text-muted-foreground">
-                  Hoc vien: {studentMap.get(editingEnrollment.userId)?.fullName ?? editingEnrollment.userId}
+                  Học viên: {studentMap.get(editingEnrollment.userId)?.fullName ?? editingEnrollment.userId}
                 </div>
                 <label className="text-sm font-medium">Progress (0-100)</label>
                 <Input
                   value={enrollmentEditForm.progress}
                   onChange={(event) => setEnrollmentEditForm((prev) => ({ ...prev, progress: event.target.value }))}
-                  placeholder="Vi du: 80"
+                  placeholder="Ví dụ: 80"
                   type="number"
                   min="0"
                   max="100"
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Bai hoc cuoi</label>
+                <label className="text-sm font-medium">Bài học cuối</label>
                 <select
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                   value={enrollmentEditForm.lessonId}
                   onChange={(event) => setEnrollmentEditForm((prev) => ({ ...prev, lessonId: event.target.value }))}
                 >
-                  <option value="">Chua chon</option>
+                  <option value="">Chưa chọn</option>
                   {lessonOptions.map((lesson) => (
                     <option key={lesson.id} value={lesson.id}>
                       {lesson.label}
@@ -950,15 +950,15 @@ export default function CourseEditPage() {
               </div>
               <div className="flex items-center justify-end gap-2">
                 <Button type="button" variant="outline" onClick={closeEnrollmentDialog} disabled={enrollmentEditSubmitting}>
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={enrollmentEditSubmitting}>
-                  {enrollmentEditSubmitting ? "Dang luu..." : "Luu"}
+                  {enrollmentEditSubmitting ? "Đang lưu..." : "Lưu"}
                 </Button>
               </div>
             </form>
           ) : (
-            <div className="text-sm text-muted-foreground">Khong co hoc vien duoc chon.</div>
+            <div className="text-sm text-muted-foreground">Không có học viên được chọn.</div>
           )}
         </DialogContent>
       </Dialog>
@@ -966,12 +966,12 @@ export default function CourseEditPage() {
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>{lessonContext?.lesson ? "Sua bai hoc" : "Them bai hoc"}</DialogTitle>
+            <DialogTitle>{lessonContext?.lesson ? "Sửa bài học" : "Thêm bài học"}</DialogTitle>
           </DialogHeader>
           <LessonForm
             initialValues={buildLessonInitial(lessonContext?.lesson)}
             submitting={lessonSubmitting}
-            submitLabel={lessonContext?.lesson ? "Luu" : "Tao"}
+            submitLabel={lessonContext?.lesson ? "Lưu" : "Tạo"}
             onSubmit={handleLessonSubmit}
             onCancel={() => setLessonDialogOpen(false)}
           />

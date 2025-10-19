@@ -16,10 +16,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 const RANGE_OPTIONS = [
-  { value: "today", label: "Hom nay" },
-  { value: "month", label: "Thang nay" },
-  { value: "year", label: "Nam nay" },
-  { value: "all", label: "Tat ca" },
+  { value: "today", label: "Hôm nay" },
+  { value: "month", label: "Tháng này" },
+  { value: "year", label: "Năm nay" },
+  { value: "all", label: "Tất cả" },
 ] as const;
 
 type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
@@ -59,27 +59,27 @@ export function VisitorOverview() {
   }> = [
     {
       key: "totalVisits",
-      label: "Luot truy cap",
+      label: "Lượt truy cập",
       value: stats?.totalVisits ?? 0,
       hint: rangeOption?.label ? `Trong ${rangeOption.label.toLowerCase()}` : undefined,
     },
     {
       key: "uniqueVisitors",
-      label: "Khach duy nhat",
+      label: "Khách duy nhất",
       value: stats?.uniqueVisitors ?? 0,
       hint: "Theo visitorId",
     },
     {
       key: "uniqueSessions",
-      label: "So phien",
+      label: "Số phiên",
       value: stats?.uniqueSessions ?? 0,
-      hint: "Tong so session",
+      hint: "Tổng số session",
     },
     {
       key: "activeNow",
-      label: "Dang online",
+      label: "Đang online",
       value: stats?.activeNow ?? 0,
-      hint: "Trong 5 phut gan nhat",
+      hint: "Trong 5 phút gần nhất",
       highlight: true,
     },
   ];
@@ -89,10 +89,10 @@ export function VisitorOverview() {
       <Card>
         <CardHeader className="gap-4 md:flex md:flex-row md:items-center md:justify-between">
           <div>
-            <CardTitle>Theo doi visitor</CardTitle>
+            <CardTitle>Theo dõi visitor</CardTitle>
             <CardDescription>
-              Cap nhat {rangeOption?.label?.toLowerCase() ?? "thoi gian"}
-              {updatedAt ? ` - lan cuoi ${updatedAt}` : ""}
+              Cập nhật {rangeOption?.label?.toLowerCase() ?? "thời gian"}
+              {updatedAt ? ` - lần cuối ${updatedAt}` : ""}
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -127,10 +127,10 @@ export function VisitorOverview() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Luot truy cap theo thoi gian</CardTitle>
+          <CardTitle>Lượt truy cập theo thời gian</CardTitle>
           <CardDescription>
-            {rangeOption?.label ?? "Tat ca"}
-            {timeline.length === 0 && !isLoading ? " - khong co du lieu" : ""}
+            {rangeOption?.label ?? "Tất cả"}
+            {timeline.length === 0 && !isLoading ? " - không có dữ liệu" : ""}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -225,7 +225,7 @@ function TimelineSkeleton() {
 function EmptyState() {
   return (
     <div className="flex h-32 flex-col items-center justify-center rounded-md border border-dashed text-center text-sm text-muted-foreground">
-      Chua co luot truy cap nao cho bo loc nay.
+      Chưa có lượt truy cập nào cho bộ lọc này.
     </div>
   );
 }

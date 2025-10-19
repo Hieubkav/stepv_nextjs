@@ -39,7 +39,7 @@ export default function LibraryListPage() {
     try {
       await setResourceActive({ id: resource._id as any, active: !resource.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
     }
   }
 
@@ -47,17 +47,17 @@ export default function LibraryListPage() {
     try {
       await updateResource({ id: resource._id as any, isDownloadVisible: !resource.isDownloadVisible });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat link tai");
+      toast.error(error?.message ?? "Không thể cập nhật link tải");
     }
   }
 
   async function handleDelete(resource: ResourceDoc) {
-    if (!window.confirm(`Xoa tai nguyen "${resource.title}"?`)) return;
+    if (!window.confirm(`Xóa tài nguyên "${resource.title}"?`)) return;
     try {
       await deleteResource({ id: resource._id as any });
-      toast.success("Da xoa tai nguyen");
+      toast.success("Đã xóa tài nguyên");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa tai nguyen");
+      toast.error(error?.message ?? "Không thể xóa tài nguyên");
     }
   }
 
@@ -71,7 +71,7 @@ export default function LibraryListPage() {
       await updateResource({ id: resource._id as any, order: target.order });
       await updateResource({ id: target._id as any, order: resource.order });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the doi thu tu");
+      toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
@@ -79,25 +79,25 @@ export default function LibraryListPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Thu vien - Tai nguyen</h1>
-          <p className="text-sm text-muted-foreground">Quan ly danh sach resource hien thi o trang /thu-vien.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Thư viện - Tài nguyên</h1>
+          <p className="text-sm text-muted-foreground">Quản lý danh sách resource hiển thị ở trang /thu-vien.</p>
         </div>
         <Button asChild>
           <Link href="/dashboard/library/new">
             <Plus className="mr-2 size-4" />
-            Them tai nguyen
+            Thêm tài nguyên
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sach tai nguyen</CardTitle>
+          <CardTitle>Danh sách tài nguyên</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {!resources && <div className="text-sm text-muted-foreground">Dang tai...</div>}
+          {!resources && <div className="text-sm text-muted-foreground">Đang tải...</div>}
           {resources && sorted.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chua co tai nguyen nao.</div>
+            <div className="text-sm text-muted-foreground">Chưa có tài nguyên nào.</div>
           )}
           {resources && sorted.length > 0 && (
             <div className="space-y-3">
@@ -122,7 +122,7 @@ export default function LibraryListPage() {
                     )}
                     {resource.features && resource.features.length > 0 && (
                       <div className="text-xs text-muted-foreground">
-                        Tinh nang: {resource.features.join(", ")}
+                        Tính năng: {resource.features.join(", ")}
                       </div>
                     )}
                   </div>
@@ -131,14 +131,14 @@ export default function LibraryListPage() {
                     <div className="flex flex-col items-start gap-2 text-xs text-muted-foreground">
                       <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox checked={resource.active} onCheckedChange={() => handleToggleActive(resource)} />
-                        <span>{resource.active ? "Dang hien" : "Dang an"}</span>
+                        <span>{resource.active ? "Đang hiện" : "Đang ẩn"}</span>
                       </label>
                       <label className="inline-flex cursor-pointer items-center gap-2 text-sm">
                         <Checkbox
                           checked={resource.isDownloadVisible}
                           onCheckedChange={() => handleToggleDownload(resource)}
                         />
-                        <span>Link tai {resource.isDownloadVisible ? "hien" : "an"}</span>
+                        <span>Link tải {resource.isDownloadVisible ? "hiện" : "ẩn"}</span>
                       </label>
                     </div>
                     <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function LibraryListPage() {
                         size="icon"
                         onClick={() => move(resource, "up")}
                         disabled={index === 0}
-                        title="Len"
+                        title="Lên"
                       >
                         <ChevronUp className="size-4" />
                       </Button>
@@ -162,7 +162,7 @@ export default function LibraryListPage() {
                         size="icon"
                         onClick={() => move(resource, "down")}
                         disabled={index === sorted.length - 1}
-                        title="Xuong"
+                        title="Xuống"
                       >
                         <ChevronDown className="size-4" />
                       </Button>
@@ -170,7 +170,7 @@ export default function LibraryListPage() {
                         variant="destructive"
                         size="icon"
                         onClick={() => handleDelete(resource)}
-                        title="Xoa"
+                        title="Xóa"
                       >
                         <Trash2 className="size-4" />
                       </Button>
