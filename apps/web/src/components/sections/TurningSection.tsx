@@ -102,10 +102,16 @@ const TurningSection = ({
           <div className="space-y-8">
             {/* Founder Signature */}
             <div className="space-y-4">
-              <div
-                className="w-full h-32 bg-contain bg-center bg-no-repeat"
-                style={{ backgroundImage: `url('${signatureImage}')` }}
-              />
+              {signatureImage && (
+                <div className="overflow-hidden rounded-lg border border-white/10 max-w-[160px] aspect-square">
+                  <img
+                    src={signatureImage}
+                    alt={founderName ? `Ảnh của ${founderName}` : 'Ảnh người sáng lập'}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )}
               <div>
                 <h3 className="text-white font-light text-2xl leading-tight font-sans">
                   {founderName}
