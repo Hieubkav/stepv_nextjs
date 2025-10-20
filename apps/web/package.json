@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "postbuild": "node ./scripts/postbuild-cleanup.mjs",
     "start": "next start",
     "postinstall": "fumadocs-mdx"
   },
