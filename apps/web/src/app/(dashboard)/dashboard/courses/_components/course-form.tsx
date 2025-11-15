@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@dohy/backend/convex/_generated/api";
+import { Image as ImageIcon, X } from "lucide-react";
 
 export type CourseFormValues = {
   title: string;
@@ -241,46 +242,165 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
       </div>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="w-[calc(100vw-2rem)] md:max-w-6xl lg:max-w-7xl max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Chọn ảnh thumbnail</DialogTitle>
+            <DialogTitle className="text-xl">Chọn ảnh thumbnail</DialogTitle>
           </DialogHeader>
-          <div className="grid max-h-[65vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4">
-            {(images ?? []).map((image) => {
+          
+          <CourseThumbnailPicker
+            images={images ?? []}
+            selectedId={values.thumbnailMediaId}
+            onSelect={(id) => {
+              update("thumbnailMediaId", id);
+              setPickerOpen(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </form>
+  );
+}
+
+type CourseThumbnailPickerProps = {
+  images: any[];
+  selectedId: string;
+  onSelect: (id: string) => void;
+};
+
+function CourseThumbnailPicker({ images, selectedId, onSelect }: CourseThumbnailPickerProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredImages = useMemo(() => {
+    if (!searchQuery.trim()) return images;
+    const query = searchQuery.toLowerCase();
+    return images.filter((img: any) => {
+      const title = img.title || "";
+      const id = String(img._id);
+      return title.toLowerCase().includes(query) || id.toLowerCase().includes(query);
+    });
+  }, [images, searchQuery]);
+
+  const isEmpty = images.length === 0;
+  const hasNoResults = filteredImages.length === 0 && searchQuery;
+
+  return (
+    <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+      {/* Search Bar */}
+      <div className="relative">
+        <Input
+          type="text"
+          placeholder="Tìm kiếm ảnh thumbnail..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pr-8"
+          aria-label="Tìm kiếm ảnh thumbnail"
+        />
+        {searchQuery && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+            onClick={() => setSearchQuery("")}
+            aria-label="Xóa tìm kiếm"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Images Grid */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              Chưa có ảnh nào
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Chưa có ảnh nào trong media. Hãy tải ảnh tại trang Media.
+            </p>
+          </div>
+        ) : hasNoResults ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              Không tìm thấy kết quả
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Thử tìm kiếm với từ khóa khác
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => setSearchQuery("")}
+            >
+              Xóa bộ lọc
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredImages.map((image: any) => {
               const id = String(image._id);
-              const isSelected = id === values.thumbnailMediaId;
+              const isSelected = id === selectedId;
               return (
                 <button
                   key={id}
                   type="button"
-                  className={`flex flex-col items-center gap-2 rounded border border-input bg-background p-3 text-sm transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary ${
-                    isSelected ? "border-primary ring-2 ring-primary" : ""
-                  }`}
-                  onClick={() => {
-                    update("thumbnailMediaId", id);
-                    setPickerOpen(false);
-                  }}
+                  className={`
+                    group
+                    rounded-lg border bg-card
+                    text-left transition-all
+                    hover:border-primary
+                    focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                    min-h-[44px] min-w-[44px]
+                    ${isSelected ? "border-primary ring-2 ring-primary" : ""}
+                  `}
+                  onClick={() => onSelect(id)}
+                  aria-label={`Chọn ${image.title || "ảnh thumbnail"}`}
                 >
                   {image.url ? (
-                    <img src={image.url} alt={image.title || "preview"} className="h-32 w-full object-cover" />
+                    <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
+                      <img 
+                        src={image.url} 
+                        alt={image.title || "preview"} 
+                        className="h-full w-full object-contain p-2"
+                        loading="lazy"
+                      />
+                      <div className={`
+                        absolute inset-0 transition-colors
+                        ${isSelected ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/10"}
+                      `} />
+                    </div>
                   ) : (
-                    <div className="flex h-32 w-full items-center justify-center rounded border border-dashed text-xs text-muted-foreground">
-                      No URL
+                    <div className="flex h-40 w-full items-center justify-center rounded-t-lg bg-muted">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
                     </div>
                   )}
-                  <span className="w-full truncate text-xs text-muted-foreground">{image.title || "Không tên"}</span>
-                  <span className="w-full truncate text-[10px] text-muted-foreground/70">{id}</span>
+                  <div className="p-3">
+                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                      {image.title || "Không tên"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {id}
+                    </p>
+                  </div>
                 </button>
               );
             })}
-            {(images ?? []).length === 0 && (
-              <div className="col-span-full rounded border border-dashed p-4 text-sm text-muted-foreground">
-                Chưa có ảnh nào trong media. Hãy tải ảnh tại trang Media.
-              </div>
-            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </form>
+        )}
+      </div>
+
+      {/* Footer Info */}
+      {!isEmpty && (
+        <div className="text-sm text-muted-foreground text-center pt-2 border-t">
+          Hiển thị {filteredImages.length} ảnh
+          {searchQuery && ` (từ ${images.length} tổng cộng)`}
+        </div>
+      )}
+    </div>
   );
 }

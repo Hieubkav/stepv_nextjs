@@ -507,39 +507,166 @@ type MediaPickerDialogProps = {
 function MediaPickerDialog({ kind, open, onOpenChange, onSelect }: MediaPickerDialogProps) {
   const media = useQuery(api.media.list, { kind: kind as any });
   const isVideo = kind === "video";
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredMedia = useMemo(() => {
+    if (!media) return [];
+    if (!searchQuery.trim()) return media;
+    
+    const query = searchQuery.toLowerCase();
+    return media.filter((item: any) => {
+      const title = item.title || "";
+      return title.toLowerCase().includes(query);
+    });
+  }, [media, searchQuery]);
+
+  const isLoading = !media;
+  const isEmpty = media && media.length === 0;
+  const hasNoResults = filteredMedia.length === 0 && searchQuery;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-[calc(100vw-2rem)] md:max-w-6xl lg:max-w-7xl max-h-[85vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>{isVideo ? "Chọn video từ Media" : "Chọn ảnh từ Media"}</DialogTitle>
+          <DialogTitle className="text-xl">{isVideo ? "Chọn video từ Media" : "Chọn ảnh từ Media"}</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-          {media?.map((item: any) => {
-            const mediaUrl = isVideo ? item.externalUrl : item.url;
-            const title = item.title || (isVideo ? "Video" : "Ảnh");
-            return (
-              <button
-                key={String(item._id)}
+
+        <div className="space-y-4 flex-1 min-h-0 flex flex-col">
+          {/* Search Bar */}
+          <div className="relative">
+            <Input
+              type="text"
+              placeholder={isVideo ? "Tìm kiếm video..." : "Tìm kiếm ảnh..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pr-8"
+              aria-label={isVideo ? "Tìm kiếm video" : "Tìm kiếm ảnh"}
+            />
+            {searchQuery && (
+              <Button
                 type="button"
-                onClick={() => mediaUrl && onSelect(mediaUrl)}
-                className="rounded border p-1 text-left transition hover:ring-2 hover:ring-ring"
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={() => setSearchQuery("")}
+                aria-label="Xóa tìm kiếm"
               >
-                {mediaUrl ? (
-                  isVideo ? (
-                    <video src={mediaUrl} className="h-24 w-full rounded object-cover" />
-                  ) : (
-                    <img src={mediaUrl} alt={title} className="h-24 w-full rounded object-cover" />
-                  )
-                ) : (
-                  <div className="flex h-24 w-full items-center justify-center rounded bg-muted text-xs">Không có URL</div>
-                )}
-                <div className="mt-1 truncate px-1 text-xs">{title}</div>
-              </button>
-            );
-          })}
-          {!media ? <div className="text-sm text-muted-foreground">Đang tải...</div> : null}
-          {media && media.length === 0 ? <div className="text-sm text-muted-foreground">Chưa có media</div> : null}
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          {/* Media Grid */}
+          <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="rounded-lg border bg-muted animate-pulse">
+                    <div className="h-40 w-full rounded-t-lg bg-muted-foreground/10" />
+                    <div className="p-3">
+                      <div className="h-4 w-3/4 rounded bg-muted-foreground/10" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : isEmpty ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+                <p className="text-lg font-medium text-muted-foreground mb-2">
+                  {isVideo ? "Chưa có video nào" : "Chưa có ảnh nào"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Hãy thêm media từ trang Quản lý Media
+                </p>
+              </div>
+            ) : hasNoResults ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+                <p className="text-lg font-medium text-muted-foreground mb-2">
+                  Không tìm thấy kết quả
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Thử tìm kiếm với từ khóa khác
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-4"
+                  onClick={() => setSearchQuery("")}
+                >
+                  Xóa bộ lọc
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredMedia.map((item: any) => {
+                  const mediaUrl = isVideo ? item.externalUrl : item.url;
+                  const title = item.title || (isVideo ? "Video" : "Ảnh");
+                  return (
+                    <button
+                      key={String(item._id)}
+                      type="button"
+                      onClick={() => mediaUrl && onSelect(mediaUrl)}
+                      className="
+                        group
+                        rounded-lg border bg-card
+                        text-left
+                        transition-all
+                        hover:border-primary
+                        focus:outline-none
+                        focus:ring-2 focus:ring-ring focus:ring-offset-2
+                        min-h-[44px] min-w-[44px]
+                      "
+                      aria-label={`Chọn ${title}`}
+                    >
+                      {mediaUrl ? (
+                        <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
+                          {isVideo ? (
+                            <video 
+                              src={mediaUrl} 
+                              className="h-full w-full object-contain"
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img 
+                              src={mediaUrl} 
+                              alt={title} 
+                              className="h-full w-full object-contain p-2"
+                              loading="lazy"
+                            />
+                          )}
+                          <div className="
+                            absolute inset-0 
+                            bg-black/0 
+                            group-hover:bg-black/10 
+                            transition-colors
+                          " />
+                        </div>
+                      ) : (
+                        <div className="flex h-40 w-full items-center justify-center rounded-t-lg bg-muted">
+                          <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+                        </div>
+                      )}
+                      <div className="p-3">
+                        <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                          {title}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Footer Info */}
+          {!isLoading && !isEmpty && (
+            <div className="text-sm text-muted-foreground text-center pt-2 border-t">
+              Hiển thị {filteredMedia.length} {isVideo ? "video" : "ảnh"}
+              {searchQuery && ` (từ ${media?.length || 0} tổng cộng)`}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

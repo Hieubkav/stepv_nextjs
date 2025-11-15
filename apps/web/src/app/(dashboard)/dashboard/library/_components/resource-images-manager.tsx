@@ -5,10 +5,11 @@ import { useMutation, useQuery } from "convex/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { toast } from "sonner";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Image as ImageIcon, Plus, Trash2, X } from "lucide-react";
 
 type ResourceImagesManagerProps = {
   resourceId: string;
@@ -236,71 +237,210 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
       </Card>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="w-[calc(100vw-2rem)] md:max-w-6xl lg:max-w-7xl max-h-[85vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>Chọn ảnh từ media</DialogTitle>
+            <DialogTitle className="text-xl">Chọn ảnh từ media</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 min-h-0 flex flex-col">
             {Array.isArray(mediaList) ? (
               <>
-                <div className="grid max-h-[60vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3 md:grid-cols-4">
-                  {availableMedia.map((img: any) => {
-                    const id = String(img._id);
-                    const checked = selectedMediaIds.includes(id);
-                    return (
-                      <div
-                        key={id}
-                        role="button"
-                        tabIndex={0}
-                        className={`relative flex flex-col items-center gap-2 rounded border p-3 text-sm transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary ${
-                          checked ? "border-primary ring-2 ring-primary" : ""
-                        }`}
-                        onClick={() => toggleSelect(id)}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter" || event.key === " ") {
-                            event.preventDefault();
-                            toggleSelect(id);
-                          }
-                        }}
-                      >
-                        {img.url ? (
-                          <img src={img.url} alt={img.title || "media"} className="h-32 w-full rounded object-cover" />
-                        ) : (
-                          <div className="flex h-32 w-full items-center justify-center rounded border border-dashed text-xs text-muted-foreground">
-                            No preview
-                          </div>
-                        )}
-                        <span className="w-full truncate text-xs text-muted-foreground">{img.title || id}</span>
-                        <span className="w-full truncate text-[10px] text-muted-foreground/70">{id}</span>
-                        <Checkbox
-                          className="pointer-events-none absolute right-2 top-2"
-                          checked={checked}
-                          aria-hidden
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-                {availableMedia.length === 0 && (
-                  <p className="text-sm text-muted-foreground">
-                    Tất cả media đã được sử dụng hoặc chưa có ảnh nào trong thư viện. Hãy tải ảnh mới tại trang Media.
-                  </p>
-                )}
+                {/* Search Bar */}
+                <ResourceImageSearchBar 
+                  availableMedia={availableMedia}
+                  selectedMediaIds={selectedMediaIds}
+                  toggleSelect={toggleSelect}
+                  adding={adding}
+                  onClose={() => setPickerOpen(false)}
+                  onAddSelected={handleAddSelected}
+                />
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Đang tải danh sách media...</p>
+              <div className="flex-1 flex items-center justify-center">
+                <p className="text-sm text-muted-foreground">Đang tải danh sách media...</p>
+              </div>
             )}
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => setPickerOpen(false)}>
-                Hủy
-              </Button>
-              <Button onClick={handleAddSelected} disabled={!selectedMediaIds.length || adding}>
-                {adding ? "Đang thêm..." : `Thêm ${selectedMediaIds.length} ảnh`}
-              </Button>
-            </div>
           </div>
         </DialogContent>
       </Dialog>
+    </>
+  );
+}
+
+type ResourceImageSearchBarProps = {
+  availableMedia: any[];
+  selectedMediaIds: string[];
+  toggleSelect: (id: string) => void;
+  adding: boolean;
+  onClose: () => void;
+  onAddSelected: () => void;
+};
+
+function ResourceImageSearchBar({ 
+  availableMedia, 
+  selectedMediaIds, 
+  toggleSelect, 
+  adding, 
+  onClose, 
+  onAddSelected 
+}: ResourceImageSearchBarProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredMedia = useMemo(() => {
+    if (!searchQuery.trim()) return availableMedia;
+    const query = searchQuery.toLowerCase();
+    return availableMedia.filter((item: any) => {
+      const title = item.title || "";
+      return title.toLowerCase().includes(query);
+    });
+  }, [availableMedia, searchQuery]);
+
+  const hasNoResults = filteredMedia.length === 0 && searchQuery;
+  const isEmpty = availableMedia.length === 0;
+
+  return (
+    <>
+      {/* Search Bar */}
+      <div className="relative">
+        <Input
+          type="text"
+          placeholder="Tìm kiếm ảnh..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pr-8"
+          aria-label="Tìm kiếm ảnh"
+        />
+        {searchQuery && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+            onClick={() => setSearchQuery("")}
+            aria-label="Xóa tìm kiếm"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Media Grid */}
+      <div className="flex-1 min-h-0 overflow-y-auto pr-2">
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              Chưa có ảnh nào
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Tất cả media đã được sử dụng hoặc chưa có ảnh nào trong thư viện.
+            </p>
+          </div>
+        ) : hasNoResults ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
+            <p className="text-lg font-medium text-muted-foreground mb-2">
+              Không tìm thấy kết quả
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Thử tìm kiếm với từ khóa khác
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-4"
+              onClick={() => setSearchQuery("")}
+            >
+              Xóa bộ lọc
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredMedia.map((img: any) => {
+              const id = String(img._id);
+              const checked = selectedMediaIds.includes(id);
+              return (
+                <div
+                  key={id}
+                  role="button"
+                  tabIndex={0}
+                  className={`
+                    group
+                    relative rounded-lg border bg-card
+                    text-left transition-all
+                    hover:border-primary
+                    focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+                    min-h-[44px] min-w-[44px]
+                    ${checked ? "border-primary ring-2 ring-primary" : ""}
+                  `}
+                  onClick={() => toggleSelect(id)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      toggleSelect(id);
+                    }
+                  }}
+                  aria-label={`${checked ? "Bỏ chọn" : "Chọn"} ${img.title || "ảnh"}`}
+                >
+                  {img.url ? (
+                    <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
+                      <img 
+                        src={img.url} 
+                        alt={img.title || "media"} 
+                        className="h-full w-full object-contain p-2"
+                        loading="lazy"
+                      />
+                      <div className={`
+                        absolute inset-0 transition-colors
+                        ${checked ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/10"}
+                      `} />
+                    </div>
+                  ) : (
+                    <div className="flex h-40 w-full items-center justify-center rounded-t-lg bg-muted">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                      {img.title || id}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {id}
+                    </p>
+                  </div>
+                  <Checkbox
+                    className="pointer-events-none absolute right-3 top-3 bg-white shadow-sm"
+                    checked={checked}
+                    aria-hidden
+                  />
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t">
+        <div className="text-sm text-muted-foreground">
+          {selectedMediaIds.length > 0 && (
+            <span>Đã chọn {selectedMediaIds.length} ảnh</span>
+          )}
+          {searchQuery && !isEmpty && (
+            <span className="ml-2">
+              (Hiển thị {filteredMedia.length}/{availableMedia.length})
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={onClose} disabled={adding}>
+            Hủy
+          </Button>
+          <Button onClick={onAddSelected} disabled={!selectedMediaIds.length || adding}>
+            {adding ? "Đang thêm..." : selectedMediaIds.length > 0 ? `Thêm ${selectedMediaIds.length} ảnh` : "Thêm ảnh"}
+          </Button>
+        </div>
+      </div>
     </>
   );
 }
