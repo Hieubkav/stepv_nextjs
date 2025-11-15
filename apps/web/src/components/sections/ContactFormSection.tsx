@@ -286,30 +286,30 @@ const ContactFormSection = ({
   };
 
   return (
-    <section id="contact" className={`relative py-20 text-white min-h-screen ${resolvedBackground}`}>
-      {shouldOverlay && <div className="absolute inset-0 bg-black/55" aria-hidden="true" />}
+    <section id="contact" className={`relative py-24 text-white min-h-screen ${resolvedBackground}`}>
+      {shouldOverlay && <div className="absolute inset-0 bg-black/40" aria-hidden="true" />}
       <div className="relative container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="overflow-hidden rounded-[36px] border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_25px_120px_rgba(0,0,0,0.6)]">
+          <div className="overflow-hidden rounded-3xl border border-white/20 bg-black/30 backdrop-blur-sm shadow-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-2">
-              <div className="flex flex-col gap-12 bg-black/50 px-8 py-12 sm:px-12 lg:py-16 border-b border-white/10 lg:border-b-0 lg:border-r">
-                <div className="space-y-6">
-                  <h1 className="text-5xl md:text-6xl lg:text-7xl font-thin leading-tight tracking-wide text-white">
+              <div className="flex flex-col gap-10 bg-black/40 px-8 py-14 sm:px-12 lg:py-16 border-b border-white/20 lg:border-b-0 lg:border-r">
+                <div className="space-y-5">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-light leading-tight tracking-wide text-white">
                     {resolvedTitle}
                   </h1>
-                  <p className="max-w-lg text-xl font-light leading-relaxed text-white/80">
+                  <p className="max-w-lg text-lg font-light leading-relaxed text-white/90">
                     {resolvedSubtitle}
                   </p>
                 </div>
 
-                <div className="h-px w-full bg-white/15" />
+                <div className="h-px w-full bg-white/20" />
 
-                <div className="space-y-6">
-                  <p className="text-white/70 text-lg font-light leading-relaxed">
+                <div className="space-y-5">
+                  <p className="text-white/85 text-base font-light leading-relaxed">
                     {resolvedSocialIntro}
                   </p>
 
-                  <div className="flex flex-wrap gap-3">
+                  <div className="flex flex-wrap gap-2.5">
                     {displayedSocialLinks.map((social, index) => {
                       const IconComponent = getLucideIcon(
                         social.icon ?? social.platform.replace(/\s+/g, ""),
@@ -317,11 +317,10 @@ const ContactFormSection = ({
                       return (
                         <a
                           key={`${social.platform}-${index}`}
-                          // key={social.platform}
                           href={social.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm text-white/80 transition-colors hover:border-[#FFD700] hover:text-[#FFD700]"
+                          className="flex items-center gap-2 rounded-full border border-white/25 bg-white/5 px-4 py-2.5 text-sm text-white/90 transition-all hover:border-[#FFD700] hover:bg-[#FFD700]/10 hover:text-[#FFD700]"
                         >
                           <IconComponent className="h-4 w-4" aria-hidden="true" />
                           <span className="text-sm uppercase tracking-wide">{social.platform}</span>
@@ -335,7 +334,7 @@ const ContactFormSection = ({
                   <div>
                     <Button
                       asChild
-                      className="bg-white text-black hover:bg-gray-100 px-8 py-3 rounded-lg font-medium tracking-wide uppercase transition-all duration-300"
+                      className="bg-white text-black hover:bg-white/90 px-8 py-3 rounded-lg font-medium tracking-wide uppercase transition-all duration-200"
                     >
                       <a href={resolvedCta.url}>{resolvedCta.label}</a>
                     </Button>
@@ -343,16 +342,16 @@ const ContactFormSection = ({
                 )}
               </div>
 
-              <div className="lg:pl-16 py-12 flex flex-col justify-center">
-                <div className="space-y-12">
+              <div className="px-8 py-14 sm:px-12 lg:py-16 flex flex-col justify-center">
+                <div className="space-y-10">
                   <div>
-                    <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-6">
+                    <h3 className="text-base font-medium text-white uppercase tracking-wider mb-5">
                       {resolvedContactTitle}
                     </h3>
-                    <p className="text-white/70 text-sm mb-6">
+                    <p className="text-white/85 text-base mb-6 leading-relaxed">
                       {resolvedContactDescription}
                     </p>
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       {displayedContactLinks.map((link, index) => {
                         const linkKey = link.label ?? link.href ?? link.value ?? String(index);
                         const isExternalLink =
@@ -361,23 +360,23 @@ const ContactFormSection = ({
                           !link.href.startsWith("tel:");
 
                         return (
-                          <div key={`${linkKey}-${index}`} className="space-y-1">
+                          <div key={`${linkKey}-${index}`} className="space-y-2">
                             {link.label && (
-                              <div className="text-xs uppercase tracking-[0.3em] text-white/50">
+                              <div className="text-xs uppercase tracking-[0.25em] text-white/60 font-medium">
                                 {link.label}
                               </div>
                             )}
                             {link.href ? (
                               <a
                                 href={link.href}
-                                className="text-[#FFD700] hover:underline text-lg"
+                                className="text-[#FFD700] hover:text-[#FFC700] hover:underline text-xl font-medium transition-colors block"
                                 rel={isExternalLink ? "noopener noreferrer" : undefined}
                                 target={isExternalLink ? "_blank" : undefined}
                               >
                                 {link.value ?? link.href}
                               </a>
                             ) : (
-                              <span className="text-[#FFD700] text-lg">{link.value ?? link.label}</span>
+                              <span className="text-[#FFD700] text-xl font-medium block">{link.value ?? link.label}</span>
                             )}
                           </div>
                         );
@@ -385,18 +384,20 @@ const ContactFormSection = ({
                     </div>
                   </div>
 
+                  <div className="h-px w-full bg-white/20" />
+
                   <div>
-                    <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-2">
+                    <h3 className="text-base font-medium text-white uppercase tracking-wider mb-3">
                       {resolvedFormTitle}
                     </h3>
-                    <p className="text-white mb-8">
+                    <p className="text-white/85 text-base mb-7 leading-relaxed">
                       {resolvedFormDescription}{" "}
                       {resolvedPromiseHighlight && (
-                        <span className="text-[#FFD700]">{resolvedPromiseHighlight}</span>
+                        <span className="text-[#FFD700] font-medium">{resolvedPromiseHighlight}</span>
                       )}
                     </p>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-5">
                       {effectiveFields.map((field) => {
                         const fieldValue = formState[field.name];
 
@@ -409,7 +410,7 @@ const ContactFormSection = ({
                               required={field.required}
                               value={String(fieldValue ?? "")}
                               onChange={handleFieldChange}
-                              className="rounded-2xl border border-white/20 bg-white/5 px-4 py-3 text-sm text-white placeholder-white/40 focus:border-[#FFD700] focus:ring-[#FFD700]/30 focus:ring-2 focus:outline-none transition resize-none"
+                              className="rounded-xl border border-white/30 bg-white/10 px-4 py-3 text-base text-white placeholder-white/50 focus:border-[#FFD700] focus:ring-[#FFD700]/40 focus:ring-2 focus:outline-none transition-all resize-none"
                               placeholder={field.placeholder}
                             />
                           );
@@ -423,7 +424,7 @@ const ContactFormSection = ({
                               required={field.required}
                               value={String(fieldValue ?? "")}
                               onChange={handleFieldChange}
-                              className="h-12 w-full rounded-2xl border border-white/20 bg-white/5 px-3 text-sm text-white placeholder-white/40 focus:border-[#FFD700] focus:ring-[#FFD700]/30 focus:ring-2 focus:outline-none transition"
+                              className="h-12 w-full rounded-xl border border-white/30 bg-white/10 px-4 text-base text-white placeholder-white/50 focus:border-[#FFD700] focus:ring-[#FFD700]/40 focus:ring-2 focus:outline-none transition-all"
                             >
                               <option value="">
                                 {field.placeholder ?? "Chọn một tùy chọn"}
@@ -441,14 +442,14 @@ const ContactFormSection = ({
                           return (
                             <label
                               key={field.name}
-                              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80"
+                              className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-base text-white/90"
                             >
                               <input
                                 type="checkbox"
                                 name={field.name}
                                 checked={Boolean(fieldValue)}
                                 onChange={handleFieldChange}
-                                className="h-4 w-4 rounded border-white/40 bg-black/70 text-[#FFD700] focus:ring-[#FFD700] focus:ring-offset-0"
+                                className="h-5 w-5 rounded border-white/50 bg-black/70 text-[#FFD700] focus:ring-[#FFD700] focus:ring-offset-0"
                               />
                               <span>{field.label}</span>
                             </label>
@@ -463,25 +464,25 @@ const ContactFormSection = ({
                             required={field.required}
                             value={String(fieldValue ?? "")}
                             onChange={handleFieldChange}
-                            className="h-12 w-full rounded-2xl border border-white/20 bg-white/5 px-3 text-sm text-white placeholder-white/40 focus:border-[#FFD700] focus:ring-[#FFD700]/30 focus:ring-2 focus:outline-none transition"
+                            className="h-12 w-full rounded-xl border border-white/30 bg-white/10 px-4 text-base text-white placeholder-white/50 focus:border-[#FFD700] focus:ring-[#FFD700]/40 focus:ring-2 focus:outline-none transition-all"
                             placeholder={field.placeholder}
                           />
                         );
                       })}
 
-                      <div className="flex items-start gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                      <div className="flex items-start gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-3">
                         <input
                           type="checkbox"
                           name="privacyAgreed"
                           checked={privacyAgreed}
                           onChange={(event) => setPrivacyAgreed(event.target.checked)}
-                          className="mt-0.5 h-4 w-4 rounded border-white/40 bg-black/70 text-[#FFD700] focus:ring-[#FFD700] focus:ring-offset-0"
+                          className="mt-0.5 h-5 w-5 rounded border-white/50 bg-black/70 text-[#FFD700] focus:ring-[#FFD700] focus:ring-offset-0"
                           required
                         />
-                        <span className="text-sm text-white/80">
+                        <span className="text-sm text-white/90 leading-relaxed">
                           {privacyBefore}
                           {privacyHighlight ? (
-                            <a href="#" className="text-[#FFD700] hover:underline">
+                            <a href="#" className="text-[#FFD700] hover:text-[#FFC700] hover:underline transition-colors">
                               {privacyHighlight}
                             </a>
                           ) : null}
@@ -492,13 +493,13 @@ const ContactFormSection = ({
                       <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full rounded-full border border-[#FFD700] bg-[#FFD700] py-3 px-6 font-medium uppercase tracking-wide text-black transition-all duration-300 hover:bg-transparent hover:text-[#FFD700] disabled:cursor-not-allowed disabled:opacity-60"
+                        className="w-full rounded-lg border-2 border-[#FFD700] bg-[#FFD700] py-3.5 px-6 font-semibold uppercase tracking-wide text-black transition-all duration-200 hover:bg-black hover:text-[#FFD700] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-[#FFD700] disabled:hover:text-black"
                       >
                         {isSubmitting ? (
                           <div className="flex items-center justify-center gap-2">
                             <div
                               className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"
-                              style={{ borderColor: "#FFD700", borderTopColor: "transparent" }}
+                              style={{ borderColor: "currentColor", borderTopColor: "transparent" }}
                             />
                             <span>Đang gửi...</span>
                           </div>
@@ -508,20 +509,13 @@ const ContactFormSection = ({
                       </Button>
 
                       {submitStatus === "success" && (
-                        <div
-                          className="rounded-2xl border px-5 py-4 text-center text-sm"
-                          style={{
-                            backgroundColor: "rgba(255, 215, 0, 0.15)",
-                            borderColor: "rgba(255, 215, 0, 0.65)",
-                            color: "#FFD700",
-                          }}
-                        >
+                        <div className="rounded-xl border-2 border-[#FFD700]/70 bg-[#FFD700]/15 px-5 py-4 text-center text-base text-[#FFD700] font-medium">
                           Cảm ơn bạn! Tin nhắn của bạn đã được gửi. Chúng tôi sẽ phản hồi sớm nhất.
                         </div>
                       )}
 
                       {submitStatus === "error" && (
-                        <div className="rounded-2xl border border-red-500/60 bg-red-500/15 px-5 py-4 text-center text-sm text-red-300">
+                        <div className="rounded-xl border-2 border-red-500/70 bg-red-500/15 px-5 py-4 text-center text-base text-red-300 font-medium">
                           Xin lỗi, đã có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.
                         </div>
                       )}
