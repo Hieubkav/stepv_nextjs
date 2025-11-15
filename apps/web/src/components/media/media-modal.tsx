@@ -113,14 +113,14 @@ export function MediaModal({ open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl md:max-w-5xl h-[80vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl md:max-w-7xl h-[90vh] flex flex-col overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Quản lý media</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-6 md:grid md:h-full md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] md:gap-8">
-          <div className="flex min-h-0 flex-col gap-4">
-            <div className="flex gap-2">
+        <div className="flex-1 flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-8 overflow-hidden">
+          <div className="flex flex-col gap-4 md:overflow-y-auto md:pr-2">
+            <div className="flex gap-2 flex-shrink-0">
               <Button variant={tab === "image" ? "default" : "outline"} onClick={() => setTab("image")}>
                 Ảnh
               </Button>
@@ -130,11 +130,11 @@ export function MediaModal({ open, onOpenChange }: Props) {
             </div>
 
             {tab === "image" ? (
-              <div className="flex flex-1 min-h-0 flex-col gap-4">
+              <div className="flex flex-col gap-4">
                 <div className="space-y-2">
                   <Label>Chọn ảnh</Label>
                   <div
-                    className={`flex flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed p-6 text-center transition hover:border-primary ${
+                    className={`flex flex-col items-center justify-center gap-2 rounded-md border border-dashed p-8 text-center transition-colors cursor-pointer hover:border-primary ${
                       isDragging ? "border-primary bg-primary/5" : "border-border bg-muted/20"
                     }`}
                     onDragEnter={(event) => {
@@ -161,7 +161,14 @@ export function MediaModal({ open, onOpenChange }: Props) {
                     }}
                     onClick={() => fileInputRef.current?.click()}
                     role="button"
+                    tabIndex={0}
                     aria-label="Kéo thả ảnh vào đây hoặc bấm để chọn"
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        fileInputRef.current?.click();
+                      }
+                    }}
                   >
                     <div className="text-sm text-muted-foreground">
                       Kéo thả ảnh vào đây hoặc <span className="text-primary underline">bấm để chọn</span>
@@ -179,62 +186,81 @@ export function MediaModal({ open, onOpenChange }: Props) {
                   <div className="rounded-md border bg-muted/20 p-3">
                     <div className="mb-2 text-xs text-muted-foreground">Xem trước</div>
                     <div className="flex items-center justify-center rounded bg-background p-2">
-                      <img src={imagePreview} alt="Xem trước ảnh" className="max-h-48 w-full object-contain" />
+                      <img src={imagePreview} alt="Xem trước ảnh" className="max-h-40 w-full object-contain" />
                     </div>
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label>Tiêu đề (tùy chọn)</Label>
-                  <Input type="text" value={imageTitle} onChange={(event) => setImageTitle(event.target.value)} />
+                  <Label htmlFor="image-title">Tiêu đề (tùy chọn)</Label>
+                  <Input id="image-title" type="text" value={imageTitle} onChange={(event) => setImageTitle(event.target.value)} />
                 </div>
-                <div className="pt-1">
-                  <Button className="w-full md:w-auto" disabled={!canSubmitImage || submitting} onClick={submitImage}>
-                    Tải lên ảnh (tự chuyển WebP)
+                <div className="sticky bottom-0 bg-background pt-2 pb-1">
+                  <Button className="w-full min-h-[44px]" disabled={!canSubmitImage || submitting} onClick={submitImage}>
+                    {submitting ? "Đang tải lên..." : "Tải lên ảnh (tự chuyển WebP)"}
                   </Button>
                 </div>
               </div>
             ) : (
-              <div className="flex flex-1 flex-col gap-4">
+              <div className="flex flex-col gap-4">
                 <div className="space-y-2">
-                  <Label>Link video</Label>
-                  <Input type="text" placeholder="https://..." value={videoUrl} onChange={(event) => setVideoUrl(event.target.value)} />
+                  <Label htmlFor="video-url">Link video</Label>
+                  <Input
+                    id="video-url"
+                    type="text"
+                    placeholder="https://..."
+                    value={videoUrl}
+                    onChange={(event) => setVideoUrl(event.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <Label>Tiêu đề (tùy chọn)</Label>
-                  <Input type="text" value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} />
+                  <Label htmlFor="video-title">Tiêu đề (tùy chọn)</Label>
+                  <Input id="video-title" type="text" value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} />
                 </div>
-                <div className="pt-1">
-                  <Button className="w-full md:w-auto" disabled={!canSubmitVideo || submitting} onClick={submitVideo}>
-                    Thêm video
+                <div className="sticky bottom-0 bg-background pt-2 pb-1">
+                  <Button className="w-full min-h-[44px]" disabled={!canSubmitVideo || submitting} onClick={submitVideo}>
+                    {submitting ? "Đang thêm..." : "Thêm video"}
                   </Button>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex h-full min-h-0 flex-col gap-3 rounded-md border bg-muted/10 p-3 md:bg-muted/20 md:p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-medium">Danh sach gan day</h3>
-              <span className="text-xs text-muted-foreground">{recentList.length} muc</span>
+          <div className="flex flex-col gap-3 rounded-md border bg-muted/10 p-4 md:bg-muted/20 overflow-hidden">
+            <div className="flex items-center justify-between flex-shrink-0">
+              <h3 className="font-medium">Danh sách gần đây</h3>
+              <span className="text-xs text-muted-foreground">{recentList.length} mục</span>
             </div>
-            <div className="flex-1 overflow-y-auto pr-1">
+            <div className="flex-1 overflow-y-auto pr-2 scroll-smooth">
               {recentList.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Chưa có media nào.</p>
               ) : (
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                   {recentList.map((item) => (
-                    <div key={item._id} className="flex items-center gap-3 rounded-md border bg-background p-2 shadow-sm">
-                      {item.kind === "image" ? (
-                        <img src={item.url} alt={item.title || "Ảnh"} className="h-12 w-12 rounded object-cover" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded bg-muted text-xs">Video</div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm">{item.title || (item.kind === "image" ? "Ảnh" : "Video")}</div>
+                    <div
+                      key={item._id}
+                      className="flex flex-col gap-2 rounded-md border bg-background p-3 transition-shadow hover:shadow-md"
+                    >
+                      <div className="aspect-square w-full overflow-hidden rounded bg-muted">
+                        {item.kind === "image" ? (
+                          <img src={item.url} alt={item.title || "Ảnh"} className="h-full w-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">Video</div>
+                        )}
                       </div>
-                      <Button size="sm" variant="destructive" onClick={() => onDelete(item._id)}>
-                        Xóa
-                      </Button>
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium">{item.title || (item.kind === "image" ? "Ảnh" : "Video")}</div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => onDelete(item._id)}
+                          className="flex-shrink-0 min-h-[44px] min-w-[44px]"
+                          aria-label={`Xóa ${item.title || (item.kind === "image" ? "ảnh" : "video")}`}
+                        >
+                          Xóa
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -254,4 +280,3 @@ export function MediaTrigger({ onOpen }: { onOpen: () => void }) {
     </Button>
   );
 }
-
