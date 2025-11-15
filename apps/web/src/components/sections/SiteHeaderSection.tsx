@@ -11,12 +11,12 @@ import type { SiteHeaderCta, SiteHeaderMenuItem, SiteHeaderProps, SiteHeaderSoci
 type SiteHeaderSectionProps = SiteHeaderProps;
 
 const DEFAULT_MENU: SiteHeaderMenuItem[] = [
-  { label: 'TRANG CHU', url: '/', highlight: true },
-  { label: 'DU AN', url: '#projects' },
-  { label: 'DICH VU', url: '#services' },
-  { label: 'VE CHUNG TOI', url: '#about' },
-  { label: 'THU VIEN', url: '#library' },
-  { label: 'LIEN HE', url: '#contact' },
+  { label: 'Trang chủ', url: '/', highlight: true },
+  { label: 'Dự án', url: '#projects' },
+  { label: 'Dịch vụ', url: '#services' },
+  { label: 'Về chúng tôi', url: '#about' },
+  { label: 'Thư viện', url: '#library' },
+  { label: 'Liên hệ', url: '#contact' },
 ];
 
 const DEFAULT_SOCIALS: SiteHeaderSocial[] = [
@@ -28,7 +28,7 @@ const DEFAULT_SOCIALS: SiteHeaderSocial[] = [
   { platform: 'X', url: 'https://x.com/dohystudio', icon: 'X' },
 ];
 
-const DEFAULT_CTA: SiteHeaderCta = { label: 'LIEN HE', url: '#contact' };
+const DEFAULT_CTA: SiteHeaderCta = { label: 'Liên hệ', url: '#contact' };
 const FALLBACK_LOGO = '/images/logo.png';
 
 type NormalizedMenuItem = {
@@ -79,7 +79,7 @@ const renderSocialIcon = (icon?: string, platform?: string) => {
   const normalizedIcon = icon?.trim();
   const normalizedPlatform = platform?.trim();
   if (normalizedIcon && normalizedIcon.toLowerCase() === 'x') {
-    return <XIcon className="h-4 w-4" size={16} />;
+    return <XIcon className="h-5 w-5" size={20} />;
   }
 
   const IconComponent =
@@ -87,7 +87,7 @@ const renderSocialIcon = (icon?: string, platform?: string) => {
     (normalizedPlatform ? getLucideIcon(normalizedPlatform) : undefined) ??
     getLucideIcon('Share2');
 
-  return IconComponent ? <IconComponent className="h-4 w-4" /> : null;
+  return IconComponent ? <IconComponent className="h-5 w-5" /> : null;
 };
 
 const SiteHeaderSection = ({
@@ -197,13 +197,13 @@ const SiteHeaderSection = ({
   ) => {
     const baseClass =
       variant === 'desktop'
-        ? 'px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors  border-transparent'
-        : 'block px-4 py-3 uppercase font-semibold text-sm transition-colors rounded-lg';
+        ? 'inline-flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50'
+        : 'block px-4 py-3 text-sm font-medium transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-white';
     const activeClass =
       variant === 'desktop'
         ? item.highlight || item.active
-          ? 'text-white border-white'
-          : 'text-white hover:text-gray-300'
+          ? 'text-white'
+          : 'text-white/90 hover:text-white'
         : item.highlight || item.active
           ? 'text-black bg-white'
           : 'text-white hover:bg-white/10';
@@ -247,7 +247,7 @@ const SiteHeaderSection = ({
 
   const renderDesktopCta = () => {
     if (!resolvedCta.label) return null;
-    const className = 'hidden lg:inline-block uppercase text-xs font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105';
+    const className = 'hidden lg:inline-flex items-center justify-center min-w-[120px] min-h-[44px] px-6 py-2.5 text-base font-semibold text-black bg-white rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50 touch-manipulation';
     const href = resolvedCta.url ?? '#contact';
 
     if (href.startsWith('#')) {
@@ -289,7 +289,7 @@ const SiteHeaderSection = ({
 
   const renderMobileCta = () => {
     if (!resolvedCta.label) return null;
-    const className = 'block w-full text-center uppercase text-sm font-semibold text-black bg-white rounded-full px-6 py-3 transition-transform hover:scale-105';
+    const className = 'block w-full text-center min-h-[44px] px-6 py-3 text-base font-semibold text-black bg-white rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white touch-manipulation';
     const href = resolvedCta.url ?? '#contact';
 
     if (href.startsWith('#')) {
@@ -344,14 +344,14 @@ const SiteHeaderSection = ({
 
     if (!resolvedLogo) {
       return (
-        <a href="/" className="text-xl font-semibold uppercase tracking-wide text-white">
+        <a href="/" className="text-xl font-semibold uppercase tracking-wide text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50 rounded-lg">
           DOHY MEDIA
         </a>
       );
     }
 
     return (
-      <a href="/">
+      <a href="/" className="block focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50 rounded-lg">
         <Image
           src={resolvedLogo}
           alt="Site logo"
@@ -372,35 +372,36 @@ const SiteHeaderSection = ({
       }
     : undefined;
 
-  const shellBase = 'relative overflow-hidden flex items-center justify-between gap-2 w-full px-6 sm:px-8 py-4 backdrop-blur-2xl transition-all duration-500';
+  const shellBase = 'relative overflow-hidden flex items-center justify-between gap-6 w-full px-6 lg:px-8 py-4 backdrop-blur-2xl transition-all duration-500';
   const shellTop = 'bg-black/30 border-b border-white/10 rounded-none shadow-none';
   const shellSticky = 'bg-black/60 border border-white/10 rounded-full shadow-2xl shadow-black/50 sm:w-[96%] sm:mx-auto sm:mt-3';
 
   const renderHeaderBar = (variant: 'top' | 'sticky') => (
     <>
-      <div className="w-1/5 flex-shrink-0">
+      <div className="flex-shrink-0">
         {renderLogo(variant === 'top' ? 'large' : 'medium')}
       </div>
 
-      <nav className="hidden lg:flex justify-center flex-1 max-w-3xl mx-4">
-        <ul className="flex items-center justify-center space-x-1 w-full">
+      <nav className="hidden lg:flex justify-center flex-1" aria-label="Main navigation">
+        <ul className="flex items-center justify-center gap-6">
           {resolvedMenu.map((item) => (
-            <li key={`${variant}-${item.label}-${item.href}`} className="flex-shrink-0">
+            <li key={`${variant}-${item.label}-${item.href}`}>
               {renderMenuAction(item, 'desktop')}
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="flex items-center justify-end w-1/5 flex-shrink-0 gap-3">
-        <div className="hidden lg:flex items-center gap-2">
+      <div className="flex items-center justify-end flex-shrink-0 gap-3">
+        <div className="hidden lg:flex items-center gap-2" role="list" aria-label="Social media links">
           {resolvedSocials.map((social, index) => (
             <a
               key={`${social.platform}-${index}`}
               href={social.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-8 h-8 ${getSocialColorClass(social.platform)} hover:scale-110 transition-all duration-300 flex items-center justify-center`}
+              aria-label={social.platform}
+              className={`flex items-center justify-center w-10 h-10 ${getSocialColorClass(social.platform)} hover:scale-110 transition-all duration-200 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50`}
             >
               {renderSocialIcon(social.icon, social.platform)}
             </a>
@@ -412,7 +413,7 @@ const SiteHeaderSection = ({
         <button
           type="button"
           onClick={() => setIsMobileMenuOpen((value) => !value)}
-          className="lg:hidden text-white text-2xl focus:outline-none"
+          className="lg:hidden text-white focus:outline-none focus:ring-2 focus:ring-white rounded-md"
           aria-label="Toggle menu"
         >
           {isMobileMenuOpen ? <X className="h-7 w-7" /> : <Menu className="h-7 w-7" />}
@@ -500,34 +501,7 @@ const SiteHeaderSection = ({
         }
 
         nav ul li {
-          flex-shrink: 0;
           min-width: fit-content;
-        }
-
-        @media (max-width: 1024px) {
-          #site-header .w-1\/5 {
-            width: auto;
-          }
-        }
-
-        @media (min-width: 1024px) and (max-width: 1280px) {
-          .max-w-3xl {
-            max-width: 42rem;
-          }
-
-          .space-x-1 > :not([hidden]) ~ :not([hidden]) {
-            margin-left: 0.125rem;
-          }
-        }
-
-        @media (min-width: 1280px) {
-          .max-w-3xl {
-            max-width: 48rem;
-          }
-
-          .space-x-1 > :not([hidden]) ~ :not([hidden]) {
-            margin-left: 0.25rem;
-          }
         }
       `}</style>
     </>
