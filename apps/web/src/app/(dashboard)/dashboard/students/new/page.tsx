@@ -38,7 +38,7 @@ export default function StudentCreatePage() {
     const fullName = values.fullName.trim();
     const password = values.password.trim();
     if (!account || !fullName || !password) {
-      toast.error("Can nhap account, ho ten va mat khau");
+      toast.error("Cần nhập account, họ tên và mật khẩu");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -59,10 +59,10 @@ export default function StudentCreatePage() {
         order: parsedOrder,
         active: values.active,
       });
-      toast.success("Da tao hoc vien");
+      toast.success("Đã tạo học viên");
       router.push("/dashboard/students");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the tao hoc vien");
+      toast.error(error?.message ?? "Không thể tạo học viên");
     } finally {
       setSubmitting(false);
     }
@@ -72,13 +72,13 @@ export default function StudentCreatePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Them hoc vien</CardTitle>
+          <CardTitle>Thêm học viên</CardTitle>
         </CardHeader>
         <CardContent>
           <StudentForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Tao"
+            submitLabel="Tạo"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/students")}
           />

@@ -89,10 +89,10 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
           active: true,
         } as any);
       }
-      toast.success("Da them anh vao resource");
+      toast.success("Đã thêm ảnh vào resource");
       setPickerOpen(false);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the them anh");
+      toast.error(error?.message ?? "Không thể thêm ảnh");
     } finally {
       setAdding(false);
     }
@@ -102,17 +102,17 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
     try {
       await updateImage({ id: image._id as any, active: !image.active } as any);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai anh");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái ảnh");
     }
   }
 
   async function handleDelete(image: ResourceImageDoc) {
-    if (!window.confirm("Xoa anh khoi resource?")) return;
+    if (!window.confirm("Xóa ảnh khỏi resource?")) return;
     try {
       await deleteImage({ id: image._id as any } as any);
-      toast.success("Da xoa anh");
+      toast.success("Đã xóa ảnh");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa anh");
+      toast.error(error?.message ?? "Không thể xóa ảnh");
     }
   }
 
@@ -131,7 +131,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
         orderedIds: next.map((item) => item._id as any),
       } as any);
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the sap xep anh");
+      toast.error(error?.message ?? "Không thể sắp xếp ảnh");
     }
   }
 
@@ -139,17 +139,17 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
     <>
       <Card>
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <CardTitle>Bo suu tap anh</CardTitle>
+          <CardTitle>Bộ sưu tập ảnh</CardTitle>
           <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
             <Plus className="mr-2 size-4" />
-            Them anh
+            Thêm ảnh
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {images === undefined && <div className="text-sm text-muted-foreground">Dang tai danh sach anh...</div>}
+          {images === undefined && <div className="text-sm text-muted-foreground">Đang tải danh sách ảnh...</div>}
           {images && sortedImages.length === 0 && (
             <div className="text-sm text-muted-foreground">
-              Chua co anh nao. Bam "Them anh" de chen anh tu media.
+              Chưa có ảnh nào. Bấm "Thêm ảnh" để chèn ảnh từ media.
             </div>
           )}
           {images && sortedImages.length > 0 && (
@@ -175,11 +175,11 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                           <span className={`rounded-full px-2 py-0.5 text-xs ${
                             image.active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                           }`}>
-                            {image.active ? "Dang hien" : "Dang an"}
+                            {image.active ? "Đang hiện" : "Đang ẩn"}
                           </span>
                         </div>
                         {media?.title && (
-                          <div className="text-xs text-muted-foreground">Tieu de media: {media.title}</div>
+                          <div className="text-xs text-muted-foreground">Tiêu đề media: {media.title}</div>
                         )}
                         <div className="text-xs text-muted-foreground">Media ID: {String(image.mediaId)}</div>
                         {image.caption && (
@@ -196,7 +196,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                           checked={image.active}
                           onCheckedChange={() => handleToggleActive(image)}
                         />
-                        <span>{image.active ? "Dang hien" : "Dang an"}</span>
+                        <span>{image.active ? "Đang hiện" : "Đang ẩn"}</span>
                       </label>
                       <div className="flex items-center gap-2 self-start sm:self-end">
                         <Button
@@ -204,7 +204,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                           size="icon"
                           onClick={() => move(image, "up")}
                           disabled={index === 0}
-                          title="Len"
+                          title="Lên"
                         >
                           <ChevronUp className="size-4" />
                         </Button>
@@ -213,7 +213,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                           size="icon"
                           onClick={() => move(image, "down")}
                           disabled={index === sortedImages.length - 1}
-                          title="Xuong"
+                          title="Xuống"
                         >
                           <ChevronDown className="size-4" />
                         </Button>
@@ -221,7 +221,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                           variant="destructive"
                           size="icon"
                           onClick={() => handleDelete(image)}
-                          title="Xoa"
+                          title="Xóa"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -238,7 +238,7 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Chon anh tu media</DialogTitle>
+            <DialogTitle>Chọn ảnh từ media</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {Array.isArray(mediaList) ? (
@@ -283,19 +283,19 @@ export function ResourceImagesManager({ resourceId }: ResourceImagesManagerProps
                 </div>
                 {availableMedia.length === 0 && (
                   <p className="text-sm text-muted-foreground">
-                    Tat ca media da duoc su dung hoac chua co anh nao trong thu vien. Hay tai anh moi tai trang Media.
+                    Tất cả media đã được sử dụng hoặc chưa có ảnh nào trong thư viện. Hãy tải ảnh mới tại trang Media.
                   </p>
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Dang tai danh sach media...</p>
+              <p className="text-sm text-muted-foreground">Đang tải danh sách media...</p>
             )}
             <div className="flex items-center justify-end gap-2">
               <Button variant="outline" onClick={() => setPickerOpen(false)}>
-                Huy
+                Hủy
               </Button>
               <Button onClick={handleAddSelected} disabled={!selectedMediaIds.length || adding}>
-                {adding ? "Dang them..." : `Them ${selectedMediaIds.length} anh`}
+                {adding ? "Đang thêm..." : `Thêm ${selectedMediaIds.length} ảnh`}
               </Button>
             </div>
           </div>

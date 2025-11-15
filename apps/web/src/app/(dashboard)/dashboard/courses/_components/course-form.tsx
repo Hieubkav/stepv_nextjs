@@ -199,17 +199,17 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
         <div className="space-y-2 sm:col-span-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-sm font-medium">Thumbnail (tu media)</div>
+              <div className="text-sm font-medium">Thumbnail (từ media)</div>
               <p className="text-xs text-muted-foreground">Có thể bỏ trống nếu chưa có ảnh.</p>
             </div>
             <div className="flex items-center gap-2">
               {values.thumbnailMediaId && (
                 <Button variant="outline" size="sm" type="button" onClick={() => update("thumbnailMediaId", "")}>
-                  Xoa anh
+                  Xóa ảnh
                 </Button>
               )}
               <Button variant="secondary" size="sm" type="button" onClick={() => setPickerOpen(true)}>
-                Chon anh
+                Chọn ảnh
               </Button>
             </div>
           </div>
@@ -221,7 +221,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
                 className="h-16 w-16 rounded object-cover"
               />
               <div className="text-sm">
-                <div className="font-medium">{selectedThumbnail.title ?? "Khong ten"}</div>
+                <div className="font-medium">{selectedThumbnail.title ?? "Không tên"}</div>
                 <div className="text-xs text-muted-foreground">ID: {String(selectedThumbnail._id)}</div>
               </div>
             </div>
@@ -232,11 +232,11 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
       <div className="flex items-center justify-end gap-3">
         {onCancel && (
           <Button variant="outline" type="button" onClick={onCancel} disabled={submitting}>
-            Huy
+            Hủy
           </Button>
         )}
         <Button type="submit" disabled={submitting}>
-          {submitting ? "Dang luu..." : submitLabel}
+          {submitting ? "Đang lưu..." : submitLabel}
         </Button>
       </div>
 
@@ -268,7 +268,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
                       No URL
                     </div>
                   )}
-                  <span className="w-full truncate text-xs text-muted-foreground">{image.title || "Khong ten"}</span>
+                  <span className="w-full truncate text-xs text-muted-foreground">{image.title || "Không tên"}</span>
                   <span className="w-full truncate text-[10px] text-muted-foreground/70">{id}</span>
                 </button>
               );

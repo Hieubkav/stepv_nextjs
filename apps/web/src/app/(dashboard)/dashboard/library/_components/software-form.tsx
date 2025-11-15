@@ -131,14 +131,14 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
                     <div className="truncate text-xs text-muted-foreground">{values.iconImageId}</div>
                   </div>
                   <Button type="button" variant="ghost" size="sm" onClick={() => update("iconImageId", "")}>
-                    Xoa
+                    Xóa
                   </Button>
                 </div>
               ) : (
                 <div className="flex items-center justify-between gap-2 rounded border border-dashed p-2 text-xs text-muted-foreground">
-                  <span className="truncate">Khong tim thay media: {values.iconImageId}</span>
+                  <span className="truncate">Không tìm thấy media: {values.iconImageId}</span>
                   <Button type="button" variant="ghost" size="sm" onClick={() => update("iconImageId", "")}>
-                    Xoa
+                    Xóa
                   </Button>
                 </div>
               )
@@ -146,7 +146,7 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
           </div>
           <div className="flex items-end">
             <Button type="button" variant="outline" onClick={() => setPickerOpen(true)}>
-              Chon tu media
+              Chọn từ media
             </Button>
           </div>
         </div>
@@ -159,16 +159,16 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
         <div className="flex items-center justify-between gap-4">
           <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <Checkbox checked={values.active} onCheckedChange={(checked) => update("active", !!checked)} />
-            Dang hien thi
+            Đang hiển thị
           </label>
           <div className="flex items-center gap-2">
             {onCancel && (
               <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
-                Huy
+                Hủy
               </Button>
             )}
             <Button type="submit" disabled={submitting}>
-              {submitting ? "Dang luu..." : submitLabel}
+              {submitting ? "Đang lưu..." : submitLabel}
             </Button>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Chon icon phan mem</DialogTitle>
+            <DialogTitle>Chọn icon phần mềm</DialogTitle>
           </DialogHeader>
           <div className="grid max-h-[60vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
             {(images ?? []).map((img: any) => (
@@ -194,7 +194,7 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
             ))}
           </div>
           {(images ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">Chua co media nao. Hay tai anh tai trang Media.</p>
+            <p className="text-sm text-muted-foreground">Chưa có media nào. Hãy tải ảnh tại trang Media.</p>
           )}
         </DialogContent>
       </Dialog>

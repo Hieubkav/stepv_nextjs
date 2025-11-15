@@ -35,7 +35,7 @@ const normalizeTagsInput = (value: string) =>
     .filter(Boolean)
     .join("\n");
 
-const passwordPlaceholder = "Nhap mat khau don gian de cap cho hoc vien";
+const passwordPlaceholder = "Nhập mật khẩu đơn giản để cấp cho học viên";
 
 export function StudentForm({
   initialValues,
@@ -72,7 +72,7 @@ export function StudentForm({
     <form className="space-y-6" onSubmit={handleSubmit}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Tai khoan</label>
+          <label className="text-sm font-medium">Tài khoản</label>
           <Input
             value={values.account}
             onChange={(event) => update("account", event.target.value)}
@@ -81,7 +81,7 @@ export function StudentForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Mat khau</label>
+          <label className="text-sm font-medium">Mật khẩu</label>
           <Input
             value={values.password}
             onChange={(event) => update("password", event.target.value)}
@@ -91,12 +91,12 @@ export function StudentForm({
           />
           {showPasswordHelper && (
             <p className="text-xs text-muted-foreground">
-              Mat khau duoc luu dang plain-text de KISS, hay doi neu can va gui truc tiep cho hoc vien.
+              Mật khẩu được lưu dạng plain-text để KISS, hãy đổi nếu cần và gửi trực tiếp cho học viên.
             </p>
           )}
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Ho ten</label>
+          <label className="text-sm font-medium">Họ tên</label>
           <Input
             value={values.fullName}
             onChange={(event) => update("fullName", event.target.value)}
@@ -114,7 +114,7 @@ export function StudentForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">So dien thoai</label>
+          <label className="text-sm font-medium">Số điện thoại</label>
           <Input
             value={values.phone}
             onChange={(event) => update("phone", event.target.value)}
@@ -122,7 +122,7 @@ export function StudentForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Thu tu</label>
+          <label className="text-sm font-medium">Thứ tự</label>
           <Input
             value={values.order}
             onChange={(event) => update("order", event.target.value)}
@@ -130,7 +130,7 @@ export function StudentForm({
           />
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <label className="text-sm font-medium">Ghi chu</label>
+          <label className="text-sm font-medium">Ghi chú</label>
           <Textarea
             value={values.notes}
             onChange={(event) => update("notes", event.target.value)}
@@ -138,7 +138,7 @@ export function StudentForm({
           />
         </div>
         <div className="space-y-2 sm:col-span-2">
-          <label className="text-sm font-medium">Tags (moi dong mot tag)</label>
+          <label className="text-sm font-medium">Tags (mỗi dòng một tag)</label>
           <Textarea
             value={values.tagsText}
             onChange={(event) => update("tagsText", normalizeTagsInput(event.target.value))}
@@ -153,16 +153,16 @@ export function StudentForm({
             checked={values.active}
             onCheckedChange={(checked) => update("active", Boolean(checked))}
           />
-          <span>{values.active ? "Dang hoat dong" : "Dang khoa"}</span>
+          <span>{values.active ? "Đang hoạt động" : "Đang khóa"}</span>
         </label>
         <div className="flex items-center gap-2">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
-              Huy
+              Hủy
             </Button>
           )}
           <Button type="submit" disabled={submitting || !canSubmit}>
-            {submitting ? "Dang luu..." : submitLabel}
+            {submitting ? "Đang lưu..." : submitLabel}
           </Button>
         </div>
       </div>

@@ -39,7 +39,7 @@ export default function LibraryCreatePage() {
     const title = values.title.trim();
     const slug = values.slug.trim();
     if (!title || !slug) {
-      toast.error("Can nhap day du title va slug");
+      toast.error("Cần nhập đầy đủ title và slug");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -63,10 +63,10 @@ export default function LibraryCreatePage() {
         order: parsedOrder,
         active: values.active,
       } as any);
-      toast.success("Da tao tai nguyen");
+      toast.success("Đã tạo tài nguyên");
       router.push("/dashboard/library");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the tao tai nguyen");
+      toast.error(error?.message ?? "Không thể tạo tài nguyên");
     } finally {
       setSubmitting(false);
     }
@@ -82,7 +82,7 @@ export default function LibraryCreatePage() {
           <ResourceForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Tao"
+            submitLabel="Tạo"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/library")}
           />

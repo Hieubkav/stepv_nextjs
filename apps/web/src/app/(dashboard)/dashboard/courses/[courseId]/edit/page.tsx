@@ -621,7 +621,7 @@ export default function CourseEditPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Thong tin khoa hoc</CardTitle>
+          <CardTitle>Thông tin khóa học</CardTitle>
         </CardHeader>
         <CardContent>
           <CourseForm

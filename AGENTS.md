@@ -1,6 +1,6 @@
 Trả lời tôi băng tiếng việt nhé
 
- Sau khi xây 1 chức năng lớn xong thì nhớ nhắc tôi chạy bun run --cwd apps/web build nha vì bạn tự chạy thì sẽ chậm dụ án , nào tôi kêu thì làm. Nhớ chạy bunx tsc --project apps/web/tsconfig.json --noEmit trước xong hết lỗi thì bun run --cwd apps/web build đến khi hết lỗi . 
+Sau khi xây 1 chức năng lớn xong thì nhớ nhắc tôi chạy bun run --cwd apps/web build nha vì bạn tự chạy thì sẽ chậm dụ án , nào tôi kêu thì làm. Nhớ chạy bunx tsc --project apps/web/tsconfig.json --noEmit trước xong hết lỗi thì bun run --cwd apps/web build đến khi hết lỗi . 
 
 SAP ở đây là combo của 3 chữ Scaffold , Approach , Patern
 

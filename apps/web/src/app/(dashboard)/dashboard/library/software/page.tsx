@@ -44,17 +44,17 @@ export default function LibrarySoftwareListPage() {
     try {
       await setSoftwareActive({ id: item._id as any, active: !item.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
     }
   }
 
   async function handleDelete(item: SoftwareDoc) {
-    if (!window.confirm(`Xoa phan mem "${item.name}"?`)) return;
+    if (!window.confirm(`Xóa phần mềm "${item.name}"?`)) return;
     try {
       await deleteSoftware({ id: item._id as any });
-      toast.success("Da xoa phan mem");
+      toast.success("Đã xóa phần mềm");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa phan mem");
+      toast.error(error?.message ?? "Không thể xóa phần mềm");
     }
   }
 
@@ -68,7 +68,7 @@ export default function LibrarySoftwareListPage() {
       await updateSoftware({ id: item._id as any, order: target.order });
       await updateSoftware({ id: target._id as any, order: item.order });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the doi thu tu");
+      toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
@@ -81,19 +81,19 @@ export default function LibrarySoftwareListPage() {
         </div>
         <Button asChild>
           <Link href="/dashboard/library/software/new">
-            <Plus className="mr-2 size-4" /> Them phan mem
+            <Plus className="mr-2 size-4" /> Thêm phần mềm
           </Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sach phan mem</CardTitle>
+          <CardTitle>Danh sách phần mềm</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {!softwares && <div className="text-sm text-muted-foreground">Dang tai...</div>}
+          {!softwares && <div className="text-sm text-muted-foreground">Đang tải...</div>}
           {softwares && sorted.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chua co phan mem nao.</div>
+            <div className="text-sm text-muted-foreground">Chưa có phần mềm nào.</div>
           )}
           {softwares && sorted.length > 0 && (
             <div className="space-y-3">
@@ -134,7 +134,7 @@ export default function LibrarySoftwareListPage() {
                         {item.iconImageId && (
                           <div className="space-y-1 text-xs text-muted-foreground">
                             <div>ID icon: {item.iconImageId}</div>
-                            {icon?.title && <div className="truncate">Ten media: {icon.title}</div>}
+                            {icon?.title && <div className="truncate">Tên media: {icon.title}</div>}
                           </div>
                         )}
                       </div>
@@ -142,12 +142,12 @@ export default function LibrarySoftwareListPage() {
                     <div className="flex items-center gap-3">
                       <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
                         <Checkbox checked={item.active} onCheckedChange={() => handleToggleActive(item)} />
-                        {item.active ? "Dang hien" : "Dang an"}
+                        {item.active ? "Đang hiện" : "Đang ẩn"}
                       </label>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/dashboard/library/software/${item._id}/edit`}>
-                            <Pencil className="mr-2 size-4" /> Sua
+                            <Pencil className="mr-2 size-4" /> Sửa
                           </Link>
                         </Button>
                         <Button
@@ -155,7 +155,7 @@ export default function LibrarySoftwareListPage() {
                           size="icon"
                           onClick={() => move(item, "up")}
                           disabled={index === 0}
-                          title="Len"
+                          title="Lên"
                         >
                           <ChevronUp className="size-4" />
                         </Button>
@@ -164,7 +164,7 @@ export default function LibrarySoftwareListPage() {
                           size="icon"
                           onClick={() => move(item, "down")}
                           disabled={index === sorted.length - 1}
-                          title="Xuong"
+                          title="Xuống"
                         >
                           <ChevronDown className="size-4" />
                         </Button>
@@ -172,7 +172,7 @@ export default function LibrarySoftwareListPage() {
                           variant="destructive"
                           size="icon"
                           onClick={() => handleDelete(item)}
-                          title="Xoa"
+                          title="Xóa"
                         >
                           <Trash2 className="size-4" />
                         </Button>

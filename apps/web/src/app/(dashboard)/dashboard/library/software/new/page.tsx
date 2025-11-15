@@ -35,7 +35,7 @@ export default function LibrarySoftwareCreatePage() {
     const name = values.name.trim();
     const slug = values.slug.trim();
     if (!name || !slug) {
-      toast.error("Can nhap day du name va slug");
+      toast.error("Cần nhập đầy đủ name và slug");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -51,10 +51,10 @@ export default function LibrarySoftwareCreatePage() {
         order: parsedOrder,
         active: values.active,
       } as any);
-      toast.success("Da tao phan mem");
+      toast.success("Đã tạo phần mềm");
       router.push("/dashboard/library/software");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the tao phan mem");
+      toast.error(error?.message ?? "Không thể tạo phần mềm");
     } finally {
       setSubmitting(false);
     }
@@ -64,13 +64,13 @@ export default function LibrarySoftwareCreatePage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Them phan mem</CardTitle>
+          <CardTitle>Thêm phần mềm</CardTitle>
         </CardHeader>
         <CardContent>
           <SoftwareForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Tao"
+            submitLabel="Tạo"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/library/software")}
           />

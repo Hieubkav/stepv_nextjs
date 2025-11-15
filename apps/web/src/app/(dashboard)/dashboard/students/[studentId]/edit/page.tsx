@@ -72,7 +72,7 @@ export default function StudentEditPage() {
     const account = values.account.trim();
     const fullName = values.fullName.trim();
     if (!account || !fullName) {
-      toast.error("Can nhap account va ho ten");
+      toast.error("Cần nhập account và họ tên");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -95,9 +95,9 @@ export default function StudentEditPage() {
         order: parsedOrder,
         active: values.active,
       });
-      toast.success("Da cap nhat hoc vien");
+      toast.success("Đã cập nhật học viên");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat hoc vien");
+      toast.error(error?.message ?? "Không thể cập nhật học viên");
     } finally {
       setSubmitting(false);
     }
@@ -108,61 +108,61 @@ export default function StudentEditPage() {
     try {
       await setActive({ id: student._id, active: !student.active });
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat trang thai");
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
     }
   }
 
   async function handleDelete() {
     if (!student) return;
-    if (!window.confirm(`Xoa hoc vien "${student.fullName}"?`)) return;
+    if (!window.confirm(`Xóa học viên "${student.fullName}"?`)) return;
     try {
       const result = await deleteStudent({ id: student._id });
       if (!result?.ok) {
-        toast.error("Khong the xoa hoc vien");
+        toast.error("Không thể xóa học viên");
         return;
       }
-      toast.success("Da xoa hoc vien");
+      toast.success("Đã xóa học viên");
       router.push("/dashboard/students");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the xoa hoc vien");
+      toast.error(error?.message ?? "Không thể xóa học viên");
     }
   }
 
   if (student === undefined) {
-    return <div className="p-6 text-sm text-muted-foreground">Dang tai hoc vien...</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Đang tải học viên...</div>;
   }
 
   if (!student) {
-    return <div className="p-6 text-sm text-muted-foreground">Khong tim thay hoc vien.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">Không tìm thấy học viên.</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Chinh sua hoc vien</h1>
-          <p className="text-sm text-muted-foreground">Cap nhat thong tin tai khoan va lien he.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Chỉnh sửa học viên</h1>
+          <p className="text-sm text-muted-foreground">Cập nhật thông tin tài khoản và liên hệ.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => router.push("/dashboard/students")}>Quay lai</Button>
+          <Button variant="outline" onClick={() => router.push("/dashboard/students")}>Quay lại</Button>
           <Button variant="secondary" onClick={handleToggleActive}>
-            {student.active ? "Dang hoat dong" : "Dang khoa"}
+            {student.active ? "Đang hoạt động" : "Đang khóa"}
           </Button>
           <Button variant="destructive" onClick={handleDelete}>
-            Xoa hoc vien
+            Xóa học viên
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Thong tin hoc vien</CardTitle>
+          <CardTitle>Thông tin học viên</CardTitle>
         </CardHeader>
         <CardContent>
           <StudentForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Luu"
+            submitLabel="Lưu"
             onSubmit={handleSubmit}
             requirePassword={false}
           />

@@ -45,18 +45,18 @@ export default function LibraryEditPage({ params }: PageProps) {
   const initialValues = useMemo(() => toInitial(resource), [resource]);
 
   if (detail === undefined) {
-    return <div className="text-sm text-muted-foreground">Dang tai...</div>;
+    return <div className="text-sm text-muted-foreground">Đang tải...</div>;
   }
 
   if (!resource) {
-    return <div className="text-sm text-muted-foreground">Khong tim thay tai nguyen.</div>;
+    return <div className="text-sm text-muted-foreground">Không tìm thấy tài nguyên.</div>;
   }
 
   async function handleSubmit(values: ResourceFormValues) {
     const title = values.title.trim();
     const slug = values.slug.trim();
     if (!title || !slug) {
-      toast.error("Can nhap day du title va slug");
+      toast.error("Cần nhập đầy đủ title và slug");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -81,10 +81,10 @@ export default function LibraryEditPage({ params }: PageProps) {
         order: parsedOrder,
         active: values.active,
       } as any);
-      toast.success("Da cap nhat tai nguyen");
+      toast.success("Đã cập nhật tài nguyên");
       router.push("/dashboard/library");
     } catch (error: any) {
-      toast.error(error?.message ?? "Khong the cap nhat tai nguyen");
+      toast.error(error?.message ?? "Không thể cập nhật tài nguyên");
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +100,7 @@ export default function LibraryEditPage({ params }: PageProps) {
           <ResourceForm
             initialValues={initialValues}
             submitting={submitting}
-            submitLabel="Luu"
+            submitLabel="Lưu"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/library")}
           />

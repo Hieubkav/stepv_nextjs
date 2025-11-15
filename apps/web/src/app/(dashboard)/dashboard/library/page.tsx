@@ -145,7 +145,7 @@ export default function LibraryListPage() {
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/dashboard/library/${resource._id}/edit`}>
                           <Pencil className="mr-2 size-4" />
-                          Sua
+                          Sửa
                         </Link>
                       </Button>
                       <Button
