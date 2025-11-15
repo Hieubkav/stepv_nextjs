@@ -74,7 +74,7 @@ const HeroSection = dynamic(() => import('@/components/sections/HeroSection'), {
   ssr: false,
   loading: () => (
     <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -83,7 +83,7 @@ const WordSliderSection = dynamic(() => import('@/components/sections/WordSlider
   ssr: false,
   loading: () => (
     <div className="h-32 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -92,7 +92,7 @@ const GalleryPictureSection = dynamic(() => import('@/components/sections/Galler
   ssr: false,
   loading: () => (
     <div className="h-96 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -101,7 +101,7 @@ const YourAdviceSection = dynamic(() => import('@/components/sections/YourAdvice
   ssr: false,
   loading: () => (
     <div className="h-96 bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -110,7 +110,7 @@ const StatsSection = dynamic(() => import('@/components/sections/StatsSection'),
   ssr: false,
   loading: () => (
     <div className="h-64 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -119,7 +119,7 @@ const ServicesSection = dynamic(() => import('@/components/sections/ServicesSect
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -128,7 +128,7 @@ const WhyChooseUsSection = dynamic(() => import('@/components/sections/WhyChoose
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -137,7 +137,7 @@ const Why3DVisualsSection = dynamic(() => import('@/components/sections/Why3DVis
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -146,7 +146,7 @@ const TurningSection = dynamic(() => import('@/components/sections/TurningSectio
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -155,7 +155,7 @@ const WeWorkSection = dynamic(() => import('@/components/sections/WeWorkSection'
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -164,7 +164,7 @@ const CareSection = dynamic(() => import('@/components/sections/CareSection'), {
   ssr: false,
   loading: () => (
     <div className="h-48 bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -173,7 +173,7 @@ const StayControlSection = dynamic(() => import('@/components/sections/StayContr
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -183,7 +183,7 @@ const ContactFormSection = dynamic(() => import('@/components/sections/ContactFo
   ssr: false,
   loading: () => (
     <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
+      <div className="text-white">Đang tải...</div>
     </div>
   ),
 });
@@ -733,7 +733,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="text-sm uppercase tracking-wider">Dang tai noi dung trang chu...</div>
+        <div className="text-sm uppercase tracking-wider">Đang tải nội dung trang chủ...</div>
       </div>
     );
   }
@@ -778,7 +778,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center text-sm uppercase tracking-wider">
-          Chua co block nao duoc hien thi. Vui long cau hinh noi dung tai dashboard.
+          Chưa có block nào được hiển thị. Vui lòng cấu hình nội dung tại dashboard.
         </div>
       </div>
     );

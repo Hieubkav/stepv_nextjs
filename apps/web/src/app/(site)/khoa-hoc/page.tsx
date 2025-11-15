@@ -18,7 +18,7 @@ async function loadCourseList(): Promise<CourseListViewProps> {
 
   const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!convexUrl) {
-    console.warn("Khong tim thay CONVEX_URL de tai danh sach khoa hoc");
+    console.warn("Không tìm thấy CONVEX_URL để tải danh sách khóa học");
     return { ...base, error: "MISSING_CONVEX_URL" };
   }
 
@@ -64,7 +64,7 @@ async function loadCourseList(): Promise<CourseListViewProps> {
           }
         }
       } catch (mediaError) {
-        console.warn("Khong the tai danh sach media cho thumbnail", mediaError);
+        console.warn("Không thể tải danh sách media cho thumbnail", mediaError);
       }
     }
 
@@ -74,7 +74,7 @@ async function loadCourseList(): Promise<CourseListViewProps> {
       error: null,
     };
   } catch (error) {
-    console.error("Khong the tai danh sach khoa hoc", error);
+    console.error("Không thể tải danh sách khóa học", error);
     const message = error instanceof Error ? error.message : "UNKNOWN_ERROR";
     return { ...base, error: message };
   }
