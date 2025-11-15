@@ -24,8 +24,8 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({
-  titleLines = ['T?O RA.', 'THU HUT.', 'CHUY?N D?I.'],
-  subtitle = 'CHUYEN GIA HINH ?NH 3D CHO THUONG HI?U NU?C HOA & LAM D?P',
+  titleLines = ['TẠO RA.', 'THU HÚT.', 'CHUYỂN ĐỔI.'],
+  subtitle = 'CHUYÊN GIA HÌNH ẢNH 3D CHO THƯƠNG HIỆU NƯỚC HOA & LÀM ĐẸP',
   brandLogos = [
     { url: '/images/brands/brand-1.png', alt: 'Brand 1' },
     { url: '/images/brands/brand-2.png', alt: 'Brand 2' },

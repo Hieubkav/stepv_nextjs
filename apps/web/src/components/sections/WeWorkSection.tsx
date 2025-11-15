@@ -23,49 +23,49 @@ interface WeWorkSectionProps {
 
 const DEFAULT_STEPS: WorkStep[] = [
   {
-    title: 'KHOI DONG & LEN KE HOACH',
+    title: 'KHỞI ĐỘNG & LÊN KẾ HOẠCH',
     description:
-      'Bat dau bang buoi tu van de hieu ro tam nhin va muc tieu cua ban. Chung toi lap lo trinh ro rang tu nhung buoc dau.',
+      'Bắt đầu bằng buổi tư vấn để hiểu rõ tầm nhìn và mục tiêu của bạn. Chúng tôi lập lộ trình rõ ràng từ những bước đầu.',
     icon: 'Lightbulb',
   },
   {
-    title: 'PHAT TRIEN Y TUONG',
+    title: 'PHÁT TRIỂN Ý TƯỞNG',
     description:
-      'Doi ngu sang tao de xuat y tuong phu hop thuong hieu va muc tieu cua du an, giup xac dinh phong cach ngay tu dau.',
+      'Đội ngũ sáng tạo đề xuất ý tưởng phù hợp thương hiệu và mục tiêu của dự án, giúp xác định phong cách ngay từ đầu.',
     icon: 'PenTool',
   },
   {
-    title: 'MO HINH HOA & THIET KE',
+    title: 'MÔ HÌNH HÓA & THIẾT KẾ',
     description:
-      'Su dung cong cu hien dai de tao model 3D chi tiet, vat lieu va anh sang chinh xac theo ban phac thao.',
+      'Sử dụng công cụ hiện đại để tạo model 3D chi tiết, vật liệu và ánh sáng chính xác theo bản phác thảo.',
     icon: 'Cube',
   },
   {
-    title: 'HOAT HINH & HIEU UNG',
+    title: 'HOẠT HÌNH & HIỆU ỨNG',
     description:
-      'Them chuyen dong va hieu ung hinh anh de tang cam xuc, tao ra noi dung cuon hut va kha nang ke chuyen ro rang.',
+      'Thêm chuyển động và hiệu ứng hình ảnh để tăng cảm xúc, tạo ra nội dung cuốn hút và khả năng kể chuyện rõ ràng.',
     icon: 'PlayCircle',
   },
   {
-    title: 'DANH GIA & HOAN THIEN',
+    title: 'ĐÁNH GIÁ & HOÀN THIỆN',
     description:
-      'Thu thap feedback, dieu chinh chi tiet cho den khi tat ca diem cham trai nghiem deu hoan hao.',
+      'Thu thập feedback, điều chỉnh chi tiết cho đến khi tất cả điểm chạm trải nghiệm đều hoàn hảo.',
     icon: 'Search',
   },
   {
-    title: 'BAN GIAO CUOI CUNG',
+    title: 'BÀN GIAO CUỐI CÙNG',
     description:
-      'Xuat ban giao du an theo dinh dang ban yeu cau, san sang su dung tren moi kenh marketing.',
+      'Xuất bàn giao dự án theo định dạng bạn yêu cầu, sẵn sàng sử dụng trên mọi kênh marketing.',
     icon: 'CheckCircle2',
   },
 ];
 
-const DEFAULT_CTAS: WorkCta[] = [{ label: 'BAT DAU DU AN', url: '#contact' }];
+const DEFAULT_CTAS: WorkCta[] = [{ label: 'BẮT ĐẦU DỰ ÁN', url: '#contact' }];
 
 const WeWorkSection = ({
-  title = 'CACH CHUNG TOI LAM VIEC',
+  title = 'CÁCH CHÚNG TÔI LÀM VIỆC',
   subtitle =
-    'Tai DOHY Media, chung toi xem trong quy trinh lam viec ro rang va minh bach de dam bao moi du an luon dieu huong dung nhu ban mong doi.',
+    'Tại DOHY Media, chúng tôi xem trọng quy trình làm việc rõ ràng và minh bạch để đảm bảo mọi dự án luôn điều hướng đúng như bạn mong đợi.',
   steps,
   ctas,
 }: WeWorkSectionProps) => {

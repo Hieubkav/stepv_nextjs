@@ -137,7 +137,7 @@ function ArrayFieldTemplate({ canAdd, items, onAddClick, title, schema, uiSchema
   const description = schema?.description;
   const addLabel = useMemo(() => {
     const opts = (uiSchema?.["ui:options"] ?? {}) as Record<string, unknown>;
-    return typeof opts.addButtonLabel === "string" ? opts.addButtonLabel : "Them muc";
+    return typeof opts.addButtonLabel === "string" ? opts.addButtonLabel : "Thêm mục";
   }, [uiSchema]);
 
   const itemKeys = useMemo(() => items.map((item) => item.key).join("|"), [items]);
@@ -169,7 +169,7 @@ function ArrayFieldTemplate({ canAdd, items, onAddClick, title, schema, uiSchema
       return `${(arraySchema as { title: string }).title} ${index + 1}`;
     }
 
-    return `Muc ${index + 1}`;
+    return `Mục ${index + 1}`;
   };
 
   return (
@@ -193,22 +193,22 @@ function ArrayFieldTemplate({ canAdd, items, onAddClick, title, schema, uiSchema
                 <div className="flex flex-wrap items-center gap-2">
                   {item.hasMoveUp ? (
                     <Button type="button" variant="outline" size="sm" onClick={item.onReorderClick(item.index, item.index - 1)}>
-                      <ChevronUp className="me-1 size-4" /> Len
+                      <ChevronUp className="me-1 size-4" /> Lên
                     </Button>
                   ) : null}
                   {item.hasMoveDown ? (
                     <Button type="button" variant="outline" size="sm" onClick={item.onReorderClick(item.index, item.index + 1)}>
-                      <ChevronDown className="me-1 size-4" /> Xuong
+                      <ChevronDown className="me-1 size-4" /> Xuống
                     </Button>
                   ) : null}
                   {item.hasRemove ? (
                     <Button type="button" variant="destructive" size="sm" onClick={item.onDropIndexClick(item.index)}>
-                      <Trash2 className="me-1 size-4" /> Xoa
+                      <Trash2 className="me-1 size-4" /> Xóa
                     </Button>
                   ) : null}
                   <Button type="button" variant="ghost" size="sm" onClick={() => toggleItem(item.key)}>
                     {isOpen ? <ChevronUp className="me-1 size-4" /> : <ChevronDown className="me-1 size-4" />}
-                    <span className="text-xs">{isOpen ? "Thu gon" : "Mo"}</span>
+                    <span className="text-xs">{isOpen ? "Thu gọn" : "Mở"}</span>
                   </Button>
                 </div>
               </div>
@@ -392,7 +392,7 @@ function IconPickerWidget({ value, onChange, disabled, readonly, options }: Widg
       >
         <span className="flex items-center gap-2">
           {selected ? <selected.Icon className="size-4" /> : <Sparkles className="size-4 text-muted-foreground" />}
-          <span className="text-sm">{selected ? selected.label : "Chon icon"}</span>
+          <span className="text-sm">{selected ? selected.label : "Chọn icon"}</span>
         </span>
         <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", isOpen ? "rotate-180" : "rotate-0")} />
       </Button>
@@ -424,7 +424,7 @@ function IconPickerWidget({ value, onChange, disabled, readonly, options }: Widg
           </div>
           <div className="flex justify-end border-t px-3 py-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => handleSelect(undefined)} disabled={disabled || readonly}>
-              Xoa icon
+              Xóa icon
             </Button>
           </div>
         </div>

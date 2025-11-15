@@ -99,19 +99,19 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tieu de" },
-        subtitle: { type: "string", title: "Mo ta" },
+        title: { type: "string", title: "Tiêu đề" },
+        subtitle: { type: "string", title: "Mô tả" },
         items: {
           type: "array",
-          title: "Dich vu",
+          title: "Dịch vụ",
           items: {
             type: "object",
             properties: {
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
-              title: { type: "string", title: "Tieu de" },
-              description: { type: "string", title: "Mo ta" },
-              image: { type: "string", title: "Anh" },
-              linkUrl: { type: "string", title: "Lien ket", format: "uri" },
+              title: { type: "string", title: "Tiêu đề" },
+              description: { type: "string", title: "Mô tả" },
+              image: { type: "string", title: "Ảnh" },
+              linkUrl: { type: "string", title: "Liên kết", format: "uri" },
             },
             required: ["title"],
           },
@@ -121,7 +121,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     uiSchema: {
       subtitle: { "ui:widget": "textarea" },
       items: {
-        "ui:options": { addButtonLabel: "Them dich vu" },
+        "ui:options": { addButtonLabel: "Thêm dịch vụ" },
         items: {
           icon: { "ui:widget": "iconPicker" },
           description: { "ui:widget": "textarea" },
@@ -139,19 +139,19 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     schema: {
       type: "object",
       properties: {
-        backgroundColor: { type: "string", title: "Mau nen" },
+        backgroundColor: { type: "string", title: "Màu nền" },
         items: {
           type: "array",
-          title: "Chi so",
+          title: "Chỉ số",
           minItems: 4,
           maxItems: 4,
           default: BLOCK_DEFAULT_DATA["stats"].items,
           items: {
             type: "object",
             properties: {
-              number: { type: "string", title: "Gia tri" },
-              label: { type: "string", title: "Nhan" },
-              delay: { type: "number", title: "Do tre (ms)" },
+              number: { type: "string", title: "Giá trị" },
+              label: { type: "string", title: "Nhãn" },
+              delay: { type: "number", title: "Độ trễ (ms)" },
             },
             required: ["number", "label"],
           },
@@ -210,19 +210,19 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tiêu d?" },
-        subtitle: { type: "string", title: "Mô t?" },
+        title: { type: "string", title: "Tiêu đề" },
+        subtitle: { type: "string", title: "Mô tả" },
         videoUrl: { type: "string", title: "Video" },
         videoAlt: { type: "string", title: "Video alt" },
         items: {
           type: "array",
-          title: "Ly do",
+          title: "Lý do",
           items: {
             type: "object",
             properties: {
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
-              title: { type: "string", title: "Tiêu d?" },
-              description: { type: "string", title: "Mô t?" },
+              title: { type: "string", title: "Tiêu đề" },
+              description: { type: "string", title: "Mô tả" },
             },
             required: ["title", "description"],
           },
@@ -389,15 +389,15 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     schema: {
       type: "object",
       properties: {
-        title: { type: "string", title: "Tiêu d?" },
-        subtitle: { type: "string", title: "Mô t?" },
+        title: { type: "string", title: "Tiêu đề" },
+        subtitle: { type: "string", title: "Mô tả" },
         ctas: {
           type: "array",
           title: "CTA",
           items: {
             type: "object",
             properties: {
-              label: { type: "string", title: "Nhan nút" },
+              label: { type: "string", title: "Nhãn nút" },
               url: { type: "string", title: "Du?ng d?n", format: "uri" },
             },
           },
@@ -409,8 +409,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             type: "object",
             properties: {
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
-              title: { type: "string", title: "Tiêu d?" },
-              description: { type: "string", title: "Mô t?" },
+              title: { type: "string", title: "Tiêu đề" },
+              description: { type: "string", title: "Mô tả" },
             },
             required: ["title", "description"],
           },
@@ -482,19 +482,19 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           type: "object",
           title: "CTA",
           properties: {
-            label: { type: "string", title: "Nhan nut" },
-            url: { type: "string", title: "Duong dan", format: "uri" }
+            label: { type: "string", title: "Nhãn nút" },
+            url: { type: "string", title: "Đường dẫn", format: "uri" }
           }
         },
         contactTitle: { type: "string", title: "Tieu de lien he" },
         contactDescription: { type: "string", title: "Mo ta lien he" },
         contactLinks: {
           type: "array",
-          title: "Lien he truc tiep",
+          title: "Liên hệ trực tiếp",
           items: {
             type: "object",
             properties: {
-              label: { type: "string", title: "Nhan" },
+              label: { type: "string", title: "Nhãn" },
               value: { type: "string", title: "Gia tri" },
               href: { type: "string", title: "Lien ket" }
             }
@@ -504,12 +504,12 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         formDescription: { type: "string", title: "Mo ta form" },
         fields: {
           type: "array",
-          title: "Truong form",
+          title: "Trường form",
           items: {
             type: "object",
             properties: {
               name: { type: "string", title: "Ten truong" },
-              label: { type: "string", title: "Nhan hien thi" },
+              label: { type: "string", title: "Nhãn hiển thị" },
               type: {
                 type: "string",
                 title: "Kieu",
@@ -519,11 +519,11 @@ export const BLOCK_PRESETS: BlockPreset[] = [
               required: { type: "boolean", title: "Bat buoc" },
               options: {
                 type: "array",
-                title: "Lua chon (voi select)",
+                title: "Lựa chọn (với select)",
                 items: {
                   type: "object",
                   properties: {
-                    label: { type: "string", title: "Nhan" },
+                    label: { type: "string", title: "Nhãn" },
                     value: { type: "string", title: "Gia tri" }
                   }
                 }
@@ -533,7 +533,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           }
         },
         privacyText: { type: "string", title: "Noi dung dong y" },
-        submitLabel: { type: "string", title: "Nhan nut gui" },
+        submitLabel: { type: "string", title: "Nhãn nút gửi" },
         promiseHighlight: { type: "string", title: "Thong diep cam ket" },
         socialLinks: {
           type: "array",
@@ -542,7 +542,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             type: "object",
             properties: {
               platform: { type: "string", title: "Nen tang" },
-              url: { type: "string", title: "Duong dan", format: "uri" },
+              url: { type: "string", title: "Đường dẫn", format: "uri" },
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
@@ -556,26 +556,26 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       formDescription: { "ui:widget": "textarea" },
       privacyText: { "ui:widget": "textarea" },
       contactLinks: {
-        "ui:options": { addButtonLabel: "Them lien he" },
+        "ui:options": { addButtonLabel: "Thêm liên hệ" },
         items: {
           value: { "ui:placeholder": "contact@domain.com" },
           href: { "ui:placeholder": "mailto:..." }
         }
       },
       fields: {
-        "ui:options": { addButtonLabel: "Them truong" },
+        "ui:options": { addButtonLabel: "Thêm trường" },
         items: {
           options: {
-            "ui:options": { addButtonLabel: "Them lua chon" },
+            "ui:options": { addButtonLabel: "Thêm lựa chọn" },
             items: {
-              label: { "ui:placeholder": "Lua chon" },
+              label: { "ui:placeholder": "Lựa chọn" },
               value: { "ui:placeholder": "value" }
             }
           }
         }
       },
       socialLinks: {
-        "ui:options": { addButtonLabel: "Them social" },
+        "ui:options": { addButtonLabel: "Thêm social" },
         items: {
           icon: { "ui:widget": "iconPicker" }
         }
@@ -596,8 +596,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           items: {
             type: "object",
             properties: {
-              label: { type: "string", title: "Nhan" },
-              url: { type: "string", title: "Duong dan", format: "uri" },
+              label: { type: "string", title: "Nhãn" },
+              url: { type: "string", title: "Đường dẫn", format: "uri" },
               highlight: { type: "boolean", title: "Noi bat" }
             }
           }
@@ -609,7 +609,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             type: "object",
             properties: {
               platform: { type: "string", title: "Nen tang" },
-              url: { type: "string", title: "Duong dan", format: "uri" },
+              url: { type: "string", title: "Đường dẫn", format: "uri" },
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
@@ -618,8 +618,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           type: "object",
           title: "CTA",
           properties: {
-            label: { type: "string", title: "Nhan nut" },
-            url: { type: "string", title: "Duong dan", format: "uri" }
+            label: { type: "string", title: "Nhãn nút" },
+            url: { type: "string", title: "Đường dẫn", format: "uri" }
           }
         }
       }
@@ -634,13 +634,13 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         "ui:options": { placeholder: "/images/header-bg.jpg" }
       },
       menuItems: {
-        "ui:options": { addButtonLabel: "Them menu" },
+        "ui:options": { addButtonLabel: "Thêm menu" },
         items: {
           url: { "ui:placeholder": "https://..." }
         }
       },
       socials: {
-        "ui:options": { addButtonLabel: "Them social" },
+        "ui:options": { addButtonLabel: "Thêm social" },
         items: {
           icon: { "ui:widget": "iconPicker" }
         }
@@ -659,8 +659,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           type: "object",
           title: "CTA",
           properties: {
-            label: { type: "string", title: "Nhan nut" },
-            url: { type: "string", title: "Duong dan", format: "uri" }
+            label: { type: "string", title: "Nhãn nút" },
+            url: { type: "string", title: "Đường dẫn", format: "uri" }
           }
         }
       }
@@ -678,7 +678,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         logo: { type: "string", title: "Logo" },
         columns: {
           type: "array",
-          title: "Cot",
+          title: "Cột",
           items: {
             type: "object",
             properties: {
@@ -689,8 +689,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
                 items: {
                   type: "object",
                   properties: {
-                    label: { type: "string", title: "Nhan" },
-                    url: { type: "string", title: "Duong dan", format: "uri" },
+                    label: { type: "string", title: "Nhãn" },
+                    url: { type: "string", title: "Đường dẫn", format: "uri" },
                     highlight: { type: "boolean", title: "Noi bat" }
                   }
                 }
@@ -706,7 +706,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             type: "object",
             properties: {
               platform: { type: "string", title: "Nen tang" },
-              url: { type: "string", title: "Duong dan", format: "uri" },
+              url: { type: "string", title: "Đường dẫn", format: "uri" },
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
@@ -724,10 +724,10 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     },
     uiSchema: {
       columns: {
-        "ui:options": { addButtonLabel: "Them cot" },
+        "ui:options": { addButtonLabel: "Thêm cột" },
         items: {
           links: {
-            "ui:options": { addButtonLabel: "Them link" },
+            "ui:options": { addButtonLabel: "Thêm link" },
             items: {
               url: { "ui:placeholder": "https://..." }
             }
@@ -735,13 +735,13 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         }
       },
       socialLinks: {
-        "ui:options": { addButtonLabel: "Them social" },
+        "ui:options": { addButtonLabel: "Thêm social" },
         items: {
           icon: { "ui:widget": "iconPicker" }
         }
       },
       locationLines: {
-        "ui:options": { addButtonLabel: "Them dong" }
+        "ui:options": { addButtonLabel: "Thêm dòng" }
       }
     } satisfies UiSchema,
         template: BLOCK_DEFAULT_DATA["siteFooter"],},
@@ -753,7 +753,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       properties: {
         words: {
           type: "array",
-          title: "Tu khoa",
+          title: "Từ khóa",
           items: {
             type: "string",
             title: "Tu"
@@ -763,8 +763,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     },
     uiSchema: {
       words: {
-        "ui:options": { addButtonLabel: "Them tu" },
-        items: { "ui:placeholder": "Tu khoa" }
+        "ui:options": { addButtonLabel: "Thêm từ" },
+        items: { "ui:placeholder": "Từ khóa" }
       }
     } satisfies UiSchema,
         template: BLOCK_DEFAULT_DATA["wordSlider"],},

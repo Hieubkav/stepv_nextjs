@@ -5,4 +5,6 @@
  - Fallback 
  - UX/UI tối ưu hơn '
  - Tối ưu tốc độ load trang chủ , fix lỗi ux/ui component 
- 
+ - Xem qua các ảnh phải được chọn dễ dàng và có preview
+ - Setting phải cấu hình được web
+ - Xem các chỗ Step V Studio hãy thay băng setting đi cho chuẩn 
