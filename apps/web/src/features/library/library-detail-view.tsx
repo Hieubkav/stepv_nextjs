@@ -14,11 +14,11 @@ import type { LibraryResourceDetail, MediaImageDoc } from "./types";
 const detailPricingConfig = {
   free: {
     label: "Miễn phí",
-    badgeClassName: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/50",
+    badgeClassName: "bg-emerald-500/90 text-white border-0",
   },
   paid: {
     label: "Trả phí",
-    badgeClassName: "bg-amber-400/20 text-amber-200 border border-amber-400/50",
+    badgeClassName: "bg-amber-500/90 text-white border-0",
   },
 } as const;
 
@@ -148,26 +148,26 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
         <div className="mb-10" />
 
         <div className="grid gap-10 lg:grid-cols-[2fr,1.1fr]">
-          <div className="space-y-8">
+          <div className="space-y-6">
             <div
               className={cn(
-                "overflow-hidden rounded-3xl border bg-white/[0.05] transition-all duration-300",
+                "overflow-hidden rounded-2xl border bg-white/[0.05] transition-all duration-200",
                 activeImageUrl
-                  ? "border-white/15 shadow-[0_0_32px_rgba(240,180,41,0.15)]"
+                  ? "border-amber-500/30"
                   : "border-white/10",
               )}
             >
               {activeImageUrl ? (
                 <img src={activeImageUrl} alt={resource.title} className="h-full w-full object-cover" />
               ) : (
-                <div className="flex h-80 items-center justify-center text-sm uppercase tracking-[0.3em] text-white/55">
+                <div className="flex h-80 items-center justify-center text-sm uppercase tracking-[0.15em] text-white/50">
                   Chưa có ảnh đại diện
                 </div>
               )}
             </div>
 
             {galleryUrls.length > 0 && (
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-wrap gap-3">
                 {galleryUrls.map((url) => {
                   const isActive = activeImageUrl === url;
                   return (
@@ -176,9 +176,9 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                       type="button"
                       onClick={() => setActiveImageUrl(url)}
                       className={cn(
-                        "group h-28 flex-1 min-w-[160px] overflow-hidden rounded-2xl border bg-white/[0.03] transition-all duration-300",
+                        "group h-28 flex-1 min-w-[160px] overflow-hidden rounded-xl border bg-white/[0.03] transition-all duration-200",
                         isActive
-                          ? "border-[#f6e05e]/70 shadow-[0_0_18px_rgba(240,180,41,0.3)]"
+                          ? "border-amber-500/50"
                           : "border-white/10 hover:border-white/25",
                       )}
                     >
@@ -194,12 +194,12 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
             )}
 
             <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-4">
-                <Badge className={cn("uppercase tracking-[0.3em]", pricing.badgeClassName)}>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge className={cn("text-xs font-medium", pricing.badgeClassName)}>
                   {pricing.label}
                 </Badge>
-                <span className="text-xs uppercase tracking-[0.3em] text-white/55">
-                  Cập nhật ngày {releaseDate}
+                <span className="text-xs uppercase tracking-[0.15em] text-white/60">
+                  {releaseDate}
                 </span>
               </div>
 
@@ -209,13 +209,13 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
               )}
 
               {softwares.length > 0 && (
-                <div className="space-y-2">
-                  <div className="text-xs uppercase tracking-[0.3em] text-white/55">Tương thích</div>
+                <div className="space-y-3">
+                  <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Tương thích</div>
                   <div className="flex flex-wrap gap-2">
                     {softwares.map(({ software }) => (
                       <span
                         key={String(software._id)}
-                        className="rounded-full border border-white/15 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.3em] text-white/82"
+                        className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-xs text-white/80"
                       >
                         {software.name}
                       </span>
@@ -226,12 +226,12 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
               {resource.features && resource.features.length > 0 && (
                 <div className="space-y-3">
-                  <h2 className="text-lg font-semibold text-white">Tính năng nổi bật</h2>
-                  <ul className="space-y-2 text-sm text-white/82">
+                  <h2 className="text-base font-semibold text-white">Tính năng nổi bật</h2>
+                  <ul className="space-y-2 text-sm text-white/80">
                     {resource.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
-                        <span className="mt-1 flex size-5 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-400/10">
-                          <Check className="size-3 text-emerald-300" />
+                        <span className="mt-0.5 flex size-5 items-center justify-center rounded-full border border-emerald-500/60 bg-emerald-500/20">
+                          <Check className="size-3 text-emerald-400" />
                         </span>
                         <span>{feature}</span>
                       </li>
@@ -243,16 +243,16 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
           </div>
 
           <aside className="space-y-6">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.04] p-6 backdrop-blur">
-              <div className="space-y-1">
-                <div className="text-xs uppercase tracking-[0.3em] text-white/55">Giá</div>
+            <div className="space-y-4 rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+              <div className="space-y-2">
+                <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Giá</div>
                 <div className="text-2xl font-semibold text-white">
-                  {resource.pricingType === "free" ? "Free" : "Liên hệ để nhận báo giá"}
+                  {resource.pricingType === "free" ? "Miễn phí" : "Liên hệ báo giá"}
                 </div>
               </div>
 
-              <div className="space-y-3 rounded-2xl border border-white/10 bg-black/40 p-4">
-                <div className="text-xs uppercase tracking-[0.3em] text-white/55">Thông tin liên hệ</div>
+              <div className="space-y-3 rounded-xl border border-white/10 bg-black/30 p-4">
+                <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Liên hệ</div>
                 <div className="flex items-center gap-3 text-sm text-white/82">
                   <Mail className="size-4 text-white/55" />
                   <a href={`mailto:${contactEmail}`} className="hover:text-primary">
@@ -269,8 +269,8 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-sm text-white/78">
-              <h3 className="text-base font-semibold text-white">Ghi chú</h3>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-sm text-white/75">
+              <h3 className="text-sm font-semibold text-white/90">Ghi chú</h3>
               <p className="mt-2">
                 Nếu bạn cần hỗ trợ cài đặt hoặc demo trước khi mua, hãy liên hệ đội ngũ DOHY Studio để được tư vấn chi tiết.
               </p>

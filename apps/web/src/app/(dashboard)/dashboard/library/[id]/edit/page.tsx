@@ -19,7 +19,6 @@ function toInitial(resource: any | null): ResourceFormValues {
     title: resource?.title ?? "",
     slug: resource?.slug ?? "",
     description: resource?.description ?? "",
-    featuresText: resource?.features ? resource.features.join("") : "",
     pricingType: resource?.pricingType ?? "free",
     coverImageId: resource?.coverImageId ?? "",
     downloadUrl: resource?.downloadUrl ?? "",
@@ -61,10 +60,6 @@ export default function LibraryEditPage({ params }: PageProps) {
     }
     const orderNumber = Number.parseInt(values.order, 10);
     const parsedOrder = Number.isFinite(orderNumber) ? orderNumber : resource.order;
-    const features = values.featuresText
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
 
     setSubmitting(true);
     try {
@@ -73,7 +68,6 @@ export default function LibraryEditPage({ params }: PageProps) {
         title,
         slug,
         description: values.description.trim() || undefined,
-        features,
         pricingType: values.pricingType,
         coverImageId: values.coverImageId.trim() || undefined,
         downloadUrl: values.downloadUrl.trim() || undefined,

@@ -44,11 +44,11 @@ type ResourceExtrasMap = Record<string, LibraryResourceSoftwareLink[]>;
 const pricingConfig: Record<LibraryResourceDoc["pricingType"], { label: string; badgeClassName: string }> = {
   free: {
     label: "Free",
-    badgeClassName: "bg-emerald-400/20 text-emerald-200 border border-emerald-400/50",
+    badgeClassName: "bg-emerald-500/90 text-white border-0",
   },
   paid: {
     label: "Premium",
-    badgeClassName: "bg-amber-400/20 text-amber-200 border border-amber-400/50",
+    badgeClassName: "bg-amber-500/90 text-white border-0",
   },
 };
 
@@ -64,29 +64,29 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
   return (
     <Link
       href={`/thu-vien/${resource.slug}`}
-      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/60 hover:bg-white/[0.06]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-4 transition-all duration-200 hover:border-amber-500/40 hover:bg-white/[0.06]"
     >
-      <div className="relative h-44 overflow-hidden rounded-2xl bg-gradient-to-br from-white/10 via-transparent to-white/10">
+      <div className="relative h-44 overflow-hidden rounded-xl bg-white/5">
         {coverUrl ? (
           <img
             src={coverUrl}
             alt={resource.title}
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.3em] text-white/55">
+          <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.2em] text-white/50">
             No cover
           </div>
         )}
-        <div className="absolute left-4 top-4 flex items-center gap-2">
-          <Badge className={cn("uppercase tracking-wide", pricing.badgeClassName)}>{pricing.label}</Badge>
+        <div className="absolute left-3 top-3 flex items-center gap-2">
+          <Badge className={cn("text-xs font-medium", pricing.badgeClassName)}>{pricing.label}</Badge>
         </div>
         {softwares.length > 0 && (
-          <div className="absolute right-4 top-4 flex -space-x-2">
+          <div className="absolute right-3 top-3 flex -space-x-2">
             {softwares.slice(0, 3).map((software) => (
               <div
                 key={software.slug}
-                className="flex size-8 items-center justify-center rounded-full border border-white/20 bg-black/60 text-xs font-medium uppercase text-white/70 backdrop-blur-md"
+                className="flex size-8 items-center justify-center rounded-full border border-white/20 bg-black/70 text-xs font-medium text-white/80"
                 title={software.name}
               >
                 {software.iconUrl ? (
@@ -104,17 +104,17 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
         )}
       </div>
 
-      <div className="mt-5 flex flex-1 flex-col gap-3">
+      <div className="mt-4 flex flex-1 flex-col gap-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-lg font-semibold text-white transition-colors group-hover:text-primary">
+            <h3 className="text-lg font-semibold text-white transition-colors group-hover:text-amber-400">
               {resource.title}
             </h3>
             {resource.description && (
-              <p className="mt-1 line-clamp-2 text-sm text-white/72">{resource.description}</p>
+              <p className="mt-1 line-clamp-2 text-sm text-white/70">{resource.description}</p>
             )}
           </div>
-          <ArrowUpRight className="size-5 flex-shrink-0 text-white/30 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1 group-hover:text-primary" />
+          <ArrowUpRight className="size-5 flex-shrink-0 text-white/30 transition-all group-hover:text-amber-400" />
         </div>
 
         {resource.features && resource.features.length > 0 && (
@@ -122,7 +122,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
             {resource.features.slice(0, 3).map((feature) => (
               <span
                 key={feature}
-                className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-white/55"
+                className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-xs text-white/60"
               >
                 {feature}
               </span>
@@ -130,11 +130,11 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between text-xs font-medium uppercase tracking-[0.2em] text-white/45">
+        <div className="mt-auto flex items-center justify-between text-xs font-medium uppercase tracking-[0.15em] text-white/50">
           <span>{resource.pricingType === "free" ? "Miễn phí" : "Trả phí"}</span>
-          <span className="flex items-center gap-1">
-            Khám phá
-            <ArrowUpRight className="size-4" />
+          <span className="flex items-center gap-1 text-white/40 group-hover:text-amber-400 transition-colors">
+            Xem chi tiết
+            <ArrowUpRight className="size-3.5" />
           </span>
         </div>
       </div>
@@ -169,17 +169,17 @@ function FilterPill({ active, label, onClick, iconUrl }: FilterPillProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        "group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs uppercase tracking-[0.25em] transition-all duration-300",
+        "group inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs uppercase tracking-[0.2em] transition-all duration-200",
         active
-          ? "border-transparent bg-gradient-to-br from-[#f6e05e] to-[#f0b429] text-[#18120b] shadow-[0_0_24px_rgba(240,180,41,0.35)]"
-          : "border-white/5 bg-white/[0.02] text-white/65 hover:text-white hover:border-white/15",
+          ? "border-amber-500/50 bg-amber-500 text-white"
+          : "border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 hover:bg-white/[0.06]",
       )}
     >
       {iconUrl && (
         <span
           className={cn(
-            "flex size-5 items-center justify-center overflow-hidden rounded-full border bg-black/70 transition-colors",
-            active ? "border-[#f6e05e]/70 bg-[#f6e05e]/20" : "border-white/10",
+            "flex size-5 items-center justify-center overflow-hidden rounded-full border transition-colors",
+            active ? "border-white/30 bg-white/20" : "border-white/15 bg-black/40",
           )}
         >
           <img src={iconUrl} alt={label} className="size-full object-cover" />
@@ -388,15 +388,15 @@ export default function LibraryListView() {
           </div>
         </div>
 
-        <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur">
-          <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-white/55">
+        <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+          <div className="flex items-center gap-2 text-sm font-medium text-white/70">
             <SlidersHorizontal className="size-4" />
-            Bộ lọc tài nguyên
+            Bộ lọc
           </div>
 
-          <div className="mt-6 flex flex-col gap-8">
+          <div className="mt-6 flex flex-col gap-6">
             <div className="space-y-3">
-              <div className="text-xs uppercase tracking-[0.25em] text-white/55">Phần mềm</div>
+              <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Phần mềm</div>
               {softwares === undefined ? (
                 <div className="flex flex-wrap gap-2">
                   {Array.from({ length: 6 }).map((_, index) => (
@@ -426,7 +426,7 @@ export default function LibraryListView() {
             </div>
 
             <div className="space-y-3">
-              <div className="text-xs uppercase tracking-[0.25em] text-white/55">Giá</div>
+              <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Giá</div>
               <div className="flex flex-wrap gap-2">
                 {priceOptions.map((option) => (
                   <button
@@ -434,10 +434,10 @@ export default function LibraryListView() {
                     type="button"
                     onClick={() => setState((prev) => ({ ...prev, selectedPrice: option.value }))}
                     className={cn(
-                      "rounded-full border px-5 py-2 text-xs uppercase tracking-[0.25em] transition-all duration-300",
+                      "rounded-full border px-5 py-2 text-xs uppercase tracking-[0.15em] transition-all duration-200",
                       state.selectedPrice === option.value
-                        ? "border-transparent bg-gradient-to-br from-[#f6e05e] to-[#f0b429] text-[#18120b] shadow-[0_0_20px_rgba(240,180,41,0.3)]"
-                        : "border-white/5 bg-white/[0.02] text-white/65 hover:text-white hover:border-white/15",
+                        ? "border-amber-500/50 bg-amber-500 text-white"
+                        : "border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 hover:bg-white/[0.06]",
                     )}
                   >
                     {option.label}

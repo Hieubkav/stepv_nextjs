@@ -14,7 +14,6 @@ function buildInitial(values?: Partial<ResourceFormValues>): ResourceFormValues 
     title: values?.title ?? "",
     slug: values?.slug ?? "",
     description: values?.description ?? "",
-    featuresText: values?.featuresText ?? "",
     pricingType: values?.pricingType ?? "free",
     coverImageId: values?.coverImageId ?? "",
     downloadUrl: values?.downloadUrl ?? "",
@@ -44,10 +43,6 @@ export default function LibraryCreatePage() {
     }
     const orderNumber = Number.parseInt(values.order, 10);
     const parsedOrder = Number.isFinite(orderNumber) ? orderNumber : resources?.length ?? 0;
-    const features = values.featuresText
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean);
 
     setSubmitting(true);
     try {
@@ -55,7 +50,6 @@ export default function LibraryCreatePage() {
         title,
         slug,
         description: values.description.trim() || undefined,
-        features,
         pricingType: values.pricingType,
         coverImageId: values.coverImageId.trim() || undefined,
         downloadUrl: values.downloadUrl.trim() || undefined,
