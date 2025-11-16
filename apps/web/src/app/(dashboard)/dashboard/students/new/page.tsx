@@ -48,7 +48,7 @@ export default function StudentCreatePage() {
         account,
         password,
         fullName,
-        email: values.email.trim() || undefined,
+        email: values.email.trim(),
         phone: values.phone.trim() || undefined,
         notes: values.notes.trim() || undefined,
         tags: values.tagsText

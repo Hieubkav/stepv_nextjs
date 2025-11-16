@@ -178,16 +178,23 @@ export default defineSchema({
     account: v.string(),
     password: v.string(),
     fullName: v.string(),
-    email: v.optional(v.string()),
+    email: v.string(),
     phone: v.optional(v.string()),
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
+    // Password reset fields
+    resetToken: v.optional(v.string()),
+    resetTokenExpiry: v.optional(v.number()),
+    // Remember me fields
+    rememberToken: v.optional(v.string()),
+    rememberTokenExpiry: v.optional(v.number()),
     order: v.number(),
     active: v.boolean(),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_account", ["account"])
+    .index("by_email", ["email"])
     .index("by_active_order", ["active", "order"]),
 
   // Course enrollments (quan he user - khoa hoc)
@@ -203,6 +210,16 @@ export default defineSchema({
     .index("by_course_user", ["courseId", "userId"])
     .index("by_user", ["userId"])
     .index("by_course", ["courseId"]),
+
+  // Course favorites (danh sach yeu thich hoc vien)
+  course_favorites: defineTable({
+    studentId: v.id("students"),
+    courseId: v.id("courses"),
+    createdAt: v.number(),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_course", ["courseId"])
+    .index("by_student_course", ["studentId", "courseId"]),
 
   // Visitor tracking sessions
   visitor_sessions: defineTable({

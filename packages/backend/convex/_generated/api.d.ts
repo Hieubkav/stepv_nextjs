@@ -13,7 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as course_favorites from "../course_favorites.js";
 import type * as courses from "../courses.js";
+import type * as email from "../email.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as homepage from "../homepage.js";
 import type * as library from "../library.js";
@@ -35,7 +37,9 @@ import type * as visitors from "../visitors.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  course_favorites: typeof course_favorites;
   courses: typeof courses;
+  email: typeof email;
   healthCheck: typeof healthCheck;
   homepage: typeof homepage;
   library: typeof library;
