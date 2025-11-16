@@ -2,7 +2,7 @@
 
 import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
@@ -96,6 +96,7 @@ type LearnerTopBarProps = {
 };
 
 function LearnerTopBar({ logo }: LearnerTopBarProps) {
+  const router = useRouter();
   const pathname = usePathname() ?? "/";
   const { student, logout } = useStudentAuth();
 
@@ -152,7 +153,7 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="border-border/70 px-4"
+                  className="border-border/70 px-3 h-9"
                 >
                   <div className="flex flex-col items-start leading-tight">
                     <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -192,11 +193,20 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="px-4" asChild>
-                <Link href="/khoa-hoc/dang-nhap">Đăng nhập</Link>
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-4"
+                onClick={() => router.push("/khoa-hoc/dang-nhap")}
+              >
+                Đăng nhập
               </Button>
-              <Button size="sm" className="px-4" asChild>
-                <Link href="/khoa-hoc/dang-ky">Đăng ký</Link>
+              <Button
+                size="sm"
+                className="px-4"
+                onClick={() => router.push("/khoa-hoc/dang-ky")}
+              >
+                Đăng ký
               </Button>
             </div>
           )}
