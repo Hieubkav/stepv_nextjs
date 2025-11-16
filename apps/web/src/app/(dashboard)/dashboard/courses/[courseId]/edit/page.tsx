@@ -13,6 +13,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
+import { getYoutubeThumbnailUrl } from "@/lib/youtube";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 
@@ -84,6 +86,14 @@ type StudentSummary = {
   phone?: string;
   active: boolean;
 };
+
+type CourseTab = "info" | "content" | "students";
+
+const COURSE_TABS: { key: CourseTab; label: string }[] = [
+  { key: "info", label: "Thông tin khóa học" },
+  { key: "content", label: "Nội dung khóa học" },
+  { key: "students", label: "Học viên" },
+];
 
 
 const buildCourseInitial = (course?: CourseDetail["course"]): CourseFormValues => ({
@@ -174,6 +184,7 @@ export default function CourseEditPage() {
   const [enrollmentEditSubmitting, setEnrollmentEditSubmitting] = useState(false);
   const [editingEnrollment, setEditingEnrollment] = useState<EnrollmentDoc | null>(null);
   const [enrollmentEditForm, setEnrollmentEditForm] = useState({ progress: "", lessonId: "" });
+  const [activeTab, setActiveTab] = useState<CourseTab>("info");
 
   const course = detail?.course;
   const courseDetailHref = useMemo(() => {
@@ -487,21 +498,20 @@ export default function CourseEditPage() {
       toast.error("Không tìm thấy thông tin học viên");
       return;
     }
-    const orderNumber = Number.parseInt(enrollForm.order, 10);
-    const order = Number.isFinite(orderNumber)
-      ? orderNumber
-      : (enrollments?.length ?? 0);
-    const lessonId = enrollForm.lessonId;
+
+    const orderNumber = enrollForm.order.trim() ? Number.parseInt(enrollForm.order, 10) : 0;
+    const order = Number.isFinite(orderNumber) ? orderNumber : 0;
+
     setEnrollSubmitting(true);
     try {
       await upsertEnrollment({
         courseId,
         userId,
         order,
-        lastViewedLessonId: lessonId ? (lessonId as Id<"course_lessons">) : null,
+        lastViewedLessonId: enrollForm.lessonId ? (enrollForm.lessonId as Id<"course_lessons">) : null,
       } as any);
       toast.success(`Đã thêm ${studentInfo.fullName} vào khóa học`);
-      setEnrollForm({ userId: "", order: "", lessonId: "" });
+      setEnrollForm({ userId: studentOptions[0]?.id ?? "", order: "", lessonId: "" });
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể thêm học viên");
     } finally {
@@ -509,22 +519,12 @@ export default function CourseEditPage() {
     }
   }
 
-  async function toggleEnrollmentActive(enrollment: EnrollmentDoc) {
-    const studentInfo = studentMap.get(enrollment.userId);
-    const studentLabel = studentInfo ? `${studentInfo.fullName} (${studentInfo.account})` : enrollment.userId;
-    try {
-      await setEnrollmentActive({ courseId, userId: enrollment.userId, active: !enrollment.active });
-      toast.success(!enrollment.active ? `Đã mở quyền cho ${studentLabel}` : `Đã khóa quyền của ${studentLabel}`);
-    } catch (error: any) {
-      toast.error(error?.message ?? "Không thể cập nhật enrollment");
-    }
-  }
-
   function editEnrollment(enrollment: EnrollmentDoc) {
     setEditingEnrollment(enrollment);
+    const lastLessonId = enrollment.lastViewedLessonId ? String(enrollment.lastViewedLessonId) : "";
     setEnrollmentEditForm({
-      progress: enrollment.progressPercent !== undefined ? String(enrollment.progressPercent) : "",
-      lessonId: enrollment.lastViewedLessonId ? String(enrollment.lastViewedLessonId) : "",
+      progress: String(enrollment.progressPercent ?? 0),
+      lessonId: lastLessonId,
     });
     setEnrollmentDialogOpen(true);
   }
@@ -534,6 +534,18 @@ export default function CourseEditPage() {
     setEnrollmentEditSubmitting(false);
     setEditingEnrollment(null);
     setEnrollmentEditForm({ progress: "", lessonId: "" });
+  }
+
+  async function toggleEnrollmentActive(enrollment: EnrollmentDoc) {
+    try {
+      await setEnrollmentActive({
+        courseId,
+        userId: enrollment.userId,
+        active: !enrollment.active,
+      });
+    } catch (error: any) {
+      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
+    }
   }
 
   async function handleEnrollmentEditSubmit(event: FormEvent<HTMLFormElement>) {
@@ -619,29 +631,53 @@ export default function CourseEditPage() {
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Thông tin khóa học</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CourseForm
+      <div className="rounded-xl border bg-card p-2 shadow-sm">
+        <div className="flex flex-wrap gap-2">
+          {COURSE_TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={cn(
+                  "flex-1 min-w-[160px] rounded-lg px-4 py-2 text-sm font-medium transition hover:bg-muted",
+                  isActive ? "bg-background text-foreground shadow" : "text-muted-foreground"
+                )}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {activeTab === "info" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Thông tin khóa học</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <CourseForm
             initialValues={buildCourseInitial(course)}
             submitting={courseSubmitting}
             submitLabel="Lưu"
             onSubmit={handleCourseSubmit}
           />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3">
+      {activeTab === "content" && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between gap-3">
           <CardTitle>Chương</CardTitle>
           <Button size="sm" onClick={openCreateChapter}>
             <Plus className="mr-2 size-4" />
             Thêm chương
           </Button>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          </CardHeader>
+          <CardContent className="space-y-4">
           {chapters.length === 0 && <div className="text-sm text-muted-foreground">Chưa có chương nào.</div>}
           {chapters.map((chapter, index) => (
             <div key={String(chapter._id)} className="rounded-md border">
@@ -651,7 +687,7 @@ export default function CourseEditPage() {
                     <span className="font-semibold">{chapter.title}</span>
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">order #{chapter.order}</span>
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase text-muted-foreground">
-                      {chapter.active ? "active" : "inactive"}
+                      {chapter.active ? "hoạt động" : "bị khóa"}
                     </span>
                   </div>
                   {chapter.summary && (
@@ -699,7 +735,9 @@ export default function CourseEditPage() {
                   {chapter.lessons
                     .slice()
                     .sort((a, b) => a.order - b.order)
-                    .map((lesson, lessonIndex) => (
+                    .map((lesson, lessonIndex) => {
+                      const lessonThumbnail = getYoutubeThumbnailUrl(lesson.youtubeUrl);
+                      return (
                       <div
                         key={String(lesson._id)}
                         className="flex flex-col gap-2 rounded-md border bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between"
@@ -711,13 +749,31 @@ export default function CourseEditPage() {
                               order #{lesson.order}
                             </span>
                             {lesson.isPreview && (
-                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">preview</span>
+                              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">xem trước</span>
                             )}
                             <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase text-muted-foreground">
-                              {lesson.active ? "active" : "inactive"}
+                              {lesson.active ? "hoạt động" : "bị khóa"}
                             </span>
                           </div>
                           <div className="text-xs text-muted-foreground">YouTube: {lesson.youtubeUrl}</div>
+                          {lessonThumbnail && (
+                            <a
+                              href={lesson.youtubeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-3 rounded-md border border-dashed border-muted-foreground/50 bg-background/80 p-2 text-xs text-muted-foreground transition hover:border-primary/60"
+                            >
+                              <img
+                                src={lessonThumbnail}
+                                alt={`Preview ${lesson.title}`}
+                                className="h-16 w-28 rounded object-cover"
+                              />
+                              <div className="space-y-0.5">
+                                <div className="font-medium text-foreground">Xem thumbnail</div>
+                                <div>Mở video trên YouTube</div>
+                              </div>
+                            </a>
+                          )}
                           {lesson.description && (
                             <div className="text-xs text-muted-foreground">{lesson.description}</div>
                           )}
@@ -733,7 +789,7 @@ export default function CourseEditPage() {
                             </label>
                             <label className="inline-flex items-center gap-1">
                               <Checkbox checked={lesson.isPreview ?? false} onCheckedChange={() => toggleLessonPreview(lesson)} />
-                              <span>Preview</span>
+                              <span>Xem trước</span>
                             </label>
                           </div>
                         </div>
@@ -765,19 +821,22 @@ export default function CourseEditPage() {
                           </Button>
                         </div>
                       </div>
-                    ))}
+                      );
+                    })}
                 </div>
               )}
             </div>
           ))}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Enrollment</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {activeTab === "students" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Đăng ký học</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
           <form className="grid gap-3 sm:grid-cols-4" onSubmit={handleAddEnrollment}>
             <div className="sm:col-span-2">
               <label className="text-sm font-medium">Học viên</label>
@@ -830,9 +889,9 @@ export default function CourseEditPage() {
             </div>
           </form>
           <Separator />
-          {!enrollments && <div className="text-sm text-muted-foreground">Đang tải enrollment...</div>}
+          {!enrollments && <div className="text-sm text-muted-foreground">Đang tải đăng ký...</div>}
           {enrollments && enrollments.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chưa có enrollment nào.</div>
+            <div className="text-sm text-muted-foreground">Chưa có đăng ký nào.</div>
           )}
           {enrollments && enrollments.length > 0 && (
             <div className="space-y-2">
@@ -855,7 +914,7 @@ export default function CourseEditPage() {
                             <div className="font-medium">Học viên: {studentLabel}</div>
                             <div className="text-xs text-muted-foreground">order #{enrollment.order}</div>
                             <div className="text-xs text-muted-foreground">
-                              Progress: {enrollment.progressPercent ?? 0}%
+                              Tiến độ: {enrollment.progressPercent ?? 0}%
                             </div>
                             <div className="text-xs text-muted-foreground">
                               Bài học cuối:
@@ -887,8 +946,9 @@ export default function CourseEditPage() {
                 ))}
             </div>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
         <DialogContent className="max-w-xl">
@@ -915,7 +975,7 @@ export default function CourseEditPage() {
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Cập nhật enrollment</DialogTitle>
+            <DialogTitle>Cập nhật đăng ký</DialogTitle>
           </DialogHeader>
           {editingEnrollment ? (
             <form className="space-y-4" onSubmit={handleEnrollmentEditSubmit}>
@@ -923,7 +983,7 @@ export default function CourseEditPage() {
                 <div className="text-sm text-muted-foreground">
                   Học viên: {studentMap.get(editingEnrollment.userId)?.fullName ?? editingEnrollment.userId}
                 </div>
-                <label className="text-sm font-medium">Progress (0-100)</label>
+                <label className="text-sm font-medium">Tiến độ (0-100)</label>
                 <Input
                   value={enrollmentEditForm.progress}
                   onChange={(event) => setEnrollmentEditForm((prev) => ({ ...prev, progress: event.target.value }))}

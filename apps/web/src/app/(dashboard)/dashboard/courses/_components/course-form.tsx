@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FullRichEditor } from "@/components/ui/full-rich-editor";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Image as ImageIcon, X, Play } from "lucide-react";
+import { extractYoutubeVideoId, getYoutubeThumbnailUrl } from "@/lib/youtube";
 
 export type CourseFormValues = {
   title: string;
@@ -53,6 +54,7 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
   const images = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
   const [values, setValues] = useState<CourseFormValues>(initialValues);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
     setValues(initialValues);
@@ -85,20 +87,17 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
     await onSubmit(values);
   }
 
-  const youtubeThumbUrl = useMemo(() => {
-    try {
-      const url = new URL(values.introVideoUrl);
-      let videoId = "";
-      if (url.hostname.includes("youtube.com")) {
-        videoId = url.searchParams.get("v") || "";
-      } else if (url.hostname.includes("youtu.be")) {
-        videoId = url.pathname.slice(1).split("?")[0];
-      }
-      return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
-    } catch {
-      return null;
-    }
+  const youtubeThumbUrl = useMemo(() => getYoutubeThumbnailUrl(values.introVideoUrl, "max"), [values.introVideoUrl]);
+  const youtubePreviewUrl = useMemo(() => {
+    const videoId = extractYoutubeVideoId(values.introVideoUrl);
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   }, [values.introVideoUrl]);
+
+  useEffect(() => {
+    if (!youtubePreviewUrl) {
+      setPreviewOpen(false);
+    }
+  }, [youtubePreviewUrl]);
 
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -134,17 +133,29 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
               placeholder="https://youtube.com/watch?v=..."
             />
             {youtubeThumbUrl && (
-              <div className="mt-2 flex items-center gap-3 rounded-md border p-2 bg-muted/30">
+              <div className="mt-2 flex items-center gap-3 rounded-md border border-dashed border-muted-foreground/50 bg-background/80 p-2 text-xs text-muted-foreground">
                 <img
                   src={youtubeThumbUrl}
                   alt="YouTube thumbnail"
-                  className="h-16 w-24 rounded object-cover"
+                  className="h-16 w-28 rounded object-cover"
                 />
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <div className="space-y-1 text-left">
+                  <button
+                    type="button"
+                    onClick={() => youtubePreviewUrl && setPreviewOpen(true)}
+                    className="flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+                  >
                     <Play className="h-3 w-3" />
-                    YouTube Preview
-                  </div>
+                    Xem preview
+                  </button>
+                  <a
+                    href={values.introVideoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs underline-offset-4 hover:underline"
+                  >
+                    Mở video trên YouTube
+                  </a>
                 </div>
               </div>
             )}
@@ -277,6 +288,27 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
           {submitting ? "Đang lưu..." : submitLabel}
         </Button>
       </div>
+
+      <Dialog open={previewOpen && Boolean(youtubePreviewUrl)} onOpenChange={setPreviewOpen}>
+        <DialogContent className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Xem intro video</DialogTitle>
+          </DialogHeader>
+          {youtubePreviewUrl ? (
+            <div className="aspect-video overflow-hidden rounded-md bg-black">
+              <iframe
+                title="Intro video preview"
+                src={`${youtubePreviewUrl}?rel=0`}
+                className="h-full w-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Không thể hiển thị preview. Hãy kiểm tra URL.</p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
         <DialogContent className="w-[calc(100vw-2rem)] md:max-w-6xl lg:max-w-7xl max-h-[85vh] flex flex-col">
