@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useConvex, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
-import { ArrowUpRight, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,18 +64,18 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
     return (
         <Link
             href={`/thu-vien/${resource.slug}`}
-            className="group relative flex h-full flex-col overflow-hidden rounded-lg border border-slate-700/50 bg-slate-900/50 transition-all duration-200 hover:border-slate-600 hover:bg-slate-900/70 dark:bg-slate-900/50 dark:border-slate-700/50"
+            className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#f5c542]/20 bg-[#0c0a12] shadow-[0_12px_40px_rgba(0,0,0,0.35)] transition duration-300 hover:-translate-y-1 hover:border-[#f5c542]/60 hover:shadow-[0_18px_45px_rgba(245,197,66,0.2)]"
         >
-            <div className="relative h-40 overflow-hidden bg-slate-800/50">
+            <div className="relative aspect-video overflow-hidden bg-gradient-to-br from-[#f5c542]/20 via-transparent to-transparent">
                 {coverUrl ? (
                     <img
                         src={coverUrl}
                         alt={resource.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:brightness-110"
                     />
                 ) : (
-                    <div className="flex h-full items-center justify-center text-xs font-medium text-slate-500">
-                        No cover
+                    <div className="flex h-full items-center justify-center text-xs uppercase tracking-[0.35em] text-white/35">
+                        Chưa có ảnh
                     </div>
                 )}
                 <div className="absolute left-3 top-3">
@@ -86,7 +86,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
                         {softwares.slice(0, 2).map((software) => (
                             <div
                                 key={software.slug}
-                                className="flex size-8 items-center justify-center rounded-full border border-slate-600 bg-slate-800 text-xs font-medium text-white"
+                                className="flex size-8 items-center justify-center rounded-full border border-[#f5c542]/40 bg-[#f5c542]/10 text-xs font-medium text-white"
                                 title={software.name}
                             >
                                 {software.iconUrl ? (
@@ -106,21 +106,20 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
 
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="flex-1">
-                    <h3 className="text-base font-semibold text-white group-hover:text-slate-200 transition-colors">
+                    <h3 className="text-base font-semibold leading-snug text-white transition-colors duration-300 group-hover:text-[#f5c542]">
                         {resource.title}
                     </h3>
                     {resource.description && (
-                        <p className="mt-1 line-clamp-1 text-xs text-slate-400">
+                        <p className="mt-1 line-clamp-2 text-sm text-white/70">
                             {stripHtml(resource.description)}
                         </p>
                     )}
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-700/50">
-                    <span className="text-xs font-medium text-slate-400">
+                <div className="mt-auto flex items-start justify-end border-t border-[#f5c542]/20 pt-3 text-sm text-white/80">
+                    <span className="text-sm font-semibold text-[#f8d37f] group-hover:text-[#fadb51] transition-colors">
                         {resource.pricingType === "free" ? "Miễn phí" : "Trả phí"}
                     </span>
-                    <ArrowUpRight className="size-4 text-slate-400 group-hover:text-slate-200 transition-colors" />
                 </div>
             </div>
         </Link>
@@ -129,8 +128,8 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
 
 function LibraryCardSkeleton() {
     return (
-        <div className="flex h-full flex-col overflow-hidden rounded-lg border border-slate-700/50 bg-slate-900/50">
-            <Skeleton className="h-40 w-full" />
+        <div className="flex h-full flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#0c0a12] shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
+            <Skeleton className="aspect-video w-full" />
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <Skeleton className="h-5 w-2/3 rounded-lg" />
                 <Skeleton className="h-3 w-full rounded-lg" />
@@ -156,15 +155,15 @@ function FilterPill({ active, label, onClick, iconUrl }: FilterPillProps) {
             className={cn(
                 "inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-200",
                 active
-                    ? "border-blue-500/50 bg-blue-500/20 text-blue-300"
-                    : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600 hover:bg-slate-800",
+                    ? "border-[#f5c542]/50 bg-[#f5c542]/20 text-[#f8d37f]"
+                    : "border-white/15 bg-white/[0.04] text-white/70 hover:border-white/25 hover:bg-white/[0.08]",
             )}
         >
             {iconUrl && (
                 <span
                     className={cn(
                         "flex size-5 items-center justify-center overflow-hidden rounded-full border transition-colors",
-                        active ? "border-blue-400/50 bg-blue-400/20" : "border-slate-600 bg-slate-700",
+                        active ? "border-[#f5c542]/50 bg-[#f5c542]/20" : "border-white/20 bg-white/10",
                     )}
                 >
                     <img src={iconUrl} alt={label} className="size-full object-cover" />
@@ -314,7 +313,7 @@ export default function LibraryListView() {
     const isLoading = resources === undefined;
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white dark:bg-slate-950">
+        <div className="min-h-screen bg-[#05070f] text-white">
             <section className="mx-auto max-w-6xl px-6 pt-32 sm:px-10 sm:pt-36">
                 <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
                     <div>
@@ -323,16 +322,16 @@ export default function LibraryListView() {
                         </h2>
                     </div>
                     <div className="flex items-center gap-3">
-                        <label className="text-xs font-medium uppercase tracking-wider text-slate-400">Sắp xếp</label>
+                        <label className="text-xs font-medium uppercase tracking-wider text-white/60">Sắp xếp</label>
                         <select
                             value={state.sortBy}
                             onChange={(event) =>
                                 setState((prev) => ({ ...prev, sortBy: event.target.value as SortOption }))
                             }
-                            className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:border-slate-600 focus:outline-none focus:ring-1 focus:ring-slate-600"
+                            className="rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white focus:border-[#f5c542]/50 focus:outline-none focus:ring-1 focus:ring-[#f5c542]/30"
                         >
                             {sortOptions.map((option) => (
-                                <option key={option.value} value={option.value} className="bg-slate-900 text-white">
+                                <option key={option.value} value={option.value} className="bg-[#0c0a12] text-white">
                                     {option.label}
                                 </option>
                             ))}
@@ -340,7 +339,7 @@ export default function LibraryListView() {
                     </div>
                 </div>
 
-                <div className="mt-8 rounded-lg border border-slate-700/50 bg-slate-900/30 p-5">
+                <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">
                     <div className="flex items-center gap-2 text-sm font-semibold text-white">
                         <SlidersHorizontal className="size-4" />
                         Bộ lọc
@@ -348,7 +347,7 @@ export default function LibraryListView() {
 
                     <div className="mt-5 flex flex-col gap-5">
                         <div className="space-y-3">
-                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300">Phần mềm</div>
+                            <div className="text-xs font-semibold uppercase tracking-wider text-white/60">Phần mềm</div>
                             {softwares === undefined ? (
                                 <div className="flex flex-wrap gap-2">
                                     {Array.from({ length: 4 }).map((_, index) => (
@@ -378,7 +377,7 @@ export default function LibraryListView() {
                         </div>
 
                         <div className="space-y-3">
-                            <div className="text-xs font-semibold uppercase tracking-wider text-slate-300">Giá</div>
+                            <div className="text-xs font-semibold uppercase tracking-wider text-white/60">Giá</div>
                             <div className="flex flex-wrap gap-2">
                                 {priceOptions.map((option) => (
                                     <button
@@ -388,8 +387,8 @@ export default function LibraryListView() {
                                         className={cn(
                                             "rounded-lg border px-4 py-2 text-xs font-medium uppercase tracking-wider transition-all duration-200",
                                             state.selectedPrice === option.value
-                                                ? "border-blue-500/50 bg-blue-500/20 text-blue-300"
-                                                : "border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600 hover:bg-slate-800",
+                                                ? "border-[#f5c542]/50 bg-[#f5c542]/20 text-[#f8d37f]"
+                                                : "border-white/15 bg-white/[0.04] text-white/70 hover:border-white/25 hover:bg-white/[0.08]",
                                         )}
                                     >
                                         {option.label}
@@ -405,14 +404,14 @@ export default function LibraryListView() {
                         Array.from({ length: 6 }).map((_, index) => <LibraryCardSkeleton key={index} />)}
 
                     {!isLoading && filteredResources.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center gap-4 rounded-lg border border-slate-700/50 bg-slate-900/30 p-12 text-center">
-                            <p className="text-base font-medium text-slate-200">Không tìm thấy tài nguyên phù hợp.</p>
-                            <p className="max-w-md text-sm text-slate-400">
+                        <div className="col-span-full flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-12 text-center">
+                            <p className="text-base font-medium text-white">Không tìm thấy tài nguyên phù hợp.</p>
+                            <p className="max-w-md text-sm text-white/65">
                                 Thử thay đổi bộ lọc phần mềm hoặc giá để xem thêm các tài nguyên khác.
                             </p>
                             <Button
                                 variant="outline"
-                                className="rounded-lg border-slate-700 bg-slate-800/50 text-xs font-medium uppercase tracking-wider text-slate-300 hover:border-slate-600 hover:bg-slate-800 hover:text-slate-200"
+                                className="rounded-lg border-white/15 bg-white/[0.04] text-xs font-medium uppercase tracking-wider text-white/70 hover:border-[#f5c542]/50 hover:bg-[#f5c542]/20 hover:text-[#f8d37f]"
                                 onClick={() => setState(initialState)}
                             >
                                 Đặt lại bộ lọc

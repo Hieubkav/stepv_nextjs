@@ -97,7 +97,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     return (
       <div className="bg-[#05070f] text-white">
         <div className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
-        <div className="mb-10" />
+          <div className="mb-10" />
           <DetailSkeleton />
         </div>
       </div>
@@ -108,11 +108,11 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     return (
       <div className="bg-[#05070f] text-white">
         <div className="mx-auto max-w-3xl px-6 py-24 text-center sm:px-10">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-white/10 bg-white/5">
-            <ShieldAlert className="size-7 text-amber-300" />
+          <div className="mx-auto flex size-16 items-center justify-center rounded-full border border-[#f5c542]/30 bg-[#f5c542]/10">
+            <ShieldAlert className="size-7 text-[#f8d37f]" />
           </div>
           <h1 className="mt-6 text-3xl font-semibold text-white">Không tìm thấy tài nguyên</h1>
-          <p className="mt-2 text-sm text-white/78">
+          <p className="mt-2 text-sm text-white/65">
             Tài nguyên bạn yêu cầu có thể đã bị ẩn hoặc chưa được xuất bản. Vui lòng quay lại danh sách để xem các nội dung khác.
           </p>
         </div>
@@ -151,10 +151,10 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
           <div className="space-y-6">
             <div
               className={cn(
-                "overflow-hidden rounded-2xl border bg-white/[0.05] transition-all duration-200",
+                "overflow-hidden rounded-3xl border shadow-lg transition-all duration-200",
                 activeImageUrl
-                  ? "border-amber-500/30"
-                  : "border-white/10",
+                  ? "border-[#f5c542]/40 bg-white/[0.05] shadow-[0_12px_40px_rgba(245,197,66,0.15)]"
+                  : "border-[#f5c542]/20 bg-white/[0.03]",
               )}
             >
               {activeImageUrl ? (
@@ -176,10 +176,10 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                       type="button"
                       onClick={() => setActiveImageUrl(url)}
                       className={cn(
-                        "group h-28 flex-1 min-w-[160px] overflow-hidden rounded-xl border bg-white/[0.03] transition-all duration-200",
+                        "group h-28 flex-1 min-w-[160px] overflow-hidden rounded-2xl border transition-all duration-200",
                         isActive
-                          ? "border-amber-500/50"
-                          : "border-white/10 hover:border-white/25",
+                          ? "border-[#f5c542]/50 bg-white/[0.05]"
+                          : "border-white/10 bg-white/[0.03] hover:border-[#f5c542]/30",
                       )}
                     >
                       <img
@@ -215,7 +215,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                     {softwares.map(({ software }) => (
                       <span
                         key={String(software._id)}
-                        className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-xs text-white/80"
+                        className="rounded-full border border-[#f5c542]/30 bg-[#f5c542]/10 px-4 py-2 text-xs text-[#f8d37f]"
                       >
                         {software.name}
                       </span>
@@ -230,8 +230,8 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                   <ul className="space-y-2 text-sm text-white/80">
                     {resource.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-3">
-                        <span className="mt-0.5 flex size-5 items-center justify-center rounded-full border border-emerald-500/60 bg-emerald-500/20">
-                          <Check className="size-3 text-emerald-400" />
+                        <span className="mt-0.5 flex size-5 items-center justify-center rounded-full border border-[#f5c542]/30 bg-[#f5c542]/10">
+                          <Check className="size-3 text-[#f8d37f]" />
                         </span>
                         <span>{feature}</span>
                       </li>
@@ -251,17 +251,17 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                 </div>
               </div>
 
-              <div className="space-y-3 rounded-xl border border-white/10 bg-black/30 p-4">
+              <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
                 <div className="text-xs uppercase tracking-[0.15em] text-white/60 font-medium">Liên hệ</div>
-                <div className="flex items-center gap-3 text-sm text-white/82">
-                  <Mail className="size-4 text-white/55" />
-                  <a href={`mailto:${contactEmail}`} className="hover:text-primary">
+                <div className="flex items-center gap-3 text-sm text-white/80">
+                  <Mail className="size-4 text-white/50" />
+                  <a href={`mailto:${contactEmail}`} className="hover:text-[#f8d37f] transition-colors">
                     {contactEmail}
                   </a>
                 </div>
                 {contactPhone && (
-                  <div className="flex items-center gap-3 text-sm text-white/82">
-                    <Phone className="size-4 text-white/55" />
+                  <div className="flex items-center gap-3 text-sm text-white/80">
+                    <Phone className="size-4 text-white/50" />
                     <span>{contactPhone}</span>
                   </div>
                 )}
@@ -269,8 +269,8 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-sm text-white/75">
-              <h3 className="text-sm font-semibold text-white/90">Ghi chú</h3>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-sm text-white/70">
+              <h3 className="text-sm font-semibold text-white">Ghi chú</h3>
               <p className="mt-2">
                 Nếu bạn cần hỗ trợ cài đặt hoặc demo trước khi mua, hãy liên hệ đội ngũ DOHY Studio để được tư vấn chi tiết.
               </p>
