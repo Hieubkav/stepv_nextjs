@@ -3,9 +3,11 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, Heart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
+import { CourseFavoriteButton } from "@/features/learner/components/course-favorite-button";
 
 export type CourseListItem = {
     id: string;
@@ -85,22 +87,24 @@ function normalizeText(value: unknown) {
 function CourseCard({
     course,
     thumbnail,
+    studentId,
 }: {
     course: CourseListItem;
     thumbnail?: CourseThumbnail;
+    studentId: string | null;
 }) {
     const detailHref = `/khoa-hoc/${course.order}` as Route;
     const priceText = formatPrice(course);
     const subtitle = course.subtitle ?? course.description;
 
     return (
-        <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-[#f5c542] hover:shadow-[0_12px_24px_rgba(0,0,0,0.08)]">
+        <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300">
             <div className="relative aspect-video overflow-hidden bg-slate-100">
                 {thumbnail?.url ? (
                     <img
                         src={thumbnail.url}
                         alt={thumbnail.title ?? course.title}
-                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105 group-hover:brightness-105"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-103"
                     />
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center text-xs uppercase tracking-[0.35em] text-slate-400">
@@ -113,34 +117,45 @@ function CourseCard({
                         Đang ẩn
                     </span>
                 )}
+
+                {/* Heart Button */}
+                <div className="absolute right-3 top-3">
+                    <CourseFavoriteButton
+                        studentId={studentId ? (studentId as any) : null}
+                        courseId={course.id as any}
+                        size="md"
+                    />
+                </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-2 p-4">
-                <div className="space-y-1">
-                    <h3 className="line-clamp-2 text-lg font-bold leading-tight text-slate-900 transition-colors duration-300 group-hover:text-[#f5c542]">
+            <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="space-y-2">
+                    <h3 className="line-clamp-2 text-base font-semibold leading-tight text-slate-900 transition-colors duration-300 group-hover:text-slate-700">
                         {course.title}
                     </h3>
                     {subtitle ? <p className="line-clamp-2 text-xs text-slate-500">{subtitle}</p> : null}
                 </div>
 
-                <div className="mt-auto flex items-center justify-between pt-2">
-                    <span className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                <div className="mt-auto flex items-center justify-between">
+                    <span className="text-xs font-medium text-slate-500">
                         {course.pricingType === "free" ? "Miễn phí" : "Khóa học"}
                     </span>
-                    <span className="text-lg font-bold text-[#f5c542]">{priceText}</span>
+                    <span className="text-sm font-semibold bg-gradient-to-r from-amber-500 to-yellow-500 bg-clip-text text-transparent">
+                        {priceText}
+                    </span>
                 </div>
             </div>
 
-            <div className="space-y-2 border-t border-slate-200 bg-slate-50 p-3">
+            <div className="space-y-2 border-t border-slate-100 px-4 py-3">
                 <Link
                     href={detailHref}
-                    className="block rounded-lg bg-gradient-to-br from-[#f6e05e] to-[#f0b429] px-3 py-2.5 text-center text-sm font-bold text-[#1b1309] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_12px_32px_rgba(240,180,41,0.4)] active:translate-y-0"
+                    className="block rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 px-3 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 active:opacity-95"
                 >
                     Vào học ngay
                 </Link>
                 <Link
                     href={detailHref}
-                    className="block rounded-lg border border-slate-300 bg-white px-3 py-2 text-center text-xs font-medium text-slate-600 transition-all duration-300 hover:border-[#f5c542] hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200"
+                    className="block rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-center text-xs font-medium text-slate-700 transition-all duration-200 hover:border-slate-300 hover:bg-slate-100 active:bg-slate-200"
                 >
                     Xem chi tiết
                 </Link>
@@ -150,6 +165,7 @@ function CourseCard({
 }
 
 export default function CourseListView({ courses, thumbnails, error }: CourseListViewProps) {
+    const { student } = useStudentAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
     const [sortBy, setSortBy] = useState<SortOption>("default");
@@ -221,70 +237,80 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
     }, [currentPage, page]);
 
     return (
-        <main className="relative min-h-screen overflow-hidden bg-white pb-2 pt-8 text-slate-900 md:pt-0">
-          <div className="relative mx-auto max-w-9xl px-4 md:px-5 ">
-                <section className="relative z-10 mb-6 space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:p-3">
-                    {/* Price filters */}
-                    <div className="flex flex-wrap items-center gap-2">
-                        {priceFilters.map((filter) => {
-                            const isActive = priceFilter === filter.value;
-                            return (
-                                <button
-                                    key={filter.value}
-                                    type="button"
-                                    aria-pressed={isActive}
-                                    onClick={() => setPriceFilter(filter.value)}
-                                    className={cn(
-                                        "rounded-full border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f5c542]",
-                                        isActive
-                                            ? "border-[#f5c542] bg-gradient-to-br from-[#f6e05e] to-[#f0b429] text-[#1b1309] shadow-[0_0_20px_rgba(240,180,41,0.35)]"
-                                            : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50 hover:text-slate-900"
-                                    )}
-                                >
-                                    {filter.label}
-                                </button>
-                            );
-                        })}
+        <main className="relative min-h-screen overflow-hidden bg-white pb-2 pt-6 text-slate-900 md:pt-8">
+            <div className="relative mx-auto max-w-7xl px-4 md:px-6">
+                {/* Header Section */}
+                <div className="mb-8">
+                    <div className="space-y-2 mb-6">
+                        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Khóa học</h1>
+                        <p className="text-slate-600">Khám phá hàng trăm khóa học chất lượng cao</p>
                     </div>
 
-                    {/* Search & Sort */}
-                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-2">
-                        <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2">
-                            <Search className="shrink-0 size-4 text-slate-400" />
-                            <input
-                                value={searchTerm}
-                                onChange={(event) => setSearchTerm(event.target.value)}
-                                placeholder="Tìm khóa học..."
-                                className="w-full min-w-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                            />
+                    {/* Filter Bar */}
+                    <section className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        {/* Price filters */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            {priceFilters.map((filter) => {
+                                const isActive = priceFilter === filter.value;
+                                return (
+                                    <button
+                                        key={filter.value}
+                                        type="button"
+                                        aria-pressed={isActive}
+                                        onClick={() => setPriceFilter(filter.value)}
+                                        className={cn(
+                                            "rounded-full border px-4 py-2 text-sm font-medium transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500",
+                                            isActive
+                                                ? "border-amber-600 bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                                                : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-white"
+                                        )}
+                                    >
+                                        {filter.label}
+                                    </button>
+                                );
+                            })}
                         </div>
 
-                        <label className="flex items-center gap-2 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 md:shrink-0">
-                             <span className="whitespace-nowrap text-sm font-medium text-slate-900">Sắp xếp</span>
-                             <select
-                                value={sortBy}
-                                onChange={(event) => setSortBy(event.target.value as SortOption)}
-                                className="bg-transparent text-sm text-slate-900 outline-none"
-                            >
-                                {sortOptions.map((option) => (
-                                    <option key={option.value} value={option.value} className="bg-white text-slate-900">
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                    </div>
-                </section>
+                        {/* Search & Sort */}
+                        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+                            <div className="flex flex-1 items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5">
+                                <Search className="shrink-0 size-4 text-slate-400" />
+                                <input
+                                    value={searchTerm}
+                                    onChange={(event) => setSearchTerm(event.target.value)}
+                                    placeholder="Tìm khóa học..."
+                                    className="w-full min-w-0 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                                />
+                            </div>
+
+                            <label className="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 md:shrink-0">
+                                <span className="whitespace-nowrap text-sm font-medium text-slate-700">Sắp xếp</span>
+                                <select
+                                    value={sortBy}
+                                    onChange={(event) => setSortBy(event.target.value as SortOption)}
+                                    className="bg-transparent text-sm text-slate-900 outline-none"
+                                >
+                                    {sortOptions.map((option) => (
+                                        <option key={option.value} value={option.value} className="bg-white text-slate-900">
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                        </div>
+                    </section>
+                </div>
 
                 {error ? (
-                  <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-                    Không thể tải dữ liệu khóa học. Mã lỗi: {error}.
-                  </div>
+                    <div className="mb-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        Không thể tải dữ liệu khóa học. Mã lỗi: {error}.
+                    </div>
                 ) : null}
 
                 {filteredCourses.length === 0 && !error ? (
-                  <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center">
-                        <div className="space-y-2">
+                    <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-16 text-center">
+                        <div className="space-y-3">
+                            <div className="text-5xl">📚</div>
                             <p className="text-lg font-semibold text-slate-700">Không tìm thấy khóa học</p>
                             <p className="text-sm text-slate-500">
                                 {searchTerm || priceFilter !== "all"
@@ -297,7 +323,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
 
                 {filteredCourses.length > 0 ? (
                     <>
-                        <section className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-4">
+                        <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {paginatedCourses.map((course) => (
                                 <CourseCard
                                     key={course.id}
@@ -305,17 +331,18 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     thumbnail={
                                         course.thumbnailMediaId ? thumbnails[course.thumbnailMediaId] : undefined
                                     }
+                                    studentId={student?._id ? String(student._id) : null}
                                 />
                             ))}
                         </section>
 
                         {totalPages > 1 && (
-                          <nav className="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+                            <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
                                 <button
                                     type="button"
                                     onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="grid size-9 place-items-center rounded-lg border border-slate-300 bg-white text-sm transition hover:-translate-y-0.5 hover:text-[#f5c542] disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="grid size-9 place-items-center rounded-lg border border-slate-300 bg-white text-sm font-medium transition duration-200 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang trước"
                                 >
                                     ‹
@@ -328,10 +355,10 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                             type="button"
                                             onClick={() => setPage(item)}
                                             className={cn(
-                                                "grid size-9 place-items-center rounded-lg border text-sm transition hover:-translate-y-0.5",
+                                                "grid size-9 place-items-center rounded-lg border text-sm font-medium transition duration-200",
                                                 isActive
-                                                    ? "border-transparent bg-gradient-to-br from-[#f6e05e] to-[#f0b429] font-semibold text-[#1b1309]"
-                                                    : "border-slate-300 bg-white text-slate-700 hover:text-[#f5c542]"
+                                                    ? "border-amber-600 bg-gradient-to-r from-amber-500 to-yellow-500 text-white"
+                                                    : "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:bg-slate-50"
                                             )}
                                             aria-current={isActive ? "page" : undefined}
                                         >
@@ -343,7 +370,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     type="button"
                                     onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="grid size-9 place-items-center rounded-lg border border-slate-300 bg-white text-sm transition hover:-translate-y-0.5 hover:text-[#f5c542] disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="grid size-9 place-items-center rounded-lg border border-slate-300 bg-white text-sm font-medium transition duration-200 hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang sau"
                                 >
                                     ›
