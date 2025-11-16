@@ -3,11 +3,19 @@
 import { useMemo, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Heart, History, Menu, ShoppingBag, UserCircle2 } from "lucide-react";
+import { Menu } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StudentAuthProvider, useStudentAuth } from "@/features/learner/auth";
 import { SiteLayoutDataContext } from "@/context/site-layout-data";
 import {
@@ -21,17 +29,12 @@ type LearnerLayoutClientProps = {
   children: ReactNode;
 };
 
-const NAV_LINKS = [
-  { label: "Tất cả khóa học", href: "/khoa-hoc" },
-  { label: "Danh sách yêu thích", href: "/khoa-hoc/yeu-thich" },
-  { label: "Khóa học đã mua", href: "/khoa-hoc/da-mua" },
-  { label: "Lịch sử mua", href: "/khoa-hoc/lich-su" },
-];
+const NAV_LINKS = [{ label: "Tất cả khóa học", href: "/khoa-hoc" }];
 
-const QUICK_ACTIONS = [
-  { label: "Yêu thích", icon: Heart, href: "/khoa-hoc/yeu-thich" },
-  { label: "Đã mua", icon: ShoppingBag, href: "/khoa-hoc/da-mua" },
-  { label: "Lịch sử", icon: History, href: "/khoa-hoc/lich-su" },
+const STUDENT_MENU_LINKS = [
+  { label: "Thông tin học viên", href: "/khoa-hoc/thong-tin" },
+  { label: "Khóa học yêu thích", href: "/khoa-hoc/yeu-thich" },
+  { label: "Khóa học đã mua", href: "/khoa-hoc/da-mua" },
 ];
 
 export default function LearnerLayoutClient({ children }: LearnerLayoutClientProps) {
@@ -94,7 +97,7 @@ type LearnerTopBarProps = {
 
 function LearnerTopBar({ logo }: LearnerTopBarProps) {
   const pathname = usePathname() ?? "/";
-  const { student } = useStudentAuth();
+  const { student, logout } = useStudentAuth();
 
   const isActive = (href: string) => {
     if (href === "/khoa-hoc") {
@@ -106,11 +109,11 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/khoa-hoc" className="flex items-center gap-3" aria-label="Về trang khóa học">
-          <div className="h-10 w-10 overflow-hidden rounded-full border border-border/60 bg-muted">
+        <Link href="/" className="flex items-center gap-3" aria-label="Về trang chủ">
+          <div className="h-12 w-12 overflow-hidden border border-border/60 bg-muted">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt="Logo thương hiệu" className="h-full w-full object-cover" />
+              <img src={logo} alt="Logo thương hiệu" className="h-full w-full object-contain" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm font-semibold">
                 DOHY
@@ -141,40 +144,61 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-1">
-          {QUICK_ACTIONS.map((action) => (
-            <Button
-              key={action.href}
-              variant="ghost"
-              size="icon"
-              className="hidden rounded-full md:inline-flex"
-              asChild
-            >
-              <Link href={action.href} aria-label={action.label}>
-                <action.icon className="h-5 w-5" />
-              </Link>
-            </Button>
-          ))}
-
+        <div className="ml-auto flex items-center gap-2">
           {student ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-2 rounded-full border-foreground/20"
-            >
-              <UserCircle2 className="h-5 w-5" />
-              <span className="hidden sm:inline-flex max-w-[160px] truncate">
-                Chào, {student.fullName || student.account}
-              </span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full border-border/70 px-4"
+                >
+                  <div className="flex flex-col items-start leading-tight">
+                    <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+                      Học viên
+                    </span>
+                    <span className="text-sm font-medium">
+                      {student.fullName || student.account}
+                    </span>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel>
+                  <p className="text-xs text-muted-foreground">Không gian học viên</p>
+                  <p className="text-sm font-medium text-foreground">
+                    {student.fullName || student.account}
+                  </p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {STUDENT_MENU_LINKS.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href} className="flex w-full items-center justify-between">
+                      <span>{item.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    logout();
+                  }}
+                >
+                  Đăng xuất
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
-            <Button variant="default" size="sm" className="gap-2 rounded-full" asChild>
-              <Link href="/khoa-hoc/dang-nhap">
-                <UserCircle2 className="h-5 w-5" />
-                <span>Đăng nhập</span>
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
+                <Link href="/khoa-hoc/dang-nhap">Đăng nhập</Link>
+              </Button>
+              <Button size="sm" className="rounded-full px-4" asChild>
+                <Link href="/khoa-hoc/dang-ky">Đăng ký</Link>
+              </Button>
+            </div>
           )}
 
           <Button
