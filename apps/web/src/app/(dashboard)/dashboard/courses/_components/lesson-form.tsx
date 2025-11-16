@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { FullRichEditor } from "@/components/ui/full-rich-editor";
+import { Play } from "lucide-react";
 
 export type LessonFormValues = {
   title: string;
@@ -42,6 +43,21 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
     await onSubmit(values);
   }
 
+  const youtubeThumbUrl = useMemo(() => {
+    try {
+      const url = new URL(values.youtubeUrl);
+      let videoId = "";
+      if (url.hostname.includes("youtube.com")) {
+        videoId = url.searchParams.get("v") || "";
+      } else if (url.hostname.includes("youtu.be")) {
+        videoId = url.pathname.slice(1).split("?")[0];
+      }
+      return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
+    } catch {
+      return null;
+    }
+  }, [values.youtubeUrl]);
+
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-2">
@@ -50,12 +66,29 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
       </div>
       <div className="space-y-2">
         <label className="text-sm font-medium">Mô tả</label>
-        <Textarea value={values.description} rows={3} onChange={(event) => update("description", event.target.value)} />
+        <FullRichEditor
+          value={values.description}
+          onChange={(html) => update("description", html)}
+          placeholder="Giới thiệu bài học này..."
+        />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <label className="text-sm font-medium">YouTube URL</label>
           <Input value={values.youtubeUrl} onChange={(event) => update("youtubeUrl", event.target.value)} />
+          {youtubeThumbUrl && (
+            <div className="flex items-center gap-3 rounded-md border p-2 bg-muted/30">
+              <img
+                src={youtubeThumbUrl}
+                alt="YouTube thumbnail"
+                className="h-12 w-20 rounded object-cover"
+              />
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Play className="h-3 w-3" />
+                Preview
+              </div>
+            </div>
+          )}
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Thời lượng (giây)</label>
@@ -68,10 +101,6 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
             onChange={(event) => update("exerciseLink", event.target.value)}
             placeholder="https://..."
           />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Thứ tự</label>
-          <Input value={values.order} onChange={(event) => update("order", event.target.value)} />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium">Trạng thái</label>

@@ -4,12 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useQuery } from "convex/react";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FullRichEditor } from "@/components/ui/full-rich-editor";
 import { api } from "@dohy/backend/convex/_generated/api";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, X, Play } from "lucide-react";
 
 export type CourseFormValues = {
   title: string;
@@ -85,110 +85,127 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
     await onSubmit(values);
   }
 
+  const youtubeThumbUrl = useMemo(() => {
+    try {
+      const url = new URL(values.introVideoUrl);
+      let videoId = "";
+      if (url.hostname.includes("youtube.com")) {
+        videoId = url.searchParams.get("v") || "";
+      } else if (url.hostname.includes("youtu.be")) {
+        videoId = url.pathname.slice(1).split("?")[0];
+      }
+      return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : null;
+    } catch {
+      return null;
+    }
+  }, [values.introVideoUrl]);
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit}>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Tiêu đề</label>
-          <Input
-            value={values.title}
-            onChange={(event) => {
-              const title = event.target.value;
-              update("title", title);
-              if (!values.slug || values.slug === suggestedSlug) {
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <h3 className="text-base font-semibold">Thông tin cơ bản</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Tiêu đề</label>
+            <Input
+              value={values.title}
+              onChange={(event) => {
+                const title = event.target.value;
+                update("title", title);
                 update("slug", slugify(title));
-              }
-            }}
-            placeholder="Ví dụ: Figma cho người mới"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Slug</label>
-          <Input
-            value={values.slug}
-            onChange={(event) => update("slug", event.target.value)}
-            placeholder="figma-cho-nguoi-moi"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Phụ đề</label>
-          <Input
-            value={values.subtitle}
-            onChange={(event) => update("subtitle", event.target.value)}
-            placeholder="Mô tả ngắn về khóa học"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Link intro video (YouTube)</label>
-          <Input
-            value={values.introVideoUrl}
-            onChange={(event) => update("introVideoUrl", event.target.value)}
-            placeholder="https://youtube.com/watch?v=..."
-          />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <label className="text-sm font-medium">Mô tả</label>
-          <Textarea
-            value={values.description}
-            onChange={(event) => update("description", event.target.value)}
-            rows={4}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Loại giá</label>
-          <select
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            value={values.pricingType}
-            onChange={(event) => update("pricingType", event.target.value as CourseFormValues["pricingType"])}
-          >
-            <option value="free">Free</option>
-            <option value="paid">Paid</option>
-          </select>
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Giá (VND)</label>
-          <Input
-            type="number"
-            value={values.priceAmount}
-            onChange={(event) => update("priceAmount", event.target.value)}
-            placeholder="499000"
-            disabled={values.pricingType === "free"}
-            min="0"
-            step="1000"
-          />
-          {values.pricingType === "paid" && values.priceAmount && (
-            <p className="text-xs text-muted-foreground">Hiển thị: {formatCurrency(values.priceAmount)} VND</p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Ghi chú về giá</label>
-          <Input
-            value={values.priceNote}
-            onChange={(event) => update("priceNote", event.target.value)}
-            placeholder="Ví dụ: Giảm 20% đến 01/10"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Thứ tự</label>
-          <Input
-            value={values.order}
-            onChange={(event) => update("order", event.target.value)}
-            placeholder="0"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Trạng thái khóa học</label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={values.active}
-              onCheckedChange={(checked) => update("active", Boolean(checked))}
+              }}
+              placeholder="Ví dụ: Figma cho người mới"
             />
-            <span>{values.active ? "Đang hiện" : "Đang ẩn"}</span>
-          </label>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Phụ đề</label>
+            <Input
+              value={values.subtitle}
+              onChange={(event) => update("subtitle", event.target.value)}
+              placeholder="Mô tả ngắn về khóa học"
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <label className="text-sm font-medium">Link intro video (YouTube)</label>
+            <Input
+              value={values.introVideoUrl}
+              onChange={(event) => update("introVideoUrl", event.target.value)}
+              placeholder="https://youtube.com/watch?v=..."
+            />
+            {youtubeThumbUrl && (
+              <div className="mt-2 flex items-center gap-3 rounded-md border p-2 bg-muted/30">
+                <img
+                  src={youtubeThumbUrl}
+                  alt="YouTube thumbnail"
+                  className="h-16 w-24 rounded object-cover"
+                />
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Play className="h-3 w-3" />
+                    YouTube Preview
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* Description */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-base font-semibold">Mô tả</h3>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Hiện giá</label>
-          <label className="inline-flex items-center gap-2 text-sm">
+          <label className="text-sm font-medium">Nội dung mô tả</label>
+          <FullRichEditor
+            value={values.description}
+            onChange={(html) => update("description", html)}
+            placeholder="Giới thiệu chi tiết về khóa học này..."
+          />
+        </div>
+      </div>
+
+      {/* Pricing */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-base font-semibold">Giá cả</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Loại giá</label>
+            <select
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              value={values.pricingType}
+              onChange={(event) => update("pricingType", event.target.value as CourseFormValues["pricingType"])}
+            >
+              <option value="free">Miễn phí</option>
+              <option value="paid">Trả phí</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Giá (VND)</label>
+            <Input
+              type="number"
+              value={values.priceAmount}
+              onChange={(event) => update("priceAmount", event.target.value)}
+              placeholder="499000"
+              disabled={values.pricingType === "free"}
+              min="0"
+              step="1000"
+            />
+            {values.pricingType === "paid" && values.priceAmount && (
+              <p className="text-xs text-muted-foreground">Hiển thị: {formatCurrency(values.priceAmount)} VND</p>
+            )}
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <label className="text-sm font-medium">Ghi chú về giá</label>
+            <Input
+              value={values.priceNote}
+              onChange={(event) => update("priceNote", event.target.value)}
+              placeholder="Ví dụ: Giảm 20% đến 01/10"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
+          <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
             <Checkbox
               checked={values.isPriceVisible}
               onCheckedChange={(checked) => update("isPriceVisible", Boolean(checked))}
@@ -197,7 +214,12 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
             <span>{values.isPriceVisible ? "Hiện giá" : "Ẩn giá"}</span>
           </label>
         </div>
-        <div className="space-y-2 sm:col-span-2">
+      </div>
+
+      {/* Media */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-base font-semibold">Hình ảnh</h3>
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div>
               <div className="text-sm font-medium">Thumbnail (từ media)</div>
@@ -230,7 +252,22 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
         </div>
       </div>
 
-      <div className="flex items-center justify-end gap-3">
+      {/* Settings */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-base font-semibold">Cài đặt</h3>
+        <div className="space-y-3">
+          <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
+            <Checkbox
+              checked={values.active}
+              onCheckedChange={(checked) => update("active", Boolean(checked))}
+            />
+            <span>{values.active ? "Khóa học đang hiện" : "Khóa học đang ẩn"}</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex items-center justify-end gap-3 pt-4 border-t">
         {onCancel && (
           <Button variant="outline" type="button" onClick={onCancel} disabled={submitting}>
             Hủy
