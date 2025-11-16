@@ -69,7 +69,6 @@ export default function LibrarySoftwareEditPage({ params }: PageProps) {
         active: values.active,
       } as any);
       toast.success("Đã cập nhật phần mềm");
-      router.push("/dashboard/library/software");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể cập nhật phần mềm");
     } finally {

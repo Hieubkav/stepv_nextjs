@@ -98,15 +98,9 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
   return (
     <>
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Name</label>
-            <Input value={values.name} onChange={(e) => update("name", e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">Slug</label>
-            <Input value={values.slug} onChange={(e) => update("slug", e.target.value)} required />
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Name</label>
+          <Input value={values.name} onChange={(e) => update("name", e.target.value)} required />
         </div>
 
         <div className="space-y-2">
@@ -149,11 +143,6 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
               Chọn từ media
             </Button>
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-foreground">Order</label>
-          <Input type="number" value={values.order} onChange={(e) => update("order", e.target.value)} />
         </div>
 
         <div className="flex items-center justify-between gap-4">

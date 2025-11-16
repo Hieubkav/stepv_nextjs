@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
 
@@ -27,6 +26,8 @@ export default function LibrarySoftwareListPage() {
   const deleteSoftware = useMutation(api.library.deleteSoftware);
   const iconImages = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
 
+  const [selected, setSelected] = useState<string[]>([]);
+
   const iconLookup = useMemo(() => {
     const lookup: Record<string, any> = {};
     (iconImages ?? []).forEach((img: any) => {
@@ -40,11 +41,30 @@ export default function LibrarySoftwareListPage() {
     return [...softwares].sort((a, b) => a.order - b.order);
   }, [softwares]);
 
+  const allIdsOnPage = useMemo(() => sorted.map((x) => String(x._id)), [sorted]);
+
+  function toggleSelect(id: string, checked: boolean) {
+    setSelected((prev) => (checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id)));
+  }
+
   async function handleToggleActive(item: SoftwareDoc) {
     try {
       await setSoftwareActive({ id: item._id as any, active: !item.active });
+      toast.success(item.active ? "Đã ẩn phần mềm" : "Đã hiện phần mềm");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể cập nhật trạng thái");
+    }
+  }
+
+  async function onBulkDelete() {
+    if (selected.length === 0) return;
+    if (!window.confirm(`Xóa ${selected.length} phần mềm đã chọn?`)) return;
+    try {
+      await Promise.all(selected.map((id) => deleteSoftware({ id: id as any })));
+      setSelected([]);
+      toast.success("Đã xóa các mục đã chọn");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Lỗi xóa hàng loạt");
     }
   }
 
@@ -67,122 +87,130 @@ export default function LibrarySoftwareListPage() {
     try {
       await updateSoftware({ id: item._id as any, order: target.order });
       await updateSoftware({ id: target._id as any, order: item.order });
+      toast.success("Đã cập nhật thứ tự");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể đổi thứ tự");
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Thu vien - Phan mem</h1>
-          <p className="text-sm text-muted-foreground">Quan ly danh sach phan mem lien quan den resource.</p>
+    <div className="p-4 space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Thư viện - Phần mềm</h1>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => {
+            const on = selected.length < allIdsOnPage.length;
+            setSelected(on ? allIdsOnPage : []);
+          }}>
+            {selected.length < allIdsOnPage.length ? "Chọn tất cả" : "Bỏ chọn tất cả"}
+          </Button>
+          <Button variant="destructive" disabled={selected.length === 0} onClick={onBulkDelete}>
+            Xóa đã chọn
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/library/software/new">
+              <Plus className="mr-2 size-4" />
+              Thêm phần mềm
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/library/software/new">
-            <Plus className="mr-2 size-4" /> Thêm phần mềm
-          </Link>
-        </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Danh sách phần mềm</CardTitle>
+          <CardTitle>Danh sách</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {!softwares && <div className="text-sm text-muted-foreground">Đang tải...</div>}
-          {softwares && sorted.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chưa có phần mềm nào.</div>
-          )}
-          {softwares && sorted.length > 0 && (
-            <div className="space-y-3">
-              {sorted.map((item, index) => {
-                const icon = item.iconImageId ? iconLookup[String(item.iconImageId)] ?? null : null;
-                return (
-                  <div
-                    key={item._id}
-                    className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4"
-                  >
-                    <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:gap-4">
-                      {item.iconImageId && (
-                        <div className="flex items-center justify-center">
-                          {icon?.url ? (
-                            <img
-                              src={icon.url}
-                              alt={icon.title || item.name}
-                              className="h-16 w-16 rounded border object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-16 w-16 items-center justify-center rounded border border-dashed text-[10px] text-muted-foreground">
-                              No icon
-                            </div>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex-1 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="font-semibold">{item.name}</span>
-                          <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                            order #{item.order}
-                          </span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">Slug: {item.slug}</div>
-                        {item.description && (
-                          <div className="text-sm text-muted-foreground line-clamp-2">{item.description}</div>
-                        )}
-                        {item.iconImageId && (
-                          <div className="space-y-1 text-xs text-muted-foreground">
-                            <div>ID icon: {item.iconImageId}</div>
-                            {icon?.title && <div className="truncate">Tên media: {icon.title}</div>}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <label className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
-                        <Checkbox checked={item.active} onCheckedChange={() => handleToggleActive(item)} />
-                        {item.active ? "Đang hiện" : "Đang ẩn"}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/dashboard/library/software/${item._id}/edit`}>
-                            <Pencil className="mr-2 size-4" /> Sửa
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => move(item, "up")}
-                          disabled={index === 0}
-                          title="Lên"
-                        >
-                          <ChevronUp className="size-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => move(item, "down")}
-                          disabled={index === sorted.length - 1}
-                          title="Xuống"
-                        >
-                          <ChevronDown className="size-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => handleDelete(item)}
-                          title="Xóa"
-                        >
-                          <Trash2 className="size-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+        <CardContent>
+          <div className="divide-y rounded-md border">
+            <div className="flex items-center gap-3 p-3 bg-muted/30 text-sm text-muted-foreground">
+              <div className="w-8" />
+              <div className="w-16">Hình ảnh</div>
+              <div className="flex-1">Tên</div>
+              <div className="w-20">Trạng thái</div>
+              <div className="w-48">Hành động</div>
             </div>
-          )}
+
+            {!softwares && (
+              <div className="p-3 text-sm text-muted-foreground">Đang tải...</div>
+            )}
+            {softwares && sorted.length === 0 && (
+              <div className="p-3 text-sm text-muted-foreground">Chưa có phần mềm nào.</div>
+            )}
+            {softwares && sorted.length > 0 && sorted.map((item, index) => {
+              const icon = item.iconImageId ? iconLookup[String(item.iconImageId)] ?? null : null;
+              return (
+                <div key={String(item._id)} className="flex items-center gap-3 p-3">
+                  <div className="w-8 flex items-center justify-center">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(String(item._id))}
+                      onChange={(e) => toggleSelect(String(item._id), e.currentTarget.checked)}
+                    />
+                  </div>
+                  <div className="w-16">
+                    {icon?.url ? (
+                      <img src={icon.url} alt={item.name} className="w-14 h-14 object-cover rounded border" />
+                    ) : (
+                      <div className="w-14 h-14 bg-muted rounded border flex items-center justify-center text-[10px] text-muted-foreground">
+                        No img
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-xs text-muted-foreground">{item.slug}</div>
+                  </div>
+                  <div className="w-20">
+                    <button
+                      onClick={() => handleToggleActive(item)}
+                      className={`text-xs px-2 py-1 rounded ${
+                        item.active 
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      }`}
+                      title={item.active ? "Click để ẩn" : "Click để hiện"}
+                    >
+                      {item.active ? "Hiện" : "Ẩn"}
+                    </button>
+                  </div>
+                  <div className="w-48 flex items-center gap-1.5">
+                    <Button size="icon" variant="outline" title="Sửa" aria-label="Sửa" asChild>
+                      <Link href={`/dashboard/library/software/${item._id}/edit`}>
+                        <Pencil className="size-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => move(item, "up")}
+                      disabled={index === 0}
+                      title="Lên"
+                    >
+                      <ChevronUp className="size-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => move(item, "down")}
+                      disabled={index === sorted.length - 1}
+                      title="Xuống"
+                    >
+                      <ChevronDown className="size-4" />
+                    </Button>
+                    <Button 
+                      size="icon" 
+                      variant="destructive" 
+                      title="Xóa" 
+                      aria-label="Xóa" 
+                      onClick={() => handleDelete(item)}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </CardContent>
       </Card>
     </div>
