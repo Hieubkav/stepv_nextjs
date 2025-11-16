@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@dohy/backend/convex/_generated/api";
+import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 
 export type SoftwareFormValues = {
   name: string;
@@ -90,9 +90,8 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
     await onSubmit(values);
   }
 
-  function handleSelectIcon(id: string) {
-    setValues((prev) => ({ ...prev, iconImageId: id }));
-    setPickerOpen(false);
+  function handleSelectIcon(item: MediaItem) {
+    setValues((prev) => ({ ...prev, iconImageId: String(item._id) }));
   }
 
   return (
@@ -163,31 +162,15 @@ export function SoftwareForm({ initialValues, submitting, submitLabel, onSubmit,
         </div>
       </form>
 
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Chọn icon phần mềm</DialogTitle>
-          </DialogHeader>
-          <div className="grid max-h-[60vh] grid-cols-2 gap-3 overflow-y-auto pr-1 sm:grid-cols-3">
-            {(images ?? []).map((img: any) => (
-              <button
-                key={String(img._id)}
-                type="button"
-                className="flex flex-col items-center gap-2 rounded border p-3 text-sm transition hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                onClick={() => handleSelectIcon(String(img._id))}
-              >
-                <img src={img.url} alt={img.title || "icon"} className="h-24 w-full rounded object-cover" />
-                <span className="truncate w-full text-xs text-muted-foreground">{img.title || img._id}</span>
-                <span className="w-full truncate text-[10px] text-muted-foreground/70">{img._id}</span>
-              </button>
-            ))}
-          </div>
-          {(images ?? []).length === 0 && (
-            <p className="text-sm text-muted-foreground">Chưa có media nào. Hãy tải ảnh tại trang Media.</p>
-          )}
-        </DialogContent>
-      </Dialog>
+      <MediaPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        title="Chọn icon phần mềm"
+        selectedId={values.iconImageId}
+        onSelect={handleSelectIcon}
+      />
     </>
   );
 }
+
 

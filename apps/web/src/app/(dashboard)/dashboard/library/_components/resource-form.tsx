@@ -5,10 +5,9 @@ import { useQuery } from "convex/react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FullRichEditor } from "@/components/ui/full-rich-editor";
 import { api } from "@dohy/backend/convex/_generated/api";
-import { Image as ImageIcon, X } from "lucide-react";
+import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 
 export type ResourceFormValues = {
   title: string;
@@ -94,9 +93,8 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
     setValues((prev) => ({ ...prev, [field]: value }));
   }
 
-  function handleSelectCover(id: string) {
-    setValues((prev) => ({ ...prev, coverImageId: id }));
-    setPickerOpen(false);
+  function handleSelectCover(item: MediaItem) {
+    setValues((prev) => ({ ...prev, coverImageId: String(item._id) }));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -257,168 +255,15 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
         </div>
       </form>
 
-      <Dialog open={pickerOpen} onOpenChange={setPickerOpen}>
-        <DialogContent className="w-[calc(100vw-2rem)] md:max-w-6xl lg:max-w-7xl max-h-[85vh] flex flex-col">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Chọn ảnh cover</DialogTitle>
-          </DialogHeader>
-          
-          <ResourceCoverPicker 
-            images={images ?? []}
-            selectedId={values.coverImageId}
-            onSelect={handleSelectCover}
-          />
-        </DialogContent>
-      </Dialog>
+      <MediaPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        title="Chọn ảnh cover"
+        selectedId={values.coverImageId}
+        onSelect={handleSelectCover}
+      />
     </>
   );
 }
-
-type ResourceCoverPickerProps = {
-  images: any[];
-  selectedId: string;
-  onSelect: (id: string) => void;
-};
-
-function ResourceCoverPicker({ images, selectedId, onSelect }: ResourceCoverPickerProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredImages = useMemo(() => {
-    if (!searchQuery.trim()) return images;
-    const query = searchQuery.toLowerCase();
-    return images.filter((img: any) => {
-      const title = img.title || "";
-      const id = String(img._id);
-      return title.toLowerCase().includes(query) || id.toLowerCase().includes(query);
-    });
-  }, [images, searchQuery]);
-
-  const isEmpty = images.length === 0;
-  const hasNoResults = filteredImages.length === 0 && searchQuery;
-
-  return (
-    <div className="space-y-4 flex-1 min-h-0 flex flex-col">
-      {/* Search Bar */}
-      <div className="relative">
-        <Input
-          type="text"
-          placeholder="Tìm kiếm ảnh cover..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pr-8"
-          aria-label="Tìm kiếm ảnh cover"
-        />
-        {searchQuery && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-            onClick={() => setSearchQuery("")}
-            aria-label="Xóa tìm kiếm"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-
-      {/* Images Grid */}
-      <div className="flex-1 min-h-0 overflow-y-auto pr-2">
-        {isEmpty ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
-            <p className="text-lg font-medium text-muted-foreground mb-2">
-              Chưa có ảnh nào
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Hãy tải ảnh tại trang Media
-            </p>
-          </div>
-        ) : hasNoResults ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
-            <p className="text-lg font-medium text-muted-foreground mb-2">
-              Không tìm thấy kết quả
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Thử tìm kiếm với từ khóa khác
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-4"
-              onClick={() => setSearchQuery("")}
-            >
-              Xóa bộ lọc
-            </Button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredImages.map((img: any) => {
-              const id = String(img._id);
-              const isSelected = id === selectedId;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  className={`
-                    group
-                    rounded-lg border bg-card
-                    text-left transition-all
-                    hover:border-primary
-                    focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
-                    min-h-[44px] min-w-[44px]
-                    ${isSelected ? "border-primary ring-2 ring-primary" : ""}
-                  `}
-                  onClick={() => onSelect(id)}
-                  aria-label={`Chọn ${img.title || "ảnh cover"}`}
-                >
-                  {img.url ? (
-                    <div className="relative h-40 w-full rounded-t-lg overflow-hidden bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
-                      <img 
-                        src={img.url} 
-                        alt={img.title || "cover"} 
-                        className="h-full w-full object-contain p-2"
-                        loading="lazy"
-                      />
-                      <div className={`
-                        absolute inset-0 transition-colors
-                        ${isSelected ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/10"}
-                      `} />
-                    </div>
-                  ) : (
-                    <div className="flex h-40 w-full items-center justify-center rounded-t-lg bg-muted">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                      {img.title || id}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {id}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Footer Info */}
-      {!isEmpty && (
-        <div className="text-sm text-muted-foreground text-center pt-2 border-t">
-          Hiển thị {filteredImages.length} ảnh
-          {searchQuery && ` (từ ${images.length} tổng cộng)`}
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-
 
 

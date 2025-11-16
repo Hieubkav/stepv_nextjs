@@ -1,12 +1,18 @@
 import type { Metadata } from "next";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@dohy/backend/convex/_generated/api";
 // import Footer from "@/components/layout/footer";
 import "@/index.css";
-import SiteLayoutClient from './site-layout-client';
+import SiteLayoutClient from "./site-layout-client";
 
-export const metadata: Metadata = {
-  title: "DOHY Media - Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp",
-  description: "DOHY Media chuyên tạo ra những hình ảnh 3D siêu thực và hoạt hình được thiết kế riêng cho ngành nước hoa và làm đẹp. Chúng tôi giúp các thương hiệu cao cấp thu hút khán giả, nâng cao cách trình bày sản phẩm và nổi bật trong thị trường cạnh tranh.",
-  keywords: "hình ảnh 3D, hoạt hình 3D, nước hoa, làm đẹp, thương hiệu, marketing, quảng cáo, visualization, animation, perfume, beauty, brand, advertising",
+export const dynamic = "force-dynamic";
+
+const fallbackMetadata: Metadata = {
+  title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
+  description:
+    "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep. Chung toi giup cac thuong hieu cao cap thu hut khan gia, nang cao cach trinh bay san pham va noi bat trong thi truong canh tranh.",
+  keywords:
+    "hinh anh 3D, hoat hinh 3D, nuoc hoa, lam dep, thuong hieu, marketing, quang cao, visualization, animation, perfume, beauty, brand, advertising",
   authors: [{ name: "DOHY Media" }],
   creator: "DOHY Media",
   publisher: "DOHY Media",
@@ -23,8 +29,8 @@ export const metadata: Metadata = {
     canonical: "https://dohymedia.com",
   },
   openGraph: {
-    title: "DOHY Media - Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp",
-    description: "DOHY Media chuyên tạo ra những hình ảnh 3D siêu thực và hoạt hình được thiết kế riêng cho ngành nước hoa và làm đẹp.",
+    title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
+    description: "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep.",
     url: "https://dohymedia.com",
     siteName: "DOHY Media",
     images: [
@@ -32,7 +38,7 @@ export const metadata: Metadata = {
         url: "https://dohymedia.com/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "DOHY Media - Hình ảnh 3D chuyên nghiệp",
+        alt: "DOHY Media - Hinh anh 3D chuyen nghiep",
       },
     ],
     locale: "vi_VN",
@@ -40,12 +46,70 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DOHY Media - Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp",
-    description: "DOHY Media chuyên tạo ra những hình ảnh 3D siêu thực và hoạt hình được thiết kế riêng cho ngành nước hoa và làm đẹp.",
+    title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
+    description: "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep.",
     images: ["https://dohymedia.com/og-image.jpg"],
     creator: "@dohymedia",
   },
 };
+
+type SiteSettingValue = {
+  siteName?: string;
+  logoUrl?: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  ogImageUrl?: string;
+};
+
+export async function generateMetadata(): Promise<Metadata> {
+  const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+  if (!convexUrl) {
+    return fallbackMetadata;
+  }
+
+  try {
+    const client = new ConvexHttpClient(convexUrl);
+    const site = await client.query(api.settings.getByKey, { key: "site" });
+    const value = (site?.value ?? {}) as SiteSettingValue;
+
+    const title = value.metaTitle || value.siteName || fallbackMetadata.title;
+    const description = value.metaDescription || fallbackMetadata.description;
+    const iconUrl = value.logoUrl;
+    const ogImage = value.ogImageUrl || iconUrl;
+    const ogAlt = typeof title === "string" ? title : "Site thumbnail";
+
+    return {
+      ...fallbackMetadata,
+      title,
+      description,
+      icons: iconUrl ? { icon: iconUrl } : fallbackMetadata.icons,
+      openGraph: {
+        ...fallbackMetadata.openGraph,
+        title: title || fallbackMetadata.openGraph?.title,
+        description: description || fallbackMetadata.openGraph?.description,
+        images: ogImage
+          ? [
+              {
+                url: ogImage,
+                width: 1200,
+                height: 630,
+                alt: ogAlt,
+              },
+            ]
+          : fallbackMetadata.openGraph?.images,
+      },
+      twitter: {
+        ...fallbackMetadata.twitter,
+        title: title || fallbackMetadata.twitter?.title,
+        description: description || fallbackMetadata.twitter?.description,
+        images: ogImage ? [ogImage] : fallbackMetadata.twitter?.images,
+      },
+    };
+  } catch (error) {
+    console.warn("Không thể lấy site settings từ Convex", error);
+    return fallbackMetadata;
+  }
+}
 
 export default function SiteLayout({
   children,
