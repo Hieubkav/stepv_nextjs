@@ -108,58 +108,61 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/95 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-3">
-        <Link href="/" className="flex items-center gap-3" aria-label="Về trang chủ">
-          <div className="h-12 w-12 overflow-hidden border border-border/60 bg-muted">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-7xl items-center gap-6 px-4 py-2.5 sm:px-6">
+        <Link href="/" className="flex items-center gap-3 shrink-0" aria-label="Về trang chủ">
+          <div className="h-11 w-11 overflow-hidden rounded-lg border border-border/40 bg-gradient-to-br from-muted to-muted/70 shadow-sm hover:shadow-md transition-shadow duration-200">
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={logo} alt="Logo thương hiệu" className="h-full w-full object-contain" />
+              <img src={logo} alt="Logo thương hiệu" className="h-full w-full object-contain p-0.5" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-sm font-semibold">
+              <div className="flex h-full w-full items-center justify-center text-xs font-bold bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
                 DOHY
               </div>
             )}
           </div>
-          <div className="hidden flex-col leading-tight sm:flex">
-            <span className="text-xs font-semibold uppercase tracking-[0.4em] text-muted-foreground">
-              Learner
+          <div className="hidden flex-col leading-4 sm:flex">
+            <span className="text-[10px] font-bold uppercase tracking-[0.5em] text-muted-foreground">
+              LEARNER
             </span>
-            <span className="text-sm font-medium text-foreground">Không gian học viên</span>
+            <span className="text-[13px] font-medium text-foreground">Không gian học viên</span>
           </div>
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-1 lg:flex">
+        <nav className="hidden flex-1 items-center gap-0.5 lg:flex">
            {NAV_LINKS.map((link) => (
              <Link
                key={link.href}
                href={link.href as any}
-               className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+               className={`px-4 py-2 text-sm font-semibold transition-all duration-200 relative ${
                  isActive(link.href)
-                   ? "bg-primary text-primary-foreground shadow-sm"
-                   : "text-muted-foreground hover:bg-muted/80"
+                   ? "text-primary"
+                   : "text-muted-foreground hover:text-foreground"
                }`}
              >
                {link.label}
+               {isActive(link.href) && (
+                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary to-primary/60 rounded-full" />
+               )}
              </Link>
            ))}
          </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-3">
           {student ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="border-border/70 px-3 h-9"
+                  className="h-9 px-3 hover:bg-muted/80 transition-colors duration-200"
                 >
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
-                      Học viên
-                    </span>
-                    <span className="text-sm font-medium">
+                  <div className="flex flex-col items-start leading-tight gap-0.5">
+                    <span className="text-[10px] uppercase font-medium tracking-[0.4em] text-muted-foreground">
+                        Học viên
+                      </span>
+                    <span className="text-[13px] font-semibold text-foreground max-w-[120px] truncate">
                       {student.fullName || student.account}
                     </span>
                   </div>
@@ -167,15 +170,15 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-64">
                 <DropdownMenuLabel>
-                  <p className="text-xs text-muted-foreground">Không gian học viên</p>
-                  <p className="text-sm font-medium text-foreground">
+                  <p className="text-[11px] uppercase font-medium tracking-[0.3em] text-muted-foreground">Không gian học viên</p>
+                  <p className="text-sm font-medium text-foreground mt-1">
                     {student.fullName || student.account}
                   </p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {STUDENT_MENU_LINKS.map((item) => (
                   <DropdownMenuItem key={item.href} asChild>
-                    <Link href={item.href as any} className="flex w-full items-center justify-between">
+                    <Link href={item.href as any} className="flex w-full items-center justify-between cursor-pointer">
                       <span>{item.label}</span>
                     </Link>
                   </DropdownMenuItem>
@@ -186,24 +189,25 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
                     event.preventDefault();
                     logout();
                   }}
+                  className="cursor-pointer"
                 >
                   Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                className="px-4"
+                className="px-4 h-9 font-semibold"
                 onClick={() => router.push("/khoa-hoc/dang-nhap")}
               >
                 Đăng nhập
               </Button>
               <Button
                 size="sm"
-                className="px-4"
+                className="px-4 h-9 font-semibold"
                 onClick={() => router.push("/khoa-hoc/dang-ky")}
               >
                 Đăng ký
@@ -214,7 +218,7 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="inline-flex rounded-full lg:hidden"
+            className="inline-flex rounded-lg lg:hidden h-9 w-9"
             aria-label="Mở menu học viên"
           >
             <Menu className="h-5 w-5" />

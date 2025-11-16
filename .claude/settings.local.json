@@ -1,10 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir:*)",
+      "Bash(ls:*)",
       "Bash(find:*)",
-      "Bash(git add:*)",
-      "Bash(git commit -m \"$(cat <<''EOF''\nfix(learner): resolve hydration mismatch in header buttons\n\n- Replace asChild + Link pattern with onClick handlers to prevent hydration mismatch\n- Use router.push() for client-side navigation\n- Import useRouter hook from next/navigation\n- Improve button spacing and sizing (h-9, px-3 for student button)\n- Maintain consistent shadcn UI button styling\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(bun dev)",
+      "Bash(bun list:*)",
+      "Bash(bun add:*)",
+      "Bash(bun test:*)",
+      "Bash(bun test:favorites:*)",
+      "Bash(bun playwright test:*)"
     ],
     "deny": [],
     "ask": []

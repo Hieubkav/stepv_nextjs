@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Heart } from 'lucide-react';
+import { toast } from 'sonner';
 import type { Id } from '@dohy/backend/convex/_generated/dataModel';
 import { useCourseFavorite } from '../hooks/use-course-favorite';
 
@@ -38,13 +39,16 @@ export function CourseFavoriteButton({
 
         setIsOptimistic(true);
         const result = await toggle(e);
+        setIsOptimistic(false);
         if (!result.ok) {
-            setIsOptimistic(false);
+            toast.error(result.error || 'Không thể cập nhật yêu thích');
             console.error('Failed to toggle favorite:', result.error);
+        } else {
+            toast.success(result.isFavorited ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích');
         }
     };
 
-    const displayFavorited = isOptimistic ? !isFavorited : isFavorited;
+    const displayFavorited = isFavorited;
 
     return (
         <button
