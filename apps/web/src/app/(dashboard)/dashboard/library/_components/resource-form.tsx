@@ -28,6 +28,7 @@ export type ResourceFormProps = {
   submitLabel: string;
   onSubmit: (values: ResourceFormValues) => Promise<void>;
   onCancel?: () => void;
+  mode?: "new" | "edit";
 };
 
 const pricingOptions: { label: string; value: "free" | "paid" }[] = [
@@ -44,7 +45,7 @@ const slugify = (value: string) =>
     .replace(/(^-|-$)+/g, "")
     .trim();
 
-export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit, onCancel }: ResourceFormProps) {
+export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit, onCancel, mode = "new" }: ResourceFormProps) {
   const [values, setValues] = useState<ResourceFormValues>(initialValues);
   const images = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -109,15 +110,17 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
         {/* Basic Info */}
         <div className="space-y-4">
           <h3 className="text-base font-semibold">Thông tin cơ bản</h3>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`grid gap-4 ${mode === "edit" ? "" : "sm:grid-cols-2"}`}>
             <div className="space-y-2">
               <label className="text-sm font-medium">Title <span className="text-destructive">*</span></label>
               <Input value={values.title} onChange={(e) => update("title", e.target.value)} required />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Slug <span className="text-destructive">*</span></label>
-              <Input value={values.slug} onChange={(e) => update("slug", e.target.value)} required />
-            </div>
+            {mode !== "edit" && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Slug <span className="text-destructive">*</span></label>
+                <Input value={values.slug} onChange={(e) => update("slug", e.target.value)} required />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -203,7 +206,7 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
         <div className="space-y-4 pt-4 border-t">
           <h3 className="text-base font-semibold">Cài đặt</h3>
           
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className={`grid gap-4 ${mode === "edit" ? "" : "sm:grid-cols-2"}`}>
             <div className="space-y-2">
               <label className="text-sm font-medium">Loại giá</label>
               <select
@@ -218,10 +221,12 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Thứ tự hiển thị</label>
-              <Input type="number" value={values.order} onChange={(e) => update("order", e.target.value)} />
-            </div>
+            {mode !== "edit" && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Thứ tự hiển thị</label>
+                <Input type="number" value={values.order} onChange={(e) => update("order", e.target.value)} />
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">

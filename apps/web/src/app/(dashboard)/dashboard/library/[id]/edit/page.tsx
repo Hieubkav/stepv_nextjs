@@ -97,6 +97,7 @@ export default function LibraryEditPage({ params }: PageProps) {
             submitLabel="Lưu"
             onSubmit={handleSubmit}
             onCancel={() => router.push("/dashboard/library")}
+            mode="edit"
           />
         </CardContent>
       </Card>
