@@ -76,7 +76,6 @@ export default function LibraryEditPage({ params }: PageProps) {
         active: values.active,
       } as any);
       toast.success("Đã cập nhật tài nguyên");
-      router.push("/dashboard/library");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể cập nhật tài nguyên");
     } finally {

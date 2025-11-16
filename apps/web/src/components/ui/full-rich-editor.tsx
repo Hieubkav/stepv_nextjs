@@ -10,7 +10,7 @@ import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
-import { $getRoot, $insertNodes, ParagraphNode as LexicalParagraphNode } from "lexical";
+import { $getRoot, $insertNodes, ParagraphNode as LexicalParagraphNode, TextNode } from "lexical";
 import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
 import { $generateNodesFromDOM } from "@lexical/html";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
@@ -102,7 +102,7 @@ function InitialValuePlugin({ value }: { value: string }) {
       } else if (value.trim()) {
         // Fallback: create paragraph with text content
         const para = new LexicalParagraphNode();
-        para.append(value);
+        para.append(new TextNode(value));
         root.append(para);
       }
     });
