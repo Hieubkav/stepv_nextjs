@@ -83,7 +83,7 @@ export default function LearnerLayoutClient({ children }: LearnerLayoutClientPro
         <div className="flex min-h-screen flex-col bg-background">
           <LearnerTopBar logo={headerProps.logo} />
           <main className="flex-1 bg-muted/30">
-            <div className="mx-auto w-full max-w-6xl px-4 py-6">{children}</div>
+            <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>
           </main>
         </div>
       </StudentAuthProvider>
@@ -129,20 +129,20 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
         </Link>
 
         <nav className="hidden flex-1 items-center gap-1 lg:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-                isActive(link.href)
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
+           {NAV_LINKS.map((link) => (
+             <Link
+               key={link.href}
+               href={link.href as any}
+               className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                 isActive(link.href)
+                   ? "bg-primary text-primary-foreground shadow-sm"
+                   : "text-muted-foreground hover:bg-muted/80"
+               }`}
+             >
+               {link.label}
+             </Link>
+           ))}
+         </nav>
 
         <div className="ml-auto flex items-center gap-2">
           {student ? (
@@ -174,7 +174,7 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
                 <DropdownMenuSeparator />
                 {STUDENT_MENU_LINKS.map((item) => (
                   <DropdownMenuItem key={item.href} asChild>
-                    <Link href={item.href} className="flex w-full items-center justify-between">
+                    <Link href={item.href as any} className="flex w-full items-center justify-between">
                       <span>{item.label}</span>
                     </Link>
                   </DropdownMenuItem>

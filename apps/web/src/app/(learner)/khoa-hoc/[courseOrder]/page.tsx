@@ -268,7 +268,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
         detailError = "DETAIL_NULL";
       }
     } catch (error) {
-      console.error("Khong the tai chi tiet khoa hoc", error);
+      console.error("Không thể tải chi tiết khóa học", error);
       detailError = error instanceof Error ? error.message : "UNKNOWN_DETAIL_ERROR";
     }
 
@@ -357,7 +357,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
           };
         }
       } catch (mediaError) {
-        console.warn("Khong the tai thumbnail khoa hoc", mediaError);
+        console.warn("Không thể tải thumbnail khóa học", mediaError);
       }
     }
 
@@ -379,7 +379,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
       },
     };
   } catch (error) {
-    console.error("Khong the tai danh sach khoa hoc", error);
+    console.error("Không thể tải danh sách khóa học", error);
     return {
       ...base,
       status: "error",
@@ -511,7 +511,7 @@ export default async function CourseDetailPage({
 
   return (
     <PageShell>
-      <main className="mx-auto max-w-6xl px-4 py-8 pt-32">
+      <main className="mx-auto max-w-7xl px-4 py-8 pt-0">
         <Button variant="outline" size="sm" className="gap-2 mb-8" asChild>
           <Link href="/khoa-hoc">
             <ArrowLeft className="h-4 w-4" />

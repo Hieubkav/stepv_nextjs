@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -10,8 +10,10 @@ import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYoutubeThumbnailUrl } from "@/lib/youtube";
 import { toast } from "sonner";
@@ -124,7 +126,6 @@ const buildLessonInitial = (lesson?: LessonDoc): LessonFormValues => ({
   durationSeconds: lesson?.durationSeconds ? String(lesson.durationSeconds) : "",
   exerciseLink: lesson?.exerciseLink ?? "",
   isPreview: lesson?.isPreview ?? false,
-  order: String(lesson?.order ?? 0),
   active: lesson?.active ?? true,
 });
 
@@ -173,6 +174,7 @@ export default function CourseEditPage() {
     chapterId: Id<"course_chapters">;
     lesson?: LessonDoc;
   } | null>(null);
+  const lessonFormRef = useRef<HTMLFormElement | null>(null);
 
   const [enrollForm, setEnrollForm] = useState({ userId: "" });
   const [enrollSubmitting, setEnrollSubmitting] = useState(false);
@@ -228,6 +230,15 @@ export default function CourseEditPage() {
       setEnrollForm({ userId: studentOptions[0].id });
     }
   }, [studentOptions, enrollForm.userId]);
+
+  const activeLessonChapter = useMemo(() => {
+    if (!lessonContext) return null;
+    return chapters.find((chapter) => chapter._id === lessonContext.chapterId) ?? null;
+  }, [lessonContext, chapters]);
+
+  const lessonPreviewThumb = useMemo(() => {
+    return lessonContext?.lesson ? getYoutubeThumbnailUrl(lessonContext.lesson.youtubeUrl, "hq") : null;
+  }, [lessonContext]);
 
   async function handleCourseSubmit(values: CourseFormValues) {
     if (!course) return;
@@ -391,8 +402,6 @@ export default function CourseEditPage() {
       toast.error("Vui lòng nhập tiêu đề và YouTube URL");
       return;
     }
-    const orderNumber = Number.parseInt(values.order, 10);
-    const order = Number.isFinite(orderNumber) ? orderNumber : 0;
     const durationNumber = Number.parseInt(values.durationSeconds, 10);
     const duration = Number.isFinite(durationNumber) ? durationNumber : undefined;
 
@@ -407,11 +416,14 @@ export default function CourseEditPage() {
           youtubeUrl,
           durationSeconds: duration,
           isPreview: values.isPreview,
-          order,
+          order: lessonContext.lesson.order,
           active: values.active,
         } as any);
         toast.success("Đã cập nhật bài học");
       } else {
+        const chapter = chapters.find((c) => c._id === lessonContext.chapterId);
+        const lessons = chapter?.lessons ?? [];
+        const maxOrder = lessons.length > 0 ? Math.max(...lessons.map((l) => l.order)) : -1;
         await createLesson({
           courseId,
           chapterId: lessonContext.chapterId,
@@ -420,7 +432,7 @@ export default function CourseEditPage() {
           youtubeUrl,
           durationSeconds: duration,
           isPreview: values.isPreview,
-          order,
+          order: maxOrder + 1,
           active: values.active,
         });
         toast.success("Đã tạo bài học");
@@ -833,34 +845,102 @@ export default function CourseEditPage() {
       )}
 
       <Dialog open={chapterDialogOpen} onOpenChange={setChapterDialogOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{editingChapter ? "Sửa chương" : "Thêm chương"}</DialogTitle>
-          </DialogHeader>
-          <ChapterForm
-            initialValues={buildChapterInitial(editingChapter ?? undefined)}
-            submitting={chapterSubmitting}
-            submitLabel={editingChapter ? "Lưu" : "Tạo"}
-            onSubmit={handleChapterSubmit}
-            onCancel={() => setChapterDialogOpen(false)}
-          />
+        <DialogContent className="max-w-2xl overflow-hidden border border-border/80 p-0">
+          <div className="border-b bg-muted/40 px-6 py-5">
+            <DialogHeader className="text-left">
+              <DialogTitle>{editingChapter ? "Sửa chương" : "Thêm chương"}</DialogTitle>
+              <DialogDescription>
+                {editingChapter
+                  ? `Điều chỉnh thông tin chương "${editingChapter.title}" để giữ cấu trúc rõ ràng.`
+                  : `Tạo chương mới cho ${course?.title ?? "khóa học"} và mô tả ngắn gọn mục tiêu.`
+                }
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="px-6 pb-6 pt-4">
+            <ChapterForm
+              initialValues={buildChapterInitial(editingChapter ?? undefined)}
+              submitting={chapterSubmitting}
+              submitLabel={editingChapter ? "Lưu" : "Tạo"}
+              onSubmit={handleChapterSubmit}
+              onCancel={() => setChapterDialogOpen(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={lessonDialogOpen} onOpenChange={setLessonDialogOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>{lessonContext?.lesson ? "Sửa bài học" : "Thêm bài học"}</DialogTitle>
-          </DialogHeader>
-          <LessonForm
-            initialValues={buildLessonInitial(lessonContext?.lesson)}
-            submitting={lessonSubmitting}
-            submitLabel={lessonContext?.lesson ? "Lưu" : "Tạo"}
-            onSubmit={handleLessonSubmit}
-            onCancel={() => setLessonDialogOpen(false)}
-          />
+        <DialogContent className="w-full max-w-7xl sm:max-w-7xl max-h-[90vh] overflow-hidden border border-border/80 p-0 flex flex-col">
+          <div className="flex flex-col md:flex-row flex-1 min-h-0">
+            <div className="order-2 hidden md:block border-b bg-muted/40 px-6 py-6 text-sm text-muted-foreground md:order-1 md:w-72 md:border-b-0 md:border-r md:overflow-y-auto">
+            <div className="space-y-4">
+            <div>
+              <p className="text-xs uppercase tracking-wide">Chương</p>
+              <p className="text-sm font-medium text-foreground">
+                {activeLessonChapter?.title ?? "Chưa xác định"}
+              </p>
+            </div>
+            {lessonContext?.lesson && (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    className={cn(
+                      lessonContext.lesson.active
+                        ? "bg-emerald-100 text-emerald-900"
+                        : "bg-slate-200 text-slate-800",
+                    )}
+                  >
+                    {lessonContext.lesson.active ? "Đang hiển" : "Đang ẩn"}
+                      </Badge>
+                      {lessonContext.lesson.isPreview && (
+                         <Badge className="bg-amber-100 text-amber-900">Xem trước</Badge>
+                       )}
+                      </div>
+                      {lessonPreviewThumb && (
+                       <div className="overflow-hidden rounded-md border border-border bg-background shadow-sm">
+                         <img src={lessonPreviewThumb} alt="Ảnh xem nhanh video" className="h-36 w-full object-cover" />
+                       </div>
+                      )}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="order-1 flex-1 md:order-2 flex flex-col min-h-0">
+              <div className="border-b px-4 sm:px-6 py-4 sm:py-5 shrink-0">
+                <DialogHeader className="text-left">
+                  <DialogTitle className="text-lg sm:text-base">{lessonContext?.lesson ? "Sửa bài học" : "Thêm bài học"}</DialogTitle>
+                  <DialogDescription className="text-xs sm:text-sm">
+                    {lessonContext?.lesson
+                      ? "Cập nhật thông tin bài học để đồng bộ trải nghiệm học viên."
+                      : "Điền đủ dữ liệu để xuất bản bài học mới trong chương này."
+                    }
+                  </DialogDescription>
+                </DialogHeader>
+              </div>
+              <ScrollArea className="flex-1 min-h-0">
+                <div className="px-4 sm:px-6 py-4 sm:py-6">
+                  <LessonForm
+                    initialValues={buildLessonInitial(lessonContext?.lesson)}
+                    submitting={lessonSubmitting}
+                    submitLabel={lessonContext?.lesson ? "Lưu" : "Tạo"}
+                    onSubmit={handleLessonSubmit}
+                    onCancel={() => setLessonDialogOpen(false)}
+                    hideButtons={true}
+                    formRef={lessonFormRef}
+                  />
+                </div>
+              </ScrollArea>
+              <div className="border-t bg-background px-4 sm:px-6 py-3 shrink-0 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setLessonDialogOpen(false)} disabled={lessonSubmitting}>Hủy</Button>
+                <Button onClick={() => lessonFormRef.current?.requestSubmit()} disabled={lessonSubmitting}>
+                  {lessonSubmitting ? "Đang lưu..." : (lessonContext?.lesson ? "Lưu" : "Tạo")}
+                </Button>
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
+

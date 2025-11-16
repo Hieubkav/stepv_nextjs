@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +15,6 @@ export type LessonFormValues = {
   durationSeconds: string;
   exerciseLink: string;
   isPreview: boolean;
-  order: string;
   active: boolean;
 };
 
@@ -25,10 +24,14 @@ export type LessonFormProps = {
   submitLabel: string;
   onSubmit: (values: LessonFormValues) => Promise<void>;
   onCancel?: () => void;
+  hideButtons?: boolean;
+  formRef?: React.RefObject<HTMLFormElement | null>;
 };
 
-export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, onCancel }: LessonFormProps) {
+export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, onCancel, hideButtons, formRef }: LessonFormProps) {
   const [values, setValues] = useState(initialValues);
+  const internalRef = useRef<HTMLFormElement>(null);
+  const ref = formRef || internalRef;
 
   useEffect(() => {
     setValues(initialValues);
@@ -59,7 +62,7 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
   }, [values.youtubeUrl]);
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form ref={ref} className="space-y-4" onSubmit={handleSubmit}>
       <div className="space-y-2">
         <label className="text-sm font-medium">Tiêu đề bài học</label>
         <Input value={values.title} onChange={(event) => update("title", event.target.value)} />
@@ -102,34 +105,41 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
             placeholder="https://..."
           />
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Trạng thái</label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={values.active}
-              onCheckedChange={(checked) => update("active", Boolean(checked))}
-            />
-            <span>{values.active ? "Đang hiện" : "Đang ẩn"}</span>
-          </label>
-          <label className="inline-flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={values.isPreview}
-              onCheckedChange={(checked) => update("isPreview", Boolean(checked))}
-            />
-            <span>Cho phép xem demo</span>
-          </label>
         </div>
-      </div>
-      <div className="flex items-center justify-end gap-3">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
-            Hủy
+        <div className="grid gap-4 sm:grid-cols-2">
+        <label className="flex items-center gap-3 rounded-md border border-input bg-background/50 px-4 py-3 cursor-pointer hover:bg-accent/50 transition">
+          <Checkbox
+            checked={values.active}
+            onCheckedChange={(checked) => update("active", Boolean(checked))}
+          />
+          <div className="flex-1">
+            <div className="text-sm font-medium">Đang hiện</div>
+            <div className="text-xs text-muted-foreground">Học viên sẽ thấy bài học này</div>
+          </div>
+        </label>
+        <label className="flex items-center gap-3 rounded-md border border-input bg-background/50 px-4 py-3 cursor-pointer hover:bg-accent/50 transition">
+          <Checkbox
+            checked={values.isPreview}
+            onCheckedChange={(checked) => update("isPreview", Boolean(checked))}
+          />
+          <div className="flex-1">
+            <div className="text-sm font-medium">Xem demo</div>
+            <div className="text-xs text-muted-foreground">Cho phép xem miễn phí</div>
+          </div>
+        </label>
+        </div>
+      {!hideButtons && (
+        <div className="flex items-center justify-end gap-3">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+              Hủy
+            </Button>
+          )}
+          <Button type="submit" disabled={submitting}>
+            {submitting ? "Đang lưu..." : submitLabel}
           </Button>
-        )}
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "Đang lưu..." : submitLabel}
-        </Button>
-      </div>
+        </div>
+      )}
     </form>
   );
 }
