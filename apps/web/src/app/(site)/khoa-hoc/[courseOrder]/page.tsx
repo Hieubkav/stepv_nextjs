@@ -1,8 +1,14 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { ConvexHttpClient } from "convex/browser";
 
 import { api } from "@dohy/backend/convex/_generated/api";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CourseHeader } from "./components/course-header";
+import { VideoPlayer } from "./components/video-player";
+import { CourseDetails } from "./components/course-details";
+import { CourseCurriculum } from "./components/course-curriculum";
+import { CourseHighlights } from "./components/course-highlights";
+import { CoursePrice } from "./components/course-price";
 
 type PageParams = Promise<{ courseOrder: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -392,22 +398,8 @@ function buildFeatureLines(data: CourseDetailPageData) {
   return lines;
 }
 
-function PageShell({
-  children,
-  containerClassName,
-}: {
-  children: ReactNode;
-  containerClassName?: string;
-}) {
-  const container = `relative mx-auto ${containerClassName ?? "max-w-[1200px] px-5 pb-20 pt-24 md:pt-32"}`;
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-[#05070f] text-white">
-      <div className="pointer-events-none absolute left-[-18%] top-[-28%] h-[42rem] w-[42rem] rounded-full bg-[radial-gradient(circle,_rgba(245,197,66,0.22)_0%,_transparent_72%)]" />
-      <div className="pointer-events-none absolute right-[-22%] top-[-24%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,_rgba(250,204,21,0.15)_0%,_transparent_75%)]" />
-      <div className="pointer-events-none absolute left-[10%] bottom-[-32%] h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle,_rgba(245,158,11,0.1)_0%,_transparent_78%)]" />
-      <div className={container}>{children}</div>
-    </main>
-  );
+function PageShell({ children }: { children: ReactNode }) {
+  return <div className="min-h-screen bg-muted/20 text-foreground">{children}</div>;
 }
 
 function ErrorState({
@@ -420,33 +412,50 @@ function ErrorState({
   debug?: CourseDetailPageData["debug"];
 }) {
   return (
-    <PageShell containerClassName="max-w-3xl px-5 pb-20 pt-24 md:pt-32">
-      <div className="space-y-6">
-        <Link
-          href="/khoa-hoc"
-          className="inline-flex items-center text-sm text-white/70 transition hover:text-[#f5c542]"
-        >
-          <span aria-hidden>&larr;</span>
-          <span className="ml-2">Quay lại danh sách khóa học</span>
-        </Link>
-        <section className="rounded-3xl border border-white/12 bg-[#0a090f]/90 p-6 shadow-[0_14px_45px_rgba(0,0,0,0.45)]">
-          <h1 className="text-2xl font-bold">{title}</h1>
-          <p className="mt-3 text-sm text-white/70">{description}</p>
-        </section>
+    <PageShell>
+      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+        <div className="mx-auto max-w-6xl px-4 py-4">
+          <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Course</p>
+          <h1 className="text-lg font-semibold leading-tight text-balance">Chi tiết khóa học</h1>
+        </div>
+      </header>
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </CardContent>
+        </Card>
         {debug ? (
-          <details className="rounded-2xl border border-white/12 bg-white/[0.05] p-4 text-xs text-white/65">
-            <summary className="cursor-pointer text-sm font-semibold text-[#f5c542]">
-              Hiển thị thông tin debug
-            </summary>
-            <pre className="mt-3 whitespace-pre-wrap break-words text-[12px] leading-relaxed text-white/60">
-              {JSON.stringify(debug, null, 2)}
-            </pre>
-          </details>
+          <Card className="mt-6 bg-muted/40">
+            <CardHeader>
+              <CardTitle className="text-sm font-semibold text-muted-foreground">Debug</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <pre className="whitespace-pre-wrap break-words text-xs text-muted-foreground">
+                {JSON.stringify(debug, null, 2)}
+              </pre>
+            </CardContent>
+          </Card>
         ) : null}
       </div>
     </PageShell>
   );
 }
+
+
+
+function DebugPanel({ payload }: { payload: Record<string, unknown> }) {
+  return (
+    <details className="mt-10 rounded-lg border border-dashed border-border bg-background px-4 py-3 text-sm text-muted-foreground">
+      <summary className="cursor-pointer text-sm font-semibold text-primary">Debug payload</summary>
+      <pre className="mt-3 whitespace-pre-wrap break-words text-xs">{JSON.stringify(payload, null, 2)}</pre>
+    </details>
+  );
+}
+
 
 export default async function CourseDetailPage({
   params,
@@ -499,160 +508,57 @@ export default async function CourseDetailPage({
   const heroDescription =
     course.subtitle ??
     course.description ??
-    "Khóa học đang cập nhật phần mô tả chi tiết, vui lòng xem chương trình học bên dưới.";
+    "Khóa học đang cập nhật phần mở từ chi tiết, vui lòng xem chương trình học bên dưới.";
+  const heroStats = [
+    { label: "Chương học", value: `${totals.chapters}` },
+    { label: "Bài giảng", value: `${totals.lessons}` },
+    { label: "Thời lượng", value: totalDurationText ?? "Đang cập nhật" },
+  ];
+
+  const descriptionBody = course.description ?? heroDescription;
+
+  const badges = [
+    course.pricingType === "free" ? "Miễn phí" : "Trả phí",
+    `${totals.chapters} chương`,
+    `${totals.lessons} bài học`,
+  ];
+  if (totals.previewLessons > 0) {
+    badges.push(`${totals.previewLessons} bài xem thử`);
+  }
 
   return (
     <PageShell>
-      <div className="space-y-8">
-        <section className="flex flex-col gap-6 lg:flex-row">
-          <div className="flex-1 space-y-4">
-            <nav className="flex flex-wrap items-center gap-2 text-sm text-white/60">
-              <Link href="/" className="transition hover:text-[#f5c542]">
-                Trang chủ
-              </Link>
-              <span className="opacity-60">▶︎</span>
-              <Link href="/khoa-hoc" className="transition hover:text-[#f5c542]">
-                Khóa học
-              </Link>
-              <span className="opacity-60">▶︎</span>
-              <span className="text-white">{course.title}</span>
-            </nav>
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-                  {course.title}
-                </h1>
-                {!course.active ? (
-                  <span className="rounded-full border border-amber-400/60 bg-amber-500/15 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-amber-100">
-                    Preview
-                  </span>
-                ) : null}
-              </div>
-              <p className="text-sm text-white/70 sm:text-base">{heroDescription}</p>
-            </div>
+      <CourseHeader title={course.title} subtitle={course.subtitle} />
+      <main className="mx-auto max-w-6xl px-4 py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-8 lg:col-span-2">
+            <VideoPlayer thumbnail={thumbnail} totalDurationText={totalDurationText} />
+            <CourseDetails
+              title={course.title}
+              subtitle={course.subtitle}
+              description={descriptionBody}
+            />
+            <CourseHighlights stats={heroStats} features={features} curriculumSummary={curriculumSummary} />
           </div>
-
-          <aside className="lg:w-[340px]">
-            <div className="sticky top-28 rounded-3xl border border-white/12 bg-[#0a0d16]/90 p-4 shadow-[0_14px_45px_rgba(0,0,0,0.45)] backdrop-blur">
-              <div className="aspect-video overflow-hidden rounded-xl bg-[#0f111b]">
-                {thumbnail?.url ? (
-                  <img src={thumbnail.url} alt={thumbnail.title ?? course.title} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center text-xs uppercase tracking-[0.35em] text-white/35">
-                    Đang cập nhật ảnh
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 flex items-baseline justify-between">
-                <div className="text-2xl font-black text-[#f8d37f]">{priceText}</div>
-                {comparePriceText ? <div className="text-xs text-white/50 line-through">{comparePriceText}</div> : null}
-              </div>
-
-              {course.priceNote && !comparePriceText ? (
-                <div className="mt-1 text-xs text-white/55">{course.priceNote}</div>
-              ) : null}
-
-              <div className="mt-3">
-                <button
-                  type="button"
-                  className="w-full rounded-lg bg-gradient-to-br from-[#f6e05e] to-[#f0b429] px-3 py-2 font-bold text-[#1b1309] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(240,180,41,0.35)]"
-                >
-                  Vào học
-                </button>
-              </div>
-
-              <ul className="mt-4 space-y-2 text-sm text-white/75">
-                {features.map((line) => (
-                  <li key={line}>• {line}</li>
-                ))}
-              </ul>
-            </div>
-          </aside>
-        </section>
-
-        <section className="rounded-3xl border border-white/12 bg-[#0a090f]/90 px-6 py-5 shadow-[0_10px_35px_rgba(0,0,0,0.35)]">
-          <h2 className="text-lg font-extrabold">Mô tả</h2>
-          <p className="mt-2 text-sm leading-6 text-white/70">
-            {course.description
-              ? course.description
-              : "Nội dung mô tả chi tiết đang được bổ sung. Hãy xem chương trình học để hiểu rõ cấu trúc khóa học."}
-          </p>
-        </section>
-
-        <section className="rounded-3xl border border-white/12 bg-[#0a090f]/90 shadow-[0_10px_35px_rgba(0,0,0,0.35)]">
-          <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
-            <h2 className="text-lg font-extrabold">Nội dung khóa học</h2>
-            <span className="text-sm text-white/60">{curriculumSummary}</span>
+          <div className="space-y-6">
+            <CoursePrice
+              priceText={priceText}
+              comparePriceText={comparePriceText}
+              priceNote={course.priceNote}
+              pricingType={course.pricingType}
+            />
+            <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} />
           </div>
-
-          {chapters.length > 0 ? (
-            <div className="divide-y divide-white/10" id="curriculum">
-              {chapters.map((chapter, index) => (
-                <details key={chapter.id} open={index === 0} className="group">
-                  <summary className="flex cursor-pointer items-center justify-between px-6 py-4 transition hover:bg-white/5">
-                    <div className="font-semibold">
-                      {index + 1}. {chapter.title}
-                    </div>
-                    <div className="text-sm text-white/60">{chapter.lessons.length} bài</div>
-                  </summary>
-                  <div className="px-6 pb-4">
-                    {chapter.summary ? <p className="mb-3 text-sm text-white/65">{chapter.summary}</p> : null}
-                    <ul className="space-y-2 text-sm">
-                      {chapter.lessons.length > 0 ? (
-                        chapter.lessons.map((lesson) => (
-                          <li
-                            key={lesson.id}
-                            className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-white"
-                          >
-                            <span className="flex-1 pr-3">{lesson.title}</span>
-                            <div className="flex items-center gap-2 text-xs text-white/60">
-                              {lesson.isPreview ? (
-                                <span className="rounded-full border border-[#f5c542]/60 bg-[#f5c542]/10 px-2 py-0.5 font-semibold uppercase tracking-[0.2em] text-[#f9d97b]">
-                                  Preview
-                                </span>
-                              ) : null}
-                              <span>{lesson.durationLabel ?? "00:00"}</span>
-                            </div>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="rounded-xl border border-dashed border-white/12 bg-white/[0.03] px-3 py-2 text-sm text-white/60">
-                          Bài giảng đang được cập nhật cho chương này.
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </details>
-              ))}
-            </div>
-          ) : (
-            <div className="px-6 py-6 text-sm text-white/60">Chương trình học đang được cập nhật. Vui lòng quay lại sau.</div>
-          )}
-
-          {chapters.length > 3 ? (
-            <button className="w-full px-6 py-4 text-sm text-[#f8d37f] transition hover:text-[#f5c542]">
-              Xem thêm chương
-            </button>
-          ) : null}
-        </section>
-
-        <details className="rounded-3xl border border-white/12 bg-white/[0.05] px-6 py-5 text-xs text-white/65">
-          <summary className="cursor-pointer text-sm font-semibold text-[#f5c542]">Debug payload</summary>
-          <pre className="mt-3 whitespace-pre-wrap break-words text-[12px] leading-relaxed text-white/60">
-            {JSON.stringify(
-              {
-                preview,
-                order: numericOrder,
-                debug: data.debug,
-                totals,
-              },
-              null,
-              2,
-            )}
-          </pre>
-        </details>
-      </div>
+        </div>
+        <DebugPanel
+          payload={{
+            preview,
+            order: numericOrder,
+            debug: data.debug,
+            totals,
+          }}
+        />
+      </main>
     </PageShell>
   );
 }
