@@ -152,9 +152,9 @@ export default function HomeBlocksPage() {
                       />
                     </div>
                     <div className="w-8 text-muted-foreground text-sm">#</div>
-                    <div className="flex-1 text-sm font-medium">Kind</div>
-                    <div className="w-28 text-sm">Visible</div>
-                    <div className="w-36 text-sm">Hành động</div>
+                      <div className="flex-1 text-sm font-medium">Loại</div>
+                      <div className="w-28 text-sm">Hiển thị</div>
+                      <div className="w-36 text-sm">Hành động</div>
                   </div>
 
                   {blocks.map((b, i) => (
@@ -177,12 +177,12 @@ export default function HomeBlocksPage() {
                       </div>
                       <div className="w-28 flex items-center gap-2 text-sm">
                         <Checkbox id={`vis-${b._id}`} checked={b.isVisible} onCheckedChange={() => onToggleVisible(b)} />
-                        <label htmlFor={`vis-${b._id}`} className="text-muted-foreground">Visible</label>
+                        <label htmlFor={`vis-${b._id}`} className="text-muted-foreground">Hiển thị</label>
                       </div>
                       <div className="w-36 flex items-center gap-1">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/dashboard/home-blocks/${String(b._id)}`}>Edit</Link>
-                        </Button>
+                           <Link href={`/dashboard/home-blocks/${String(b._id)}`}>Sửa</Link>
+                         </Button>
                         <Button variant="outline" size="icon" onClick={() => move(b._id as any, "up")} disabled={i === 0} title="Lên">
                           <ChevronUp className="size-4" />
                         </Button>

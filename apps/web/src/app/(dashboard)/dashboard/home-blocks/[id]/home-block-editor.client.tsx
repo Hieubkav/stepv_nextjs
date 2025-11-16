@@ -90,7 +90,7 @@ export function HomeBlockEditor({ id }: { id: string }) {
             variant={mode === "form" ? "default" : "ghost"}
             onClick={() => setMode("form")}
             disabled={!hasBlockSchema(block.kind)}
-            title={hasBlockSchema(block.kind) ? "Dùng giao diện form" : "Kind này chưa có form"}
+            title={hasBlockSchema(block.kind) ? "Dùng giao diện form" : "Loại này chưa có biểu mẫu"}
           >
             Form
           </Button>
@@ -108,11 +108,11 @@ export function HomeBlockEditor({ id }: { id: string }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center gap-2">
               <Checkbox id="visible" checked={isVisible} onCheckedChange={() => setIsVisible((v) => !v)} />
-              <Label htmlFor="visible">Visible</Label>
+              <Label htmlFor="visible">Hiển thị</Label>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox id="active" checked={active} onCheckedChange={() => setActive((v) => !v)} />
-              <Label htmlFor="active">Active</Label>
+              <Label htmlFor="active">Kích hoạt</Label>
             </div>
           </div>
 
@@ -123,7 +123,7 @@ export function HomeBlockEditor({ id }: { id: string }) {
               size="sm"
               onClick={() => {
                 const tpl = getTemplate(block.kind);
-                if (!tpl) return toast.message("Chưa có mẫu cho kind này");
+                if (!tpl) return toast.message("Loại này chưa có mẫu");
                 setFormData(tpl);
                 setJsonText(JSON.stringify(tpl, null, 2));
               }}
