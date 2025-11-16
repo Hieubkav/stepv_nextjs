@@ -152,7 +152,7 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="rounded-full border-border/70 px-4"
+                  className="border-border/70 px-4"
                 >
                   <div className="flex flex-col items-start leading-tight">
                     <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
@@ -192,10 +192,10 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
+              <Button variant="outline" size="sm" className="px-4" asChild>
                 <Link href="/khoa-hoc/dang-nhap">Đăng nhập</Link>
               </Button>
-              <Button size="sm" className="rounded-full px-4" asChild>
+              <Button size="sm" className="px-4" asChild>
                 <Link href="/khoa-hoc/dang-ky">Đăng ký</Link>
               </Button>
             </div>
