@@ -43,7 +43,7 @@ export function CourseFavoriteButton({
         if (!result.ok) {
             toast.error(result.error || 'Không thể cập nhật yêu thích');
             console.error('Failed to toggle favorite:', result.error);
-        } else {
+        } else if ('isFavorited' in result) {
             toast.success(result.isFavorited ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích');
         }
     };

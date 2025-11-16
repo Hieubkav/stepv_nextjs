@@ -8,7 +8,8 @@
       "Bash(bun add:*)",
       "Bash(bun test:*)",
       "Bash(bun test:favorites:*)",
-      "Bash(bun playwright test:*)"
+      "Bash(bun playwright test:*)",
+      "Skill(create-skill)"
     ],
     "deny": [],
     "ask": []
