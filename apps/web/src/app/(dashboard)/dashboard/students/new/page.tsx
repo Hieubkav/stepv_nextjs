@@ -18,7 +18,6 @@ const buildInitial = (values?: Partial<StudentFormValues>): StudentFormValues =>
   phone: values?.phone ?? "",
   notes: values?.notes ?? "",
   tagsText: values?.tagsText ?? "",
-  order: values?.order ?? "0",
   active: values?.active ?? true,
 });
 
@@ -28,9 +27,11 @@ export default function StudentCreatePage() {
   const createStudent = useMutation(api.students.createStudent);
   const [submitting, setSubmitting] = useState(false);
 
-  const initialValues = useMemo(() => {
-    const nextOrder = students ? students.length : 0;
-    return buildInitial({ order: String(nextOrder) });
+  const initialValues = useMemo(() => buildInitial(), []);
+
+  const nextOrder = useMemo(() => {
+    if (!students || students.length === 0) return 0;
+    return students.reduce((max, item) => Math.max(max, item.order ?? 0), 0) + 1;
   }, [students]);
 
   async function handleSubmit(values: StudentFormValues) {
@@ -41,9 +42,6 @@ export default function StudentCreatePage() {
       toast.error("Cần nhập account, họ tên và mật khẩu");
       return;
     }
-    const orderNumber = Number.parseInt(values.order, 10);
-    const parsedOrder = Number.isFinite(orderNumber) ? orderNumber : students?.length ?? 0;
-
     setSubmitting(true);
     try {
       await createStudent({
@@ -56,7 +54,7 @@ export default function StudentCreatePage() {
         tags: values.tagsText
           ? values.tagsText.split(/\r?\n|,/).map((tag) => tag.trim()).filter(Boolean)
           : undefined,
-        order: parsedOrder,
+        order: nextOrder,
         active: values.active,
       });
       toast.success("Đã tạo học viên");

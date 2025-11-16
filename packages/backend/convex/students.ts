@@ -1,4 +1,4 @@
-// KISS: Convex functions cho hoc vien
+// KISS: Convex functions cho học viên
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
@@ -77,8 +77,9 @@ export const listStudents = query({
   args: {
     activeOnly: v.optional(v.boolean()),
     search: v.optional(v.string()),
+    withCourseCount: v.optional(v.boolean()),
   },
-  handler: async (ctx, { activeOnly = false, search }) => {
+  handler: async (ctx, { activeOnly = false, search, withCourseCount = false }) => {
     let students = await ctx.db.query("students").collect();
     if (activeOnly) {
       students = students.filter((item) => item.active);
@@ -97,6 +98,27 @@ export const listStudents = query({
       });
     }
     students.sort((a, b) => a.order - b.order);
+    if (withCourseCount && students.length > 0) {
+      const pairs = await Promise.all(
+        students.map(async (student) => {
+          const userId = String(student._id);
+          const enrollments = await ctx.db
+            .query("course_enrollments")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .collect();
+          const count = enrollments.filter((item) => item.active).length;
+          return { userId, count };
+        }),
+      );
+      const map = new Map<string, number>();
+      for (const pair of pairs) {
+        map.set(pair.userId, pair.count);
+      }
+      return students.map((student) => ({
+        ...student,
+        courseCount: map.get(String(student._id)) ?? 0,
+      }));
+    }
     return students;
   },
 });

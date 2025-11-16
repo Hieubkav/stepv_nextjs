@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
@@ -8,6 +9,7 @@ import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 import { StudentForm } from "../../_components/student-form";
@@ -26,6 +28,22 @@ type StudentDetail = {
   active: boolean;
 };
 
+type CourseSummary = {
+  _id: Id<"courses">;
+  title: string;
+  active: boolean;
+  order: number;
+};
+
+type EnrollmentDoc = {
+  _id: Id<"course_enrollments">;
+  courseId: Id<"courses">;
+  userId: string;
+  order: number;
+  active: boolean;
+  enrolledAt: number;
+};
+
 const buildInitial = (student: StudentDetail): StudentFormValues => ({
   account: student.account,
   password: student.password,
@@ -34,7 +52,6 @@ const buildInitial = (student: StudentDetail): StudentFormValues => ({
   phone: student.phone ?? "",
   notes: student.notes ?? "",
   tagsText: student.tags?.join("\n") ?? "",
-  order: String(student.order),
   active: student.active,
 });
 
@@ -46,7 +63,6 @@ const emptyInitial: StudentFormValues = {
   phone: "",
   notes: "",
   tagsText: "",
-  order: "0",
   active: true,
 };
 
@@ -56,16 +72,68 @@ export default function StudentEditPage() {
   const studentId = params.studentId as Id<"students">;
 
   const student = useQuery(api.students.getStudent, { id: studentId }) as StudentDetail | null | undefined;
+  const enrollments = useQuery(api.courses.listEnrollmentsByUser, {
+    userId: String(studentId),
+    includeInactive: true,
+  }) as EnrollmentDoc[] | undefined;
+  const courses = useQuery(api.courses.listCourses, { includeInactive: true }) as CourseSummary[] | undefined;
   const updateStudent = useMutation(api.students.updateStudent);
   const setActive = useMutation(api.students.setStudentActive);
   const deleteStudent = useMutation(api.students.deleteStudent);
+  const upsertEnrollment = useMutation(api.courses.upsertEnrollment);
+  const removeEnrollmentMutation = useMutation(api.courses.removeEnrollment);
 
   const [submitting, setSubmitting] = useState(false);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [courseSubmitting, setCourseSubmitting] = useState(false);
 
   const initialValues = useMemo(() => {
     if (!student) return emptyInitial;
     return buildInitial(student);
   }, [student]);
+
+  const courseMap = useMemo(() => {
+    const map = new Map<string, CourseSummary>();
+    (courses ?? []).forEach((course) => {
+      map.set(String(course._id), course);
+    });
+    return map;
+  }, [courses]);
+
+  const availableCourseOptions = useMemo(() => {
+    if (!courses) return [];
+    const assigned = new Set((enrollments ?? []).map((enrollment) => String(enrollment.courseId)));
+    return courses
+      .slice()
+      .sort((a, b) => a.title.localeCompare(b.title))
+      .filter((course) => !assigned.has(String(course._id)))
+      .map((course) => ({
+        id: String(course._id),
+        label: course.title,
+      }));
+  }, [courses, enrollments]);
+
+  const studentCourses = useMemo(() => {
+    if (!enrollments) return [];
+    return enrollments
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map((enrollment) => ({
+        enrollment,
+        course: courseMap.get(String(enrollment.courseId)) ?? null,
+      }));
+  }, [enrollments, courseMap]);
+
+  useEffect(() => {
+    setSelectedCourseId((prev) => {
+      if (availableCourseOptions.length === 0) {
+        return "";
+      }
+      return availableCourseOptions.some((option) => option.id === prev)
+        ? prev
+        : availableCourseOptions[0].id;
+    });
+  }, [availableCourseOptions]);
 
   async function handleSubmit(values: StudentFormValues) {
     if (!student) return;
@@ -75,8 +143,6 @@ export default function StudentEditPage() {
       toast.error("Cần nhập account và họ tên");
       return;
     }
-    const orderNumber = Number.parseInt(values.order, 10);
-    const parsedOrder = Number.isFinite(orderNumber) ? orderNumber : student.order;
     const tags = values.tagsText
       ? values.tagsText.split(/\r?\n|,/).map((tag) => tag.trim()).filter(Boolean)
       : undefined;
@@ -92,7 +158,6 @@ export default function StudentEditPage() {
         phone: values.phone.trim() || null,
         notes: values.notes.trim() || null,
         tags,
-        order: parsedOrder,
         active: values.active,
       });
       toast.success("Đã cập nhật học viên");
@@ -100,6 +165,54 @@ export default function StudentEditPage() {
       toast.error(error?.message ?? "Không thể cập nhật học viên");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleAddCourse(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!student) return;
+    if (!selectedCourseId) {
+       toast.error("Vui lòng chọn khóa học");
+       return;
+     }
+    const courseInfo = courseMap.get(selectedCourseId);
+    setCourseSubmitting(true);
+    try {
+      await upsertEnrollment({
+        courseId: selectedCourseId as Id<"courses">,
+        userId: String(student._id),
+      } as any);
+      toast.success(
+        courseInfo
+          ? `Đã gán ${student.fullName} vào khóa "${courseInfo.title}"`
+          : "Đã cấp quyền khóa học",
+      );
+      setSelectedCourseId("");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Không thể gán khóa học");
+    } finally {
+      setCourseSubmitting(false);
+    }
+  }
+
+  async function handleRemoveCourse(enrollment: EnrollmentDoc) {
+    if (!student) return;
+    const courseId = String(enrollment.courseId);
+    const courseInfo = courseMap.get(courseId);
+    const label = courseInfo ? courseInfo.title : courseId;
+    if (!window.confirm(`Xóa ${student.fullName} khỏi khóa "${label}"?`)) return;
+    try {
+      const result = await removeEnrollmentMutation({
+        courseId: enrollment.courseId,
+        userId: String(student._id),
+      });
+      if (!result?.ok) {
+        toast.error("Không thể xóa khóa học");
+        return;
+      }
+      toast.success(`Đã xóa ${student.fullName} khỏi ${label}`);
+    } catch (error: any) {
+      toast.error(error?.message ?? "Không thể xóa khóa học");
     }
   }
 
@@ -166,6 +279,91 @@ export default function StudentEditPage() {
             onSubmit={handleSubmit}
             requirePassword={false}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Khóa học tham gia</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleAddCourse}>
+            <div className="sm:flex-1">
+              <label className="text-sm font-medium">Khóa học</label>
+              {courses === undefined ? (
+                <div className="text-xs text-muted-foreground">Đang tải danh sách khóa học...</div>
+              ) : availableCourseOptions.length === 0 ? (
+                <div className="text-xs text-muted-foreground">
+                  {courses.length === 0 ? "Chưa có khóa học nào." : "Không còn khóa học trống."}
+                </div>
+              ) : (
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={selectedCourseId}
+                  onChange={(event) => setSelectedCourseId(event.target.value)}
+                >
+                  {availableCourseOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="flex justify-end sm:block">
+              <Button
+                type="submit"
+                disabled={courseSubmitting || !selectedCourseId || availableCourseOptions.length === 0}
+              >
+                {courseSubmitting ? "Đang lưu..." : "Thêm khóa học"}
+              </Button>
+            </div>
+          </form>
+          <Separator />
+          {!enrollments && <div className="text-sm text-muted-foreground">Đang tải khóa học...</div>}
+          {enrollments && enrollments.length === 0 && (
+            <div className="text-sm text-muted-foreground">Học viên chưa tham gia khóa học nào.</div>
+          )}
+          {enrollments && enrollments.length > 0 && (
+            <div className="space-y-2">
+              {studentCourses.map(({ enrollment, course }) => (
+                <div
+                  key={String(enrollment._id)}
+                  className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="font-medium">{course?.title ?? `Khóa học #${enrollment.courseId}`}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {course ? (course.active ? "Khóa học đang hiển" : "Khóa học đang ẩn") : "Không rõ trạng thái khóa học"}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                        enrollment.active
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                      }`}
+                    >
+                      {enrollment.active ? "Đang hiển" : "Đang ẩn"}
+                    </span>
+                    {course ? (
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/dashboard/courses/${course._id}/edit`}>Mở khóa học</Link>
+                      </Button>
+                    ) : (
+                      <Button variant="outline" size="sm" disabled>
+                        Khóa học không còn
+                      </Button>
+                    )}
+                    <Button variant="destructive" size="sm" onClick={() => handleRemoveCourse(enrollment)}>
+                      Xóa
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

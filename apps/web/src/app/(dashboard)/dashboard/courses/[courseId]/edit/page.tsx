@@ -10,7 +10,6 @@ import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
@@ -162,8 +161,6 @@ export default function CourseEditPage() {
 
   const upsertEnrollment = useMutation(api.courses.upsertEnrollment);
   const removeEnrollment = useMutation(api.courses.removeEnrollment);
-  const setEnrollmentActive = useMutation(api.courses.setEnrollmentActive);
-  const updateEnrollmentProgress = useMutation(api.courses.updateEnrollmentProgress);
 
   const [courseSubmitting, setCourseSubmitting] = useState(false);
   const [chapterDialogOpen, setChapterDialogOpen] = useState(false);
@@ -177,13 +174,8 @@ export default function CourseEditPage() {
     lesson?: LessonDoc;
   } | null>(null);
 
-  const [enrollForm, setEnrollForm] = useState({ userId: "", order: "", lessonId: "" });
+  const [enrollForm, setEnrollForm] = useState({ userId: "" });
   const [enrollSubmitting, setEnrollSubmitting] = useState(false);
-
-  const [enrollmentDialogOpen, setEnrollmentDialogOpen] = useState(false);
-  const [enrollmentEditSubmitting, setEnrollmentEditSubmitting] = useState(false);
-  const [editingEnrollment, setEditingEnrollment] = useState<EnrollmentDoc | null>(null);
-  const [enrollmentEditForm, setEnrollmentEditForm] = useState({ progress: "", lessonId: "" });
   const [activeTab, setActiveTab] = useState<CourseTab>("info");
 
   const course = detail?.course;
@@ -233,7 +225,7 @@ export default function CourseEditPage() {
 
   useEffect(() => {
     if (!enrollForm.userId && studentOptions.length > 0) {
-      setEnrollForm((prev) => ({ ...prev, userId: studentOptions[0].id }));
+      setEnrollForm({ userId: studentOptions[0].id });
     }
   }, [studentOptions, enrollForm.userId]);
 
@@ -242,7 +234,7 @@ export default function CourseEditPage() {
     const title = values.title.trim();
     const slug = values.slug.trim();
     if (!title || !slug) {
-      toast.error("Cần nhập title và slug");
+      toast.error("Vui lòng nhập tiêu đề và slug");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -311,7 +303,7 @@ export default function CourseEditPage() {
   async function handleChapterSubmit(values: ChapterFormValues) {
     const title = values.title.trim();
     if (!title) {
-      toast.error("Cần nhập tên chương");
+      toast.error("Vui lòng nhập tên chương");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -396,7 +388,7 @@ export default function CourseEditPage() {
     const title = values.title.trim();
     const youtubeUrl = values.youtubeUrl.trim();
     if (!title || !youtubeUrl) {
-      toast.error("Cần nhập tên và YouTube URL");
+      toast.error("Vui lòng nhập tiêu đề và YouTube URL");
       return;
     }
     const orderNumber = Number.parseInt(values.order, 10);
@@ -453,7 +445,7 @@ export default function CourseEditPage() {
     try {
       await updateLesson({ id: lesson._id, isPreview: !lesson.isPreview });
     } catch (error: any) {
-      toast.error(error?.message ?? "Không thể cập nhật preview");
+      toast.error(error?.message ?? "Không thể cập nhật xem trước");
     }
   }
 
@@ -499,19 +491,14 @@ export default function CourseEditPage() {
       return;
     }
 
-    const orderNumber = enrollForm.order.trim() ? Number.parseInt(enrollForm.order, 10) : 0;
-    const order = Number.isFinite(orderNumber) ? orderNumber : 0;
-
     setEnrollSubmitting(true);
     try {
       await upsertEnrollment({
         courseId,
         userId,
-        order,
-        lastViewedLessonId: enrollForm.lessonId ? (enrollForm.lessonId as Id<"course_lessons">) : null,
       } as any);
       toast.success(`Đã thêm ${studentInfo.fullName} vào khóa học`);
-      setEnrollForm({ userId: studentOptions[0]?.id ?? "", order: "", lessonId: "" });
+      setEnrollForm({ userId: studentOptions[0]?.id ?? "" });
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể thêm học viên");
     } finally {
@@ -519,81 +506,19 @@ export default function CourseEditPage() {
     }
   }
 
-  function editEnrollment(enrollment: EnrollmentDoc) {
-    setEditingEnrollment(enrollment);
-    const lastLessonId = enrollment.lastViewedLessonId ? String(enrollment.lastViewedLessonId) : "";
-    setEnrollmentEditForm({
-      progress: String(enrollment.progressPercent ?? 0),
-      lessonId: lastLessonId,
-    });
-    setEnrollmentDialogOpen(true);
-  }
-
-  function closeEnrollmentDialog() {
-    setEnrollmentDialogOpen(false);
-    setEnrollmentEditSubmitting(false);
-    setEditingEnrollment(null);
-    setEnrollmentEditForm({ progress: "", lessonId: "" });
-  }
-
-  async function toggleEnrollmentActive(enrollment: EnrollmentDoc) {
-    try {
-      await setEnrollmentActive({
-        courseId,
-        userId: enrollment.userId,
-        active: !enrollment.active,
-      });
-    } catch (error: any) {
-      toast.error(error?.message ?? "Không thể cập nhật trạng thái");
-    }
-  }
-
-  async function handleEnrollmentEditSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!editingEnrollment) return;
-    const studentInfo = studentMap.get(editingEnrollment.userId);
-    const studentLabel = studentInfo ? `${studentInfo.fullName} (${studentInfo.account})` : editingEnrollment.userId;
-    const progressTrim = enrollmentEditForm.progress.trim();
-    const progressNumber = progressTrim ? Number(progressTrim) : undefined;
-    if (progressNumber !== undefined) {
-      if (!Number.isFinite(progressNumber) || progressNumber < 0 || progressNumber > 100) {
-        toast.error("Progress phải trong khoảng 0-100");
-        return;
-      }
-    }
-    setEnrollmentEditSubmitting(true);
-    try {
-      await updateEnrollmentProgress({
-        courseId,
-        userId: editingEnrollment.userId,
-        progressPercent: progressNumber,
-        lastViewedLessonId: enrollmentEditForm.lessonId
-          ? (enrollmentEditForm.lessonId as Id<"course_lessons">)
-          : null,
-      } as any);
-      toast.success("Đã cập nhật progress");
-      closeEnrollmentDialog();
-    } catch (error: any) {
-      toast.error(error?.message ?? "Không thể cập nhật progress");
-    } finally {
-      setEnrollmentEditSubmitting(false);
-    }
-  }
-
-
   async function removeEnrollmentEntry(enrollment: EnrollmentDoc) {
     const studentInfo = studentMap.get(enrollment.userId);
     const studentLabel = studentInfo ? `${studentInfo.fullName} (${studentInfo.account})` : enrollment.userId;
-    if (!window.confirm(`Xóa quyền của ${studentLabel}?`)) return;
+    if (!window.confirm(`Xóa quyền học của ${studentLabel}?`)) return;
     try {
       const result = await removeEnrollment({ courseId, userId: enrollment.userId });
       if (!result?.ok) {
-        toast.error("Không thể xóa enrollment");
+        toast.error("Không thể xóa đăng ký");
         return;
-      }
-      toast.success(`Đã xóa quyền học của ${studentLabel}`);
+        }
+        toast.success(`Đã xóa quyền học của ${studentLabel}`);
     } catch (error: any) {
-      toast.error(error?.message ?? "Không thể xóa enrollment");
+      toast.error(error?.message ?? "Không thể xóa đăng ký");
     }
   }
 
@@ -616,13 +541,13 @@ export default function CourseEditPage() {
           <Button variant="outline" onClick={() => router.push("/dashboard/courses")}>Quay lại</Button>
           {courseDetailHref && (
             <Button variant="outline" asChild>
-              <Link href={courseDetailHref} target="_blank" rel="noopener noreferrer">
-                Mở trang công khai
-              </Link>
-            </Button>
+                <Link href={courseDetailHref} target="_blank" rel="noopener noreferrer">
+                  Xem trang công khai
+                </Link>
+              </Button>
           )}
           <Button variant="secondary" onClick={toggleCourseActive}>
-            {course.active ? "Đang hiện" : "Đang ẩn"}
+            {course.active ? "Hiển thị" : "Ẩn"}
           </Button>
           <Button variant="destructive" onClick={handleDeleteCourse}>
             <Trash2 className="mr-2 size-4" />
@@ -685,9 +610,9 @@ export default function CourseEditPage() {
                 <div className="flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-semibold">{chapter.title}</span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">order #{chapter.order}</span>
-                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase text-muted-foreground">
-                      {chapter.active ? "hoạt động" : "bị khóa"}
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">Thứ tự #{chapter.order}</span>
+                      <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase text-muted-foreground">
+                        {chapter.active ? "hoạt động" : "bị khóa"}
                     </span>
                   </div>
                   {chapter.summary && (
@@ -695,7 +620,7 @@ export default function CourseEditPage() {
                   )}
                   <label className="inline-flex items-center gap-2 text-sm">
                     <Checkbox checked={chapter.active} onCheckedChange={() => toggleChapterActive(chapter)} />
-                    <span>{chapter.active ? "Đang hiện" : "Đang ẩn"}</span>
+                    <span>{chapter.active ? "Hiển thị" : "Ẩn"}</span>
                   </label>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -746,7 +671,7 @@ export default function CourseEditPage() {
                           <div className="flex flex-wrap items-center gap-2">
                             <span className="font-medium">{lesson.title}</span>
                             <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
-                              order #{lesson.order}
+                              Thứ tự #{lesson.order}
                             </span>
                             {lesson.isPreview && (
                               <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">xem trước</span>
@@ -769,8 +694,8 @@ export default function CourseEditPage() {
                                 className="h-16 w-28 rounded object-cover"
                               />
                               <div className="space-y-0.5">
-                                <div className="font-medium text-foreground">Xem thumbnail</div>
-                                <div>Mở video trên YouTube</div>
+                                <div className="font-medium text-foreground">Xem ảnh bìa</div>
+                                <div>Xem video trên YouTube</div>
                               </div>
                             </a>
                           )}
@@ -785,8 +710,8 @@ export default function CourseEditPage() {
                           <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                             <label className="inline-flex items-center gap-1">
                               <Checkbox checked={lesson.active} onCheckedChange={() => toggleLessonActive(lesson)} />
-                              <span>Đang hiện</span>
-                            </label>
+                              <span>Hiển thị</span>
+                              </label>
                             <label className="inline-flex items-center gap-1">
                               <Checkbox checked={lesson.isPreview ?? false} onCheckedChange={() => toggleLessonPreview(lesson)} />
                               <span>Xem trước</span>
@@ -803,7 +728,7 @@ export default function CourseEditPage() {
                             size="icon"
                             onClick={() => moveLesson(chapter, lesson, "up")}
                             disabled={lessonIndex === 0}
-                            title="Lên"
+                            title="Lên thứ tự"
                           >
                             <ChevronUp className="size-4" />
                           </Button>
@@ -812,7 +737,7 @@ export default function CourseEditPage() {
                             size="icon"
                             onClick={() => moveLesson(chapter, lesson, "down")}
                             disabled={lessonIndex === chapter.lessons.length - 1}
-                            title="Xuống"
+                            title="Xuống thứ tự"
                           >
                             <ChevronDown className="size-4" />
                           </Button>
@@ -837,115 +762,72 @@ export default function CourseEditPage() {
             <CardTitle>Đăng ký học</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-          <form className="grid gap-3 sm:grid-cols-4" onSubmit={handleAddEnrollment}>
-            <div className="sm:col-span-2">
-              <label className="text-sm font-medium">Học viên</label>
-              {students === undefined ? (
-                <div className="text-xs text-muted-foreground">Đang tải danh sách học viên...</div>
-              ) : studentOptions.length === 0 ? (
-                <div className="text-xs text-muted-foreground">Chưa có học viên để gán.</div>
-              ) : (
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  value={enrollForm.userId}
-                  onChange={(event) => setEnrollForm((prev) => ({ ...prev, userId: event.target.value }))}
-                >
-                  <option value="">-- Chọn học viên --</option>
-                  {studentOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-            <div>
-              <label className="text-sm font-medium">Thứ tự (tùy chọn)</label>
-              <Input
-                value={enrollForm.order}
-                onChange={(event) => setEnrollForm((prev) => ({ ...prev, order: event.target.value }))}
-                placeholder="Tự động"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Bài học cuối (tùy chọn)</label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                value={enrollForm.lessonId}
-                onChange={(event) => setEnrollForm((prev) => ({ ...prev, lessonId: event.target.value }))}
-              >
-                <option value="">Chưa chọn</option>
-                {lessonOptions.map((lesson) => (
-                  <option key={lesson.id} value={lesson.id}>
-                    {lesson.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="sm:col-span-4 flex justify-end">
-              <Button type="submit" disabled={enrollSubmitting || studentOptions.length === 0}>
-                {enrollSubmitting ? "Đang lưu..." : "Gán học viên"}
-              </Button>
-            </div>
-          </form>
-          <Separator />
-          {!enrollments && <div className="text-sm text-muted-foreground">Đang tải đăng ký...</div>}
-          {enrollments && enrollments.length === 0 && (
-            <div className="text-sm text-muted-foreground">Chưa có đăng ký nào.</div>
-          )}
-          {enrollments && enrollments.length > 0 && (
-            <div className="space-y-2">
-              {enrollments
-                .slice()
-                .sort((a, b) => a.order - b.order)
-                .map((enrollment) => (
-                  <div
-                    key={String(enrollment._id)}
-                    className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+            <form className="flex flex-col gap-3 sm:flex-row sm:items-end" onSubmit={handleAddEnrollment}>
+              <div className="sm:flex-1">
+                <label className="text-sm font-medium">Học viên</label>
+                {students === undefined ? (
+                  <div className="text-xs text-muted-foreground">Đang tải danh sách học viên...</div>
+                ) : studentOptions.length === 0 ? (
+                  <div className="text-xs text-muted-foreground">Chưa có học viên để gán.</div>
+                ) : (
+                  <select
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={enrollForm.userId}
+                    onChange={(event) => setEnrollForm((prev) => ({ ...prev, userId: event.target.value }))}
                   >
-                    <div className="space-y-1">
-                      {(() => {
-                        const studentInfo = studentMap.get(enrollment.userId);
-                        const studentLabel = studentInfo
-                          ? `${studentInfo.fullName} (${studentInfo.account})`
-                          : enrollment.userId;
-                        return (
-                          <>
-                            <div className="font-medium">Học viên: {studentLabel}</div>
-                            <div className="text-xs text-muted-foreground">order #{enrollment.order}</div>
-                            <div className="text-xs text-muted-foreground">
-                              Tiến độ: {enrollment.progressPercent ?? 0}%
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              Bài học cuối:
-                              {enrollment.lastViewedLessonId
-                                ? lessonOptions.find((lesson) => lesson.id === String(enrollment.lastViewedLessonId))?.label ?? String(enrollment.lastViewedLessonId)
-                                : " (chưa xem)"}
-                            </div>
-                            <label className="inline-flex items-center gap-2 text-sm">
-                              <Checkbox
-                                checked={enrollment.active}
-                                onCheckedChange={() => toggleEnrollmentActive(enrollment)}
-                              />
-                              <span>{enrollment.active ? "Đang hoạt động" : "Bị khóa"}</span>
-                            </label>
-                          </>
-                        );
-                      })()}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => editEnrollment(enrollment)}>
-                        <Pencil className="mr-2 size-4" />
-                        Cập nhật
-                      </Button>
-                      <Button variant="destructive" size="icon" onClick={() => removeEnrollmentEntry(enrollment)}>
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
+                    <option value="">-- Chọn một học viên --</option>
+                    {studentOptions.map((option) => (
+                      <option key={option.id} value={option.id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <div className="flex justify-end sm:block">
+                <Button type="submit" disabled={enrollSubmitting || studentOptions.length === 0}>
+                  {enrollSubmitting ? "Đang lưu..." : "Thêm học viên"}
+                </Button>
+              </div>
+            </form>
+            <Separator />
+            {!enrollments && <div className="text-sm text-muted-foreground">Đang tải đăng ký...</div>}
+            {enrollments && enrollments.length === 0 && (
+              <div className="text-sm text-muted-foreground">Chưa có đăng ký nào.</div>
+            )}
+            {enrollments && enrollments.length > 0 && (
+              <div className="space-y-2">
+                {enrollments
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((enrollment) => {
+                    const studentInfo = studentMap.get(enrollment.userId);
+                    const studentLabel = studentInfo
+                      ? `${studentInfo.fullName} (${studentInfo.account})`
+                      : enrollment.userId;
+                    const contactInfo = [studentInfo?.email, studentInfo?.phone]
+                      .filter((value) => Boolean(value))
+                      .join(" | ");
+                    return (
+                      <div
+                        key={String(enrollment._id)}
+                        className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="space-y-1">
+                          <div className="font-medium">{studentLabel}</div>
+                          {contactInfo && (
+                            <div className="text-xs text-muted-foreground">{contactInfo}</div>
+                          )}
+                        </div>
+                        <Button variant="destructive" size="sm" onClick={() => removeEnrollmentEntry(enrollment)}>
+                          <Trash2 className="mr-2 size-4" />
+                          Xóa
+                        </Button>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -962,64 +844,6 @@ export default function CourseEditPage() {
             onSubmit={handleChapterSubmit}
             onCancel={() => setChapterDialogOpen(false)}
           />
-        </DialogContent>
-      </Dialog>
-
-
-      <Dialog open={enrollmentDialogOpen} onOpenChange={(open) => {
-        if (open) {
-          setEnrollmentDialogOpen(true);
-        } else {
-          closeEnrollmentDialog();
-        }
-      }}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Cập nhật đăng ký</DialogTitle>
-          </DialogHeader>
-          {editingEnrollment ? (
-            <form className="space-y-4" onSubmit={handleEnrollmentEditSubmit}>
-              <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">
-                  Học viên: {studentMap.get(editingEnrollment.userId)?.fullName ?? editingEnrollment.userId}
-                </div>
-                <label className="text-sm font-medium">Tiến độ (0-100)</label>
-                <Input
-                  value={enrollmentEditForm.progress}
-                  onChange={(event) => setEnrollmentEditForm((prev) => ({ ...prev, progress: event.target.value }))}
-                  placeholder="Ví dụ: 80"
-                  type="number"
-                  min="0"
-                  max="100"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Bài học cuối</label>
-                <select
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                  value={enrollmentEditForm.lessonId}
-                  onChange={(event) => setEnrollmentEditForm((prev) => ({ ...prev, lessonId: event.target.value }))}
-                >
-                  <option value="">Chưa chọn</option>
-                  {lessonOptions.map((lesson) => (
-                    <option key={lesson.id} value={lesson.id}>
-                      {lesson.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex items-center justify-end gap-2">
-                <Button type="button" variant="outline" onClick={closeEnrollmentDialog} disabled={enrollmentEditSubmitting}>
-                  Hủy
-                </Button>
-                <Button type="submit" disabled={enrollmentEditSubmitting}>
-                  {enrollmentEditSubmitting ? "Đang lưu..." : "Lưu"}
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="text-sm text-muted-foreground">Không có học viên được chọn.</div>
-          )}
         </DialogContent>
       </Dialog>
 

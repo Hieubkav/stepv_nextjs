@@ -15,7 +15,6 @@ export type StudentFormValues = {
   phone: string;
   notes: string;
   tagsText: string;
-  order: string;
   active: boolean;
 };
 
@@ -119,14 +118,6 @@ export function StudentForm({
             value={values.phone}
             onChange={(event) => update("phone", event.target.value)}
             placeholder="090xxxxxxx"
-          />
-        </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Thứ tự</label>
-          <Input
-            value={values.order}
-            onChange={(event) => update("order", event.target.value)}
-            placeholder="0"
           />
         </div>
         <div className="space-y-2 sm:col-span-2">
