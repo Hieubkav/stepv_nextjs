@@ -35,6 +35,7 @@ type CourseLesson = {
   active: boolean;
   order: number;
   youtubeUrl?: string | null;
+  exerciseLink?: string | null;
 };
 
 type CourseChapter = {
@@ -140,6 +141,7 @@ function normalizeLessonDoc(doc: any): CourseLesson {
     active: Boolean(doc?.active),
     order: Number.isFinite(doc?.order) ? Number(doc.order) : Number.MAX_SAFE_INTEGER,
     youtubeUrl: typeof doc?.youtubeUrl === "string" ? doc.youtubeUrl : null,
+    exerciseLink: typeof doc?.exerciseLink === "string" ? doc.exerciseLink : null,
   };
 }
 

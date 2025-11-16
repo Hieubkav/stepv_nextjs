@@ -17,6 +17,7 @@ export type CourseLesson = {
   active: boolean;
   order: number;
   youtubeUrl?: string | null;
+  exerciseLink?: string | null;
 };
 
 export type CourseChapter = {
@@ -112,12 +113,23 @@ export function CourseDetailClient({
           </div>
         )}
 
-        <CourseDetails
-          title={course.title}
-          subtitle={course.subtitle}
-          description={descriptionBody}
-        />
-        <CourseHighlights stats={heroStats} features={features} curriculumSummary={curriculumSummary} />
+        {selectedLesson ? (
+          <CourseDetails
+            title={selectedLesson.title}
+            subtitle={null}
+            description={selectedLesson.description || "Chưa có mô tả cho bài học này."}
+            exerciseLink={selectedLesson.exerciseLink}
+          />
+        ) : (
+          <>
+            <CourseDetails
+              title={course.title}
+              subtitle={course.subtitle}
+              description={descriptionBody}
+            />
+            <CourseHighlights stats={heroStats} features={features} curriculumSummary={curriculumSummary} />
+          </>
+        )}
       </div>
       <div className="space-y-6">
         <CoursePrice

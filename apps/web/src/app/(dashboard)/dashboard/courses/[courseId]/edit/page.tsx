@@ -404,6 +404,7 @@ export default function CourseEditPage() {
     }
     const durationNumber = Number.parseInt(values.durationSeconds, 10);
     const duration = Number.isFinite(durationNumber) ? durationNumber : undefined;
+    const exerciseLink = values.exerciseLink.trim() || null;
 
     setLessonSubmitting(true);
     try {
@@ -415,6 +416,7 @@ export default function CourseEditPage() {
           description: values.description.trim() || null,
           youtubeUrl,
           durationSeconds: duration,
+          exerciseLink,
           isPreview: values.isPreview,
           order: lessonContext.lesson.order,
           active: values.active,
@@ -431,6 +433,7 @@ export default function CourseEditPage() {
           description: values.description.trim() || undefined,
           youtubeUrl,
           durationSeconds: duration,
+          exerciseLink: exerciseLink || undefined,
           isPreview: values.isPreview,
           order: maxOrder + 1,
           active: values.active,
