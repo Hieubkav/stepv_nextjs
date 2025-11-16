@@ -1,14 +1,12 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ConvexHttpClient } from "convex/browser";
+import { ArrowLeft } from "lucide-react";
 
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CourseHeader } from "./components/course-header";
-import { VideoPlayer } from "./components/video-player";
-import { CourseDetails } from "./components/course-details";
-import { CourseCurriculum } from "./components/course-curriculum";
-import { CourseHighlights } from "./components/course-highlights";
-import { CoursePrice } from "./components/course-price";
+import { Button } from "@/components/ui/button";
+import { CourseDetailClient } from "./components/course-detail-client";
 
 type PageParams = Promise<{ courseOrder: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -36,6 +34,7 @@ type CourseLesson = {
   isPreview: boolean;
   active: boolean;
   order: number;
+  youtubeUrl?: string | null;
 };
 
 type CourseChapter = {
@@ -58,6 +57,7 @@ type CourseDetailPageData = {
   course: CourseSummary | null;
   chapters: CourseChapter[];
   thumbnail: ThumbnailInfo | null;
+  introVideoUrl: string | null;
   totals: {
     chapters: number;
     lessons: number;
@@ -139,6 +139,7 @@ function normalizeLessonDoc(doc: any): CourseLesson {
     isPreview: Boolean(doc?.isPreview),
     active: Boolean(doc?.active),
     order: Number.isFinite(doc?.order) ? Number(doc.order) : Number.MAX_SAFE_INTEGER,
+    youtubeUrl: typeof doc?.youtubeUrl === "string" ? doc.youtubeUrl : null,
   };
 }
 
@@ -190,6 +191,7 @@ function createBaseData(): CourseDetailPageData {
     course: null,
     chapters: [],
     thumbnail: null,
+    introVideoUrl: null,
     totals: {
       chapters: 0,
       lessons: 0,
@@ -249,6 +251,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
         ...base,
         status: "inactive",
         course: normalizedCourse,
+        introVideoUrl: typeof matched?.introVideoUrl === "string" ? matched.introVideoUrl : null,
         message: "Khóa học này đang được ẩn. Hãy quay lại sau hoặc mở chế độ preview để xem nội dung.",
       };
     }
@@ -276,6 +279,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
         ...base,
         status: "detail_missing",
         course: normalizedCourse,
+        introVideoUrl: typeof matched?.introVideoUrl === "string" ? matched.introVideoUrl : null,
         message: "Chưa có dữ liệu chi tiết cho khóa học này.",
       };
     }
@@ -357,12 +361,15 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
       }
     }
 
+    const introVideoUrl = typeof matched?.introVideoUrl === "string" ? matched.introVideoUrl : null;
+
     return {
       status: "ready",
       message: "",
       course: normalizedCourse,
       chapters,
       thumbnail,
+      introVideoUrl,
       totals,
       debug: {
         reason: detailError,
@@ -405,11 +412,9 @@ function PageShell({ children }: { children: ReactNode }) {
 function ErrorState({
   title,
   description,
-  debug,
 }: {
   title: string;
   description: string;
-  debug?: CourseDetailPageData["debug"];
 }) {
   return (
     <PageShell>
@@ -428,33 +433,11 @@ function ErrorState({
             <p className="text-sm text-muted-foreground">{description}</p>
           </CardContent>
         </Card>
-        {debug ? (
-          <Card className="mt-6 bg-muted/40">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold text-muted-foreground">Debug</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <pre className="whitespace-pre-wrap break-words text-xs text-muted-foreground">
-                {JSON.stringify(debug, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-        ) : null}
       </div>
     </PageShell>
   );
 }
 
-
-
-function DebugPanel({ payload }: { payload: Record<string, unknown> }) {
-  return (
-    <details className="mt-10 rounded-lg border border-dashed border-border bg-background px-4 py-3 text-sm text-muted-foreground">
-      <summary className="cursor-pointer text-sm font-semibold text-primary">Debug payload</summary>
-      <pre className="mt-3 whitespace-pre-wrap break-words text-xs">{JSON.stringify(payload, null, 2)}</pre>
-    </details>
-  );
-}
 
 
 export default async function CourseDetailPage({
@@ -492,10 +475,10 @@ export default async function CourseDetailPage({
       error: "Đã xảy ra lỗi",
     };
     const title = errorTitleMap[data.status] || "Không thể tải khóa học";
-    return <ErrorState title={title} description={data.message || "Vui lòng thử lại sau."} debug={data.debug} />;
+    return <ErrorState title={title} description={data.message || "Vui lòng thử lại sau."} />;
   }
 
-  const { course, chapters, thumbnail, totals } = data;
+  const { course, chapters, thumbnail, totals, introVideoUrl } = data;
   const priceText = formatPrice(course);
   const comparePriceText = computeComparePrice(course, priceText);
   const features = buildFeatureLines(data);
@@ -528,36 +511,30 @@ export default async function CourseDetailPage({
 
   return (
     <PageShell>
-      <CourseHeader title={course.title} subtitle={course.subtitle} />
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <main className="mx-auto max-w-6xl px-4 py-8 pt-32">
+        <Button variant="outline" size="sm" className="gap-2 mb-8" asChild>
+          <Link href="/khoa-hoc">
+            <ArrowLeft className="h-4 w-4" />
+            Tất cả khóa học
+          </Link>
+        </Button>
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-          <div className="space-y-8 lg:col-span-2">
-            <VideoPlayer thumbnail={thumbnail} totalDurationText={totalDurationText} />
-            <CourseDetails
-              title={course.title}
-              subtitle={course.subtitle}
-              description={descriptionBody}
-            />
-            <CourseHighlights stats={heroStats} features={features} curriculumSummary={curriculumSummary} />
-          </div>
-          <div className="space-y-6">
-            <CoursePrice
-              priceText={priceText}
-              comparePriceText={comparePriceText}
-              priceNote={course.priceNote}
-              pricingType={course.pricingType}
-            />
-            <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} />
-          </div>
+          <CourseDetailClient
+            course={course}
+            chapters={chapters}
+            thumbnail={thumbnail}
+            introVideoUrl={introVideoUrl}
+            totalDurationText={totalDurationText}
+            priceText={priceText}
+            comparePriceText={comparePriceText}
+            descriptionBody={descriptionBody}
+            heroStats={heroStats}
+            features={features}
+            curriculumSummary={curriculumSummary}
+            badges={badges}
+            heroDescription={heroDescription}
+          />
         </div>
-        <DebugPanel
-          payload={{
-            preview,
-            order: numericOrder,
-            debug: data.debug,
-            totals,
-          }}
-        />
       </main>
     </PageShell>
   );

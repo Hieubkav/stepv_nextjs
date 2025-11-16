@@ -12,7 +12,7 @@ import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
 import { $getRoot, $insertNodes, ParagraphNode as LexicalParagraphNode, TextNode } from "lexical";
 import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
-import { $generateNodesFromDOM } from "@lexical/html";
+import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -50,27 +50,8 @@ function OnChangePlugin({ onChange }: { onChange: (html: string) => void }) {
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
       editorState.read(() => {
-        const htmlString = editor.getEditorState().read(() => {
-          const root = $getRoot();
-          return root.getTextContent() ? editor.getEditorState().toJSON() : "";
-        });
-        
-        // Convert Lexical state to HTML for storage
-        const parser = new DOMParser();
-        const dom = parser.parseFromString("<div></div>", "text/html");
-        const container = dom.querySelector("div")!;
-        
-        editor.getEditorState().read(() => {
-          const root = $getRoot();
-          const children = root.getChildren();
-          children.forEach((child: any) => {
-            const el = document.createElement("div");
-            el.textContent = child.getTextContent();
-            container.appendChild(el);
-          });
-        });
-        
-        onChange(container.innerHTML || "<p></p>");
+        const html = $generateHtmlFromNodes(editor, null);
+        onChange(html || "<p></p>");
       });
     });
   }, [editor, onChange]);

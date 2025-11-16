@@ -10,7 +10,7 @@ export function CourseHeader({
   subtitle?: string | null;
 }) {
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-[51] border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4">
         <div className="flex min-w-0 items-center gap-4">
           <Button variant="outline" size="sm" className="gap-2" asChild>

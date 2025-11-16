@@ -1,41 +1,42 @@
 "use client";
 
-import { Play, Clock } from "lucide-react";
+import { useState } from "react";
+import { Play, Clock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-type CourseLesson = {
-  id: string;
-  title: string;
-  durationLabel: string | null;
-  isPreview: boolean;
-};
-
-type CourseChapter = {
-  id: string;
-  title: string;
-  lessons: CourseLesson[];
-};
+import type { CourseLesson, CourseChapter } from "./course-detail-client";
 
 export function CourseCurriculum({ 
   chapters, 
   summary,
-  badges
+  badges,
+  onLessonSelect,
 }: { 
   chapters: CourseChapter[];
   summary: string;
   badges: string[];
+  onLessonSelect?: (lesson: CourseLesson) => void;
 }) {
-  const lessons = chapters.flatMap((chapter) =>
-    chapter.lessons.map((lesson) => ({
-      id: `${chapter.id}-${lesson.id}`,
-      title: lesson.title,
-      duration: lesson.durationLabel ?? "00:00",
-      chapterTitle: chapter.title,
-      isPreview: lesson.isPreview,
-    })),
-  );
+  const [expandedChapters, setExpandedChapters] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    chapters.slice(0, 2).forEach(ch => initial.add(ch.id));
+    return initial;
+  });
+  const [showAllChapters, setShowAllChapters] = useState(false);
+
+  const toggleChapter = (chapterId: string) => {
+    const newExpanded = new Set(expandedChapters);
+    if (newExpanded.has(chapterId)) {
+      newExpanded.delete(chapterId);
+    } else {
+      newExpanded.add(chapterId);
+    }
+    setExpandedChapters(newExpanded);
+  };
+
+  const visibleChapters = showAllChapters ? chapters : chapters.slice(0, 2);
+  const hasMoreChapters = chapters.length > 2;
 
   return (
     <div className="space-y-6">
@@ -72,43 +73,86 @@ export function CourseCurriculum({
           <p className="text-sm text-muted-foreground">{summary || "Nội dung khóa học đang cập nhật."}</p>
         </CardHeader>
         <CardContent className="p-0">
-          {lessons.length > 0 ? (
+          {chapters.length > 0 ? (
             <div className="space-y-1">
-              {lessons.map((lesson) => (
+              {visibleChapters.map((chapter) => (
+                <div key={chapter.id}>
+                  {/* Chapter Header */}
+                  <button
+                    onClick={() => toggleChapter(chapter.id)}
+                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors border-b"
+                    type="button"
+                  >
+                    <ChevronDown 
+                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                        expandedChapters.has(chapter.id) ? 'rotate-180' : ''
+                      }`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{chapter.title}</p>
+                      <p className="text-xs text-muted-foreground">{chapter.lessons.length} bài học</p>
+                    </div>
+                  </button>
+
+                  {/* Lessons */}
+                  {expandedChapters.has(chapter.id) && (
+                    <div className="bg-muted/30">
+                      {chapter.lessons.map((lesson) => (
+                        <button
+                          key={lesson.id}
+                          onClick={() => lesson.isPreview && onLessonSelect?.(lesson)}
+                          disabled={!lesson.isPreview}
+                          className={`w-full border-l-4 p-4 text-left transition-colors ${
+                            lesson.isPreview 
+                              ? 'border-l-primary hover:bg-primary/5 cursor-pointer' 
+                              : 'border-l-muted text-muted-foreground opacity-60'
+                          }`}
+                          type="button"
+                        >
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div
+                                className={`flex h-6 w-6 items-center justify-center rounded-full flex-shrink-0 ${
+                                  lesson.isPreview ? "bg-primary text-primary-foreground" : "bg-muted"
+                                }`}
+                              >
+                                <Play className="h-2.5 w-2.5" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className={`text-sm font-medium text-pretty truncate ${
+                                  lesson.isPreview ? "text-foreground" : ""
+                                }`}>
+                                  {lesson.title}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+                              <Clock className="h-3 w-3" />
+                              <span>{lesson.durationLabel ?? "00:00"}</span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+              {hasMoreChapters && (
                 <button
-                  key={lesson.id}
-                  className={`w-full border-l-2 p-4 text-left transition-colors hover:bg-muted/50 ${
-                    lesson.isPreview ? "border-l-primary bg-primary/5" : "border-l-transparent"
-                  }`}
+                  onClick={() => setShowAllChapters(!showAllChapters)}
+                  className="w-full flex items-center gap-2 p-4 text-left hover:bg-muted/50 transition-colors border-t border-b"
                   type="button"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                          lesson.isPreview ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        <Play className="h-3 w-3" />
-                      </div>
-                      <div>
-                        <p
-                          className={`text-sm font-medium text-pretty ${
-                            lesson.isPreview ? "text-primary" : "text-foreground"
-                          }`}
-                        >
-                          {lesson.title}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{lesson.chapterTitle}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>{lesson.duration}</span>
-                    </div>
-                  </div>
+                  <ChevronDown 
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      showAllChapters ? 'rotate-180' : ''
+                    }`}
+                  />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {showAllChapters ? `Ẩn ${chapters.length - 2} chương` : `Xem thêm ${chapters.length - 2} chương`}
+                  </span>
                 </button>
-              ))}
+              )}
             </div>
           ) : (
             <div className="px-4 py-6 text-sm text-muted-foreground">Chương trình học sẽ được cập nhật sớm.</div>
