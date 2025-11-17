@@ -30,7 +30,8 @@ Web khóa học DOHY sẽ có quy trình sau:
   - Gửi email OTP qua Resend
   - Rate limit: max 3 request/hour per email
   - Return message: "OTP đã gửi, check email của bạn"
-- [ ] Backend function: `verifyOTPAndResetPassword(email, otpCode, newPassword)`
+- [ ] Backend f
+unction: `verifyOTPAndResetPassword(email, otpCode, newPassword)`
   - Kiểm tra OTP hợp lệ (chưa hết hạn, không bị sử dụng)
   - Kiểm tra attempts < 3 (nếu hết attempt thì block 30 phút)
   - Update password trực tiếp (không dùng reset token nữa)

@@ -407,4 +407,125 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }),
+
+  // ==================== TIER 3: ENGAGEMENT FEATURES ====================
+
+  // Comments & Discussions (binh luan trong bai hoc)
+  comments: defineTable({
+    studentId: v.id("students"),
+    courseId: v.id("courses"),
+    lessonId: v.id("course_lessons"),
+    parentCommentId: v.optional(v.id("comments")), // For replies
+    content: v.string(),
+    likesCount: v.number(), // Denormalized for performance
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_lesson", ["lessonId"])
+    .index("by_student", ["studentId"])
+    .index("by_course", ["courseId"])
+    .index("by_parent", ["parentCommentId"])
+    .index("by_lesson_time", ["lessonId", "createdAt"]),
+
+  // Comment likes (like binh luan)
+  comment_likes: defineTable({
+    studentId: v.id("students"),
+    commentId: v.id("comments"),
+    createdAt: v.number(),
+  })
+    .index("by_comment", ["commentId"])
+    .index("by_student", ["studentId"])
+    .index("by_pair", ["studentId", "commentId"]),
+
+  // Course reviews (danh gia khoa)
+  course_reviews: defineTable({
+    studentId: v.id("students"),
+    courseId: v.id("courses"),
+    rating: v.number(), // 1-5
+    title: v.string(),
+    content: v.string(),
+    helpfulCount: v.number(), // Denormalized
+    unhelpfulCount: v.number(), // Denormalized
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_course", ["courseId"])
+    .index("by_student", ["studentId"])
+    .index("by_rating", ["courseId", "rating"])
+    .index("by_course_time", ["courseId", "createdAt"]),
+
+  // Review helpful votes (danh gia review la co ich hay khong)
+  review_helpful: defineTable({
+    studentId: v.id("students"),
+    reviewId: v.id("course_reviews"),
+    isHelpful: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_review", ["reviewId"])
+    .index("by_student", ["studentId"])
+    .index("by_pair", ["studentId", "reviewId"]),
+
+  // Notifications (thong bao cho hoc vien)
+  notifications: defineTable({
+    studentId: v.id("students"),
+    type: v.union(
+      v.literal("order_confirmed"),
+      v.literal("payment_rejected"),
+      v.literal("certificate_issued"),
+      v.literal("new_comment_reply"),
+      v.literal("course_updated"),
+      v.literal("course_new_lesson"),
+      v.literal("enrollment_status_changed"),
+      v.literal("system")
+    ),
+    title: v.string(),
+    message: v.string(),
+    link: v.optional(v.string()),
+    metadata: v.optional(v.any()), // Store extra data (courseId, commentId, etc.)
+    isRead: v.boolean(),
+    createdAt: v.number(),
+    readAt: v.optional(v.number()),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_student_read", ["studentId", "isRead"])
+    .index("by_student_time", ["studentId", "createdAt"]),
+
+  // Coupons & Promotions (ma giam gia)
+  coupons: defineTable({
+    code: v.string(), // SUMMER2024, WELCOME50, etc.
+    description: v.optional(v.string()),
+    discountPercent: v.optional(v.number()), // 20 = 20%
+    discountFixed: v.optional(v.number()), // 100000 = 100k VND
+    maxUses: v.optional(v.number()), // null = unlimited
+    usedCount: v.number(), // Denormalized
+    minAmount: v.optional(v.number()), // Min order value required
+    appliesTo: v.union(
+      v.literal("all_courses"),
+      v.literal("specific_courses")
+    ),
+    specificCourseIds: v.optional(v.array(v.id("courses"))),
+    specificUserIds: v.optional(v.array(v.id("students"))), // For personal coupons
+    expiresAt: v.optional(v.number()),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_active", ["active"])
+    .index("by_expires", ["expiresAt"]),
+
+  // Coupon uses (lich su su dung coupon)
+  coupon_uses: defineTable({
+    couponId: v.id("coupons"),
+    studentId: v.id("students"),
+    orderId: v.id("orders"),
+    discountAmount: v.number(),
+    appliedAt: v.number(),
+  })
+    .index("by_coupon", ["couponId"])
+    .index("by_student", ["studentId"])
+    .index("by_order", ["orderId"])
+    .index("by_coupon_student", ["couponId", "studentId"]),
 });
