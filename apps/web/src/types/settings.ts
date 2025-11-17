@@ -1,62 +1,46 @@
-// Settings table structure - single record with multiple columns
+// Settings table structure - single record with key='site' containing all site config as JSON value
 export interface Settings {
-  id: string;
+  // Branding
+  siteName?: string;
+  logoUrl?: string;
 
-  // Payment settings
-  bank_name?: string;
-  bank_account?: string;
-  bank_account_name?: string;
-  payment_qr_code?: string;
+  // Contact info
+  contactEmail?: string;
+  address?: string;
+  zaloUrl?: string;
 
-  // Contact settings
-  contact_email?: string;
-  contact_phone?: string;
-  contact_address?: string;
+  // Social media
+  facebookUrl?: string;
+  instagramUrl?: string;
+  xUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
+  pinterestUrl?: string;
 
-  // General settings
-  site_name?: string;
-  site_description?: string;
-
-  // SEO settings
-  meta_title?: string;
-  meta_description?: string;
-  meta_keywords?: string;
-
-  // Social settings
-  facebook_url?: string;
-  instagram_url?: string;
-  youtube_url?: string;
-  tiktok_url?: string;
-  pinterest_url?: string;
-  x_url?: string;
-
-  // Timestamps
-  created_at: string;
-  updated_at: string;
+  // Bank info
+  bankAccountNumber?: string;
+  bankAccountName?: string;
+  bankCode?: string;
 }
 
 // Request interfaces for updating settings
 export interface UpdateSettingsRequest {
-  bank_name?: string;
-  bank_account?: string;
-  bank_account_name?: string;
-  payment_qr_code?: string;
-  contact_email?: string;
-  contact_phone?: string;
-  contact_address?: string;
-  site_name?: string;
-  site_description?: string;
-  meta_title?: string;
-  meta_description?: string;
-  meta_keywords?: string;
-  facebook_url?: string;
-  instagram_url?: string;
-  youtube_url?: string;
-  tiktok_url?: string;
-  pinterest_url?: string;
-  x_url?: string;
+  siteName?: string;
+  logoUrl?: string;
+  contactEmail?: string;
+  address?: string;
+  zaloUrl?: string;
+  facebookUrl?: string;
+  instagramUrl?: string;
+  xUrl?: string;
+  youtubeUrl?: string;
+  tiktokUrl?: string;
+  pinterestUrl?: string;
+  bankAccountNumber?: string;
+  bankAccountName?: string;
+  bankCode?: string;
 }
 
 // Helper type for getting setting values
-export type SettingKey = keyof Omit<Settings, 'id' | 'created_at' | 'updated_at'>;
+export type SettingKey = keyof Settings;
 

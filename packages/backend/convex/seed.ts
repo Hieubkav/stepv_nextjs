@@ -17,7 +17,6 @@ export const seedHome = mutation({
           siteName: "Dohy",
           logoUrl: "/logo.png",
           contactEmail: "hello@example.com",
-          theme: "default",
           address: "",
           zaloUrl: "",
           facebookUrl: "",
@@ -26,6 +25,9 @@ export const seedHome = mutation({
           youtubeUrl: "",
           tiktokUrl: "",
           pinterestUrl: "",
+          bankAccountNumber: "",
+          bankAccountName: "",
+          bankCode: "",
         },
         updatedAt: now,
       });
