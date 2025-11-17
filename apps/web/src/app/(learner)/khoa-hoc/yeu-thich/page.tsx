@@ -9,6 +9,7 @@ import { Heart } from 'lucide-react';
 import type { Route } from 'next';
 import { CourseFavoriteButton } from '@/features/learner/components/course-favorite-button';
 import { useEffect, useState } from 'react';
+import { normalizeSlug } from '@/lib/slug';
 
 const currencyFormatter = new Intl.NumberFormat('vi-VN', {
     style: 'currency',
@@ -147,7 +148,8 @@ export default function FavoritesPage() {
                 {/* Grid */}
                 <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {favorites.map((course) => {
-                         const detailHref = `/khoa-hoc/${course.slug}` as Route;
+                         const normalizedSlug = normalizeSlug(course.slug || course.title || "");
+                         const detailHref = (normalizedSlug ? `/khoa-hoc/${normalizedSlug}` : "/khoa-hoc") as Route;
                         const priceText = formatPrice(course);
 
                         return (

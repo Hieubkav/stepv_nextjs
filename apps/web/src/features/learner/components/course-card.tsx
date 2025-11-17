@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import type { Id } from '@dohy/backend/convex/_generated/dataModel';
 import { CourseFavoriteButton } from './course-favorite-button';
+import { normalizeSlug } from '@/lib/slug';
 
 type StudentId = Id<'students'>;
 type CourseId = Id<'courses'>;
@@ -29,6 +30,8 @@ interface CourseCardProps {
 }
 
 export function CourseCard({ course, studentId, className = '' }: CourseCardProps) {
+    const detailSlug = normalizeSlug(course.slug || course.title);
+    const detailHref = detailSlug ? `/khoa-hoc/${detailSlug}` : "/khoa-hoc";
     return (
         <div className={`group bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden ${className}`}>
             {/* Course Image */}
@@ -56,7 +59,7 @@ export function CourseCard({ course, studentId, className = '' }: CourseCardProp
             </div>
 
             {/* Course Content */}
-            <Link href={`/khoa-hoc/${course.slug}`} className="block p-4 hover:no-underline">
+            <Link href={detailHref} className="block p-4 hover:no-underline">
                 <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition">
                     {course.title}
                 </h3>

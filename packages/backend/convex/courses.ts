@@ -567,10 +567,14 @@ export const createCourse = mutation({
     active: v.boolean(),
   },
   handler: async (ctx, args) => {
-    await assertCourseSlugUnique(ctx, args.slug);
+    const normalizedSlug = normalizeCourseSlug(args.slug);
+    if (!normalizedSlug) {
+      throw new Error("Slug is invalid");
+    }
+    await assertCourseSlugUnique(ctx, normalizedSlug);
     const now = Date.now();
     const id = await ctx.db.insert("courses", {
-      slug: args.slug,
+      slug: normalizedSlug,
       title: args.title,
       subtitle: args.subtitle,
       description: args.description,
@@ -609,12 +613,17 @@ export const updateCourse = mutation({
     const { id, slug, subtitle, description, thumbnailMediaId, introVideoUrl, pricingType, priceAmount, priceNote, isPriceVisible, ...rest } = args;
     const existing = await ctx.db.get(id);
     if (!existing) throw new Error("Course not found");
-    if (slug && slug !== (existing as CourseDoc).slug) {
-      await assertCourseSlugUnique(ctx, slug, id);
+    const normalizedSlug =
+      slug !== undefined ? normalizeCourseSlug(slug) : undefined;
+    if (slug !== undefined && !normalizedSlug) {
+      throw new Error("Slug is invalid");
+    }
+    if (normalizedSlug && normalizedSlug !== (existing as CourseDoc).slug) {
+      await assertCourseSlugUnique(ctx, normalizedSlug, id);
     }
 
     const patch: Record<string, unknown> = { ...rest };
-    if (slug !== undefined) patch.slug = slug;
+    if (slug !== undefined) patch.slug = normalizedSlug!;
     if (subtitle !== undefined) patch.subtitle = subtitle ?? undefined;
     if (description !== undefined) patch.description = description ?? undefined;
     if (thumbnailMediaId !== undefined) {

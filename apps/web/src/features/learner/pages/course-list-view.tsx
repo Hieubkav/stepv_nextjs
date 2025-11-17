@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Heart } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/slug";
 import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 import { CourseFavoriteButton } from "@/features/learner/components/course-favorite-button";
 
@@ -93,7 +94,8 @@ function CourseCard({
     thumbnail?: CourseThumbnail;
     studentId: string | null;
 }) {
-    const detailHref = `/khoa-hoc/${course.slug}` as Route;
+    const normalizedSlug = normalizeSlug(course.slug || course.title);
+    const detailHref = (normalizedSlug ? `/khoa-hoc/${normalizedSlug}` : "/khoa-hoc") as Route;
     const priceText = formatPrice(course);
     const subtitle = course.subtitle ?? course.description;
 

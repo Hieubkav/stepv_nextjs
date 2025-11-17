@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { normalizeSlug } from "@/lib/slug";
 import { getYoutubeThumbnailUrl } from "@/lib/youtube";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Pencil, Plus, Trash2 } from "lucide-react";
@@ -183,14 +184,13 @@ export default function CourseEditPage() {
   const course = detail?.course;
   const courseDetailHref = useMemo(() => {
     if (!course) return null;
-    if (!course.slug) {
+    const rawSlug = course.slug || course.title || "";
+    const normalizedSlug = normalizeSlug(rawSlug);
+    if (!normalizedSlug) {
       return "/khoa-hoc" as const;
     }
-    const base = `/khoa-hoc/${course.slug}` as const;
-    if (course.active) {
-      return base;
-    }
-    return `${base}?preview=1` as const;
+    const base = `/khoa-hoc/${normalizedSlug}` as const;
+    return course.active ? base : (`${base}?preview=1` as const);
   }, [course]);
   const chapters = useMemo(() => {
     if (!detail?.chapters) return [] as ChapterDoc[];
@@ -946,4 +946,3 @@ export default function CourseEditPage() {
     </div>
   );
 }
-

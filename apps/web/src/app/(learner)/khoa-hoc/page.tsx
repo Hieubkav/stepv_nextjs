@@ -7,6 +7,7 @@ import CourseListView, {
   type CourseListViewProps,
   type CourseThumbnail,
 } from "@/features/learner/pages/course-list-view";
+import { normalizeSlug } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 
@@ -30,9 +31,11 @@ async function loadCourseList(): Promise<CourseListViewProps> {
     })) as Doc<"courses">[];
     const sorted = courses.slice().sort((a, b) => a.order - b.order);
 
-    const normalized: CourseListItem[] = sorted.map((course) => ({
+    const normalized: CourseListItem[] = sorted.map((course) => {
+      const cleanSlug = normalizeSlug(course.slug || course.title || "");
+      return {
       id: String(course._id),
-      slug: course.slug,
+      slug: cleanSlug || course.slug || "",
       title: course.title,
       subtitle: course.subtitle ?? null,
       description: course.description ?? null,
@@ -45,7 +48,8 @@ async function loadCourseList(): Promise<CourseListViewProps> {
       active: course.active,
       createdAt: course.createdAt,
       updatedAt: course.updatedAt,
-    }));
+    };
+    });
 
     const thumbnailIds = normalized
       .map((course) => course.thumbnailMediaId)

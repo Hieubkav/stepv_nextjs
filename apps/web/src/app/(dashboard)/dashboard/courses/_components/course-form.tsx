@@ -11,6 +11,7 @@ import { FullRichEditor } from "@/components/ui/full-rich-editor";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Image as ImageIcon, X, Play } from "lucide-react";
 import { extractYoutubeVideoId, getYoutubeThumbnailUrl } from "@/lib/youtube";
+import { normalizeSlug } from "@/lib/slug";
 
 export type CourseFormValues = {
   title: string;
@@ -35,14 +36,7 @@ export type CourseFormProps = {
   onCancel?: () => void;
 };
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[`~!@#$%^&*()_+=\[\]{}|;:'",.<>?/\-]+/g, "-")
-    .replace(/-{2,}/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .trim();
+const slugify = normalizeSlug;
 
 const formatCurrency = (input: string) => {
   const number = Number(input);
@@ -55,10 +49,6 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
   const [values, setValues] = useState<CourseFormValues>(initialValues);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
-
-  useEffect(() => {
-    setValues(initialValues);
-  }, [initialValues]);
 
   useEffect(() => {
     if (values.pricingType === "free" && (values.priceAmount !== "" || values.isPriceVisible)) {
@@ -75,8 +65,14 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
     const list = Array.isArray(images) ? images : [];
     return list.find((item) => String(item._id) === String(values.thumbnailMediaId)) ?? null;
   }, [images, values.thumbnailMediaId]);
-
-  const suggestedSlug = useMemo(() => slugify(values.title || ""), [values.title]);
+  useEffect(() => {
+    const slugSource = initialValues.slug || initialValues.title || "";
+    const sanitizedSlug = slugify(slugSource);
+    setValues({
+      ...initialValues,
+      slug: sanitizedSlug || initialValues.slug || "",
+    });
+  }, [initialValues]);
 
   function update(field: keyof CourseFormValues, value: string | boolean) {
     setValues((prev) => ({ ...prev, [field]: value }));

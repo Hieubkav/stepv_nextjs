@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Users } from "lucide-react";
 import Link from "next/link";
+import { normalizeSlug } from "@/lib/slug";
 
 type CourseCategory = Doc<"course_categories">;
 type CourseResult = Doc<"courses">;
@@ -279,8 +280,10 @@ interface CourseCardProps {
 }
 
 function CourseCard({ course }: CourseCardProps) {
+  const detailSlug = normalizeSlug(course.slug || course.title || "");
+  const detailHref = detailSlug ? `/khoa-hoc/${detailSlug}` : "/khoa-hoc";
   return (
-    <Link href={`/khoa-hoc/${course.slug}`}>
+    <Link href={detailHref}>
       <Card className="hover:shadow-lg transition cursor-pointer h-full">
         <CardContent className="p-0">
           {/* Thumbnail */}
