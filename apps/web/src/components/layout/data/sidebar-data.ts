@@ -21,7 +21,8 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
-  GraduationCap
+  GraduationCap,
+  ReceiptText
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -46,6 +47,7 @@ export const sidebarData: SidebarData = {
         { title: 'Phần mềm', url: '/dashboard/library/software', icon: Monitor },
         { title: 'Khóa học', url: '/dashboard/courses', icon: GraduationCap },
         { title: 'Học viên', url: '/dashboard/students', icon: Users },
+        { title: 'Đơn hàng', url: '/dashboard/order', icon: ReceiptText },
         { title: 'Khối giao diện', url: '/dashboard/home-blocks', icon: LayoutDashboard },
         { title: 'Cài đặt', url: '/dashboard/settings', icon: Settings },
       ],

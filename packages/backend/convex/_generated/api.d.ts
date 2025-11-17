@@ -27,6 +27,7 @@ import type * as homepage from "../homepage.js";
 import type * as library from "../library.js";
 import type * as media from "../media.js";
 import type * as notifications from "../notifications.js";
+import type * as orders from "../orders.js";
 import type * as otp from "../otp.js";
 import type * as pageBlocks from "../pageBlocks.js";
 import type * as pages from "../pages.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   library: typeof library;
   media: typeof media;
   notifications: typeof notifications;
+  orders: typeof orders;
   otp: typeof otp;
   pageBlocks: typeof pageBlocks;
   pages: typeof pages;
