@@ -99,6 +99,7 @@ export function CourseDetailClient({
             title: selectedLesson.title,
             durationLabel: selectedLesson.durationLabel,
           } : null}
+          courseId={course.id}
         />
         
         {selectedLesson && (
@@ -137,6 +138,7 @@ export function CourseDetailClient({
           comparePriceText={comparePriceText}
           priceNote={course.priceNote}
           pricingType={course.pricingType}
+          courseOrder={course.order}
         />
         <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} onLessonSelect={handleLessonSelect} />
       </div>

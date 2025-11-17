@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useMemo } from "react";
-import { Play, Maximize2 } from "lucide-react";
+import { useEffect, useRef, useMemo, useState } from "react";
+import { Play, Maximize2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { extractYoutubeVideoId } from "@/lib/youtube";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "@/.source";
+import { useAuth } from "@/features/learner/auth/student-auth-context";
 
 type ThumbnailInfo = {
   url?: string;
@@ -24,20 +27,31 @@ declare global {
   }
 }
 
-export function VideoPlayer({ 
-  thumbnail, 
+export function VideoPlayer({
+  thumbnail,
   totalDurationText,
   introVideoUrl,
   selectedLesson,
-}: { 
+  courseId,
+}: {
   thumbnail: ThumbnailInfo | null;
   totalDurationText: string | null;
   introVideoUrl?: string | null;
   selectedLesson?: VideoInfo | null;
+  courseId?: string;
 }) {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
+  const { student } = useAuth();
+
+  const [watchedSeconds, setWatchedSeconds] = useState(0);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [totalDuration, setTotalDuration] = useState(0);
+  const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  const recordLessonView = useMutation(api.progress.recordLessonView);
+  const completeLessonIfDone = useMutation(api.progress.completeLessonIfDone);
 
   const videoId = useMemo(() => {
     if (selectedLesson?.id) {
@@ -86,6 +100,38 @@ export function VideoPlayer({
         events: {
           onReady: (event: any) => {
             event.target.setSize('100%', '100%');
+            // Get video duration
+            const duration = event.target.getDuration();
+            setTotalDuration(duration);
+            // Start tracking watch time
+            if (trackingIntervalRef.current) {
+              clearInterval(trackingIntervalRef.current);
+            }
+            trackingIntervalRef.current = setInterval(() => {
+              const currentTime = event.target.getCurrentTime();
+              setWatchedSeconds(Math.floor(currentTime));
+            }, 1000);
+          },
+          onStateChange: (event: any) => {
+            if (event.data === window.YT.PlayerState.PLAYING) {
+              // Recording view with watch time when playing
+              if (selectedLesson && student && courseId) {
+                recordLessonView({
+                  studentId: student._id,
+                  lessonId: selectedLesson.id as any,
+                  courseId: courseId as any,
+                  watchTimeSeconds: Math.floor(event.target.getCurrentTime()),
+                }).catch(err => console.log("Recording view:", err));
+              }
+            } else if (event.data === window.YT.PlayerState.ENDED) {
+              // Auto-complete lesson when video ends
+              if (selectedLesson && student && courseId) {
+                completeLessonIfDone({
+                  studentId: student._id,
+                  lessonId: selectedLesson.id as any,
+                }).catch(err => console.log("Completing lesson:", err));
+              }
+            }
           },
         },
       });
@@ -109,12 +155,15 @@ export function VideoPlayer({
     loadYouTubeAPI();
 
     return () => {
+      if (trackingIntervalRef.current) {
+        clearInterval(trackingIntervalRef.current);
+      }
       if (playerRef.current && typeof playerRef.current.destroy === 'function') {
         playerRef.current.destroy();
         playerRef.current = null;
       }
     };
-  }, [videoId]);
+  }, [videoId, selectedLesson, student, courseId, recordLessonView, completeLessonIfDone]);
 
   const handleFullscreenToggle = () => {
     if (typeof document === "undefined") return;
@@ -194,6 +243,34 @@ export function VideoPlayer({
           <Maximize2 className="h-4 w-4" />
         </Button>
       </div>
+
+      {/* Progress Bar */}
+      {selectedLesson && totalDuration > 0 && (
+        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="text-sm font-medium text-gray-700">
+                Tiến độ: {Math.round((watchedSeconds / totalDuration) * 100)}%
+              </div>
+              {isCompleted && (
+                <div className="flex items-center gap-1 text-green-600">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="text-xs font-medium">Hoàn thành</span>
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-gray-500">
+              {Math.floor(watchedSeconds / 60)}:{String(watchedSeconds % 60).padStart(2, '0')} / {Math.floor(totalDuration / 60)}:{String(Math.floor(totalDuration) % 60).padStart(2, '0')}
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+            <div
+              className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-200"
+              style={{ width: `${Math.min((watchedSeconds / totalDuration) * 100, 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

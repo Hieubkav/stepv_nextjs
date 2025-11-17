@@ -1,17 +1,26 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+'use client';
 
-export function CoursePrice({ 
-  priceText, 
-  comparePriceText, 
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
+
+export function CoursePrice({
+  priceText,
+  comparePriceText,
   priceNote,
-  pricingType
-}: { 
+  pricingType,
+  courseOrder,
+}: {
   priceText: string;
   comparePriceText: string | null;
   priceNote: string | null;
   pricingType: "free" | "paid";
+  courseOrder?: number;
 }) {
+  const { student } = useStudentAuth();
+
   return (
     <Card id="support">
       <CardHeader>
@@ -27,6 +36,29 @@ export function CoursePrice({
             <p className="text-xs text-muted-foreground mt-1">{priceNote}</p>
           ) : null}
         </div>
+
+        {pricingType === "paid" && courseOrder ? (
+          <Button
+            asChild
+            size="lg"
+            className="w-full"
+          >
+            <Link href={`/khoa-hoc/${courseOrder}/checkout`}>
+              Mua khóa học
+            </Link>
+          </Button>
+        ) : null}
+
+        {pricingType === "free" ? (
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full"
+            disabled
+          >
+            Miễn phí - Đăng ký ở phần "Chương trình học"
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );

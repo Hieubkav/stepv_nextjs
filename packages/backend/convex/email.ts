@@ -334,3 +334,379 @@ export const sendWelcomeEmail = action({
         });
     },
 });
+
+export const sendOTPEmail = action({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        otpCode: v.string(),
+        expiresInMinutes: v.number(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, otpCode, expiresInMinutes } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 16px;
+              color: #333;
+              margin-bottom: 20px;
+            }
+            .message {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 30px;
+              line-height: 1.8;
+            }
+            .otp-box {
+              background: #f8f9fa;
+              border: 2px solid #667eea;
+              border-radius: 8px;
+              padding: 30px;
+              text-align: center;
+              margin: 30px 0;
+            }
+            .otp-code {
+              font-size: 32px;
+              font-weight: 700;
+              font-family: 'Courier New', monospace;
+              color: #667eea;
+              letter-spacing: 8px;
+              word-break: break-all;
+            }
+            .otp-info {
+              font-size: 13px;
+              color: #999;
+              margin-top: 15px;
+            }
+            .warning {
+              background: #fff3cd;
+              border-left: 4px solid #ffc107;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+              font-size: 13px;
+              color: #856404;
+            }
+            .footer {
+              background: #f8f9fa;
+              border-top: 1px solid #e9ecef;
+              padding: 20px 30px;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Mã Xác Thực OTP</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Xin chào ${studentName},</p>
+
+              <p class="message">
+                Bạn đã yêu cầu đặt lại mật khẩu cho tài khoản Dohy của mình.
+                Sử dụng mã OTP dưới đây để tiếp tục.
+              </p>
+
+              <div class="otp-box">
+                <div class="otp-code">${otpCode}</div>
+                <div class="otp-info">
+                  Mã này sẽ hết hạn trong ${expiresInMinutes} phút
+                </div>
+              </div>
+
+              <div class="warning">
+                <strong>⚠️ Lưu ý bảo mật:</strong><br>
+                • Không bao giờ chia sẻ mã OTP này với bất kỳ ai<br>
+                • Dohy sẽ không bao giờ yêu cầu bạn cung cấp mã OTP qua email<br>
+                • Nếu bạn không yêu cầu điều này, vui lòng bỏ qua email này
+              </div>
+
+              <p class="message">
+                Nếu bạn gặp vấn đề hoặc không yêu cầu đặt lại mật khẩu,
+                vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Dohy. Tất cả quyền được bảo lưu.</p>
+              <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: 'Mã OTP lấy lại mật khẩu - Dohy',
+            html,
+        });
+    },
+});
+
+export const sendPaymentRequestToAdminEmail = action({
+    args: {
+        studentName: v.string(),
+        studentEmail: v.string(),
+        courseId: v.string(),
+        amount: v.number(),
+        paymentId: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentName, studentEmail, amount, paymentId } = args;
+
+        const adminEmail = 'admin@dohy.dev'; // Replace with actual admin email from settings
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #667eea; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 20px; border-radius: 0 0 8px 8px; }
+            .button { background: #667eea; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>💳 Yêu cầu mua khóa học mới</h2>
+            </div>
+            <div class="content">
+              <p><strong>Học viên:</strong> ${studentName}</p>
+              <p><strong>Email:</strong> ${studentEmail}</p>
+              <p><strong>Số tiền:</strong> ${amount.toLocaleString('vi-VN')} VND</p>
+
+              <p style="margin-top: 20px;">Vui lòng kiểm tra chứng minh thanh toán và xác nhận trong admin dashboard.</p>
+
+              <p style="margin-top: 20px;">
+                <a href="https://dohy.dev/dashboard/payments" class="button">Xem chi tiết thanh toán</a>
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: adminEmail,
+            subject: `[Dohy] Học viên ${studentName} yêu cầu mua khóa - ${amount.toLocaleString('vi-VN')} VND`,
+            html,
+        });
+    },
+});
+
+export const sendPaymentReceivedEmail = action({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        amount: v.number(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, amount } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #667eea; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 20px; border-radius: 0 0 8px 8px; }
+            .status-box { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 15px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>✅ Chứng minh thanh toán đã nhận</h2>
+            </div>
+            <div class="content">
+              <p>Xin chào ${studentName},</p>
+
+              <p>Chúng tôi đã nhận được chứng minh thanh toán của bạn.</p>
+
+              <div class="status-box">
+                <strong>Số tiền:</strong> ${amount.toLocaleString('vi-VN')} VND<br/>
+                <strong>Trạng thái:</strong> Chờ xác nhận
+              </div>
+
+              <p>Admin sẽ xác nhận thanh toán trong vòng 24 giờ. Bạn sẽ nhận được email khi được phê duyệt.</p>
+
+              <p style="margin-top: 20px; color: #999; font-size: 12px;">Nếu bạn có câu hỏi, vui lòng liên hệ hỗ trợ của chúng tôi.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: 'Chứng minh thanh toán đã nhận - Dohy',
+            html,
+        });
+    },
+});
+
+export const sendPaymentConfirmedEmail = action({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        courseName: v.string(),
+        courseSlug: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, courseName, courseSlug } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #4caf50; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 20px; border-radius: 0 0 8px 8px; }
+            .button { background: #4caf50; color: white; padding: 12px 30px; border-radius: 5px; text-decoration: none; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>🎉 Thanh toán được xác nhận!</h2>
+            </div>
+            <div class="content">
+              <p>Xin chào ${studentName},</p>
+
+              <p>Thanh toán của bạn đã được xác nhận. Bạn giờ có thể bắt đầu học khóa học.</p>
+
+              <h3 style="color: #667eea; margin-top: 30px;">${courseName}</h3>
+
+              <p style="margin-top: 30px;">
+                <a href="https://dohy.dev/khoa-hoc/${courseSlug}" class="button">Bắt đầu học ngay</a>
+              </p>
+
+              <p style="margin-top: 30px; color: #999; font-size: 12px;">
+                Cảm ơn bạn đã chọn Dohy. Chúng tôi mong chờ thấy bạn thành công!
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: `Chào mừng bạn đến với ${courseName} - Dohy`,
+            html,
+        });
+    },
+});
+
+export const sendPaymentRejectedEmail = action({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        reason: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, reason } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #ff9800; color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .content { background: white; padding: 20px; border-radius: 0 0 8px 8px; }
+            .reason-box { background: #fff3cd; border-left: 4px solid #ff9800; padding: 15px; margin: 20px 0; }
+            .button { background: #667eea; color: white; padding: 12px 30px; border-radius: 5px; text-decoration: none; display: inline-block; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h2>⚠️ Thanh toán bị từ chối</h2>
+            </div>
+            <div class="content">
+              <p>Xin chào ${studentName},</p>
+
+              <p>Thanh toán của bạn không được xác nhận vì lý do sau:</p>
+
+              <div class="reason-box">
+                <strong>Lý do:</strong> ${reason}
+              </div>
+
+              <p>Vui lòng kiểm tra lại thông tin thanh toán và thử lại.</p>
+
+              <p style="margin-top: 30px;">
+                <a href="https://dohy.dev/khoa-hoc" class="button">Quay lại để thử lại</a>
+              </p>
+
+              <p style="margin-top: 30px; color: #999; font-size: 12px;">
+                Nếu bạn có câu hỏi, vui lòng liên hệ bộ phận hỗ trợ của chúng tôi.
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: 'Thanh toán bị từ chối - Dohy',
+            html,
+        });
+    },
+});

@@ -1029,6 +1029,7 @@ export const upsertEnrollment = mutation({
       enrolledAt: now,
       progressPercent: progress ?? 0,
       lastViewedLessonId,
+      status: "free" as const,
       order: args.order ?? now,
       active: args.active ?? true,
     });
@@ -1153,8 +1154,101 @@ export const seedSampleCourse = mutation({
   },
 });
 
+/**
+ * Query: Get course metadata for access control
+ * Returns course pricing and basic info
+ */
+export const getCourse = query({
+  args: {
+    id: v.id("courses"),
+  },
+  handler: async (ctx, { id }) => {
+    const course = await ctx.db.get(id);
+    if (!course) {
+      return {
+        _id: id,
+        title: "Unknown",
+        pricingType: "free" as const,
+        priceAmount: undefined,
+        active: false,
+      };
+    }
 
+    return {
+      _id: course._id,
+      title: course.title,
+      pricingType: course.pricingType,
+      priceAmount: course.priceAmount,
+      active: course.active,
+    };
+  },
+});
 
+/**
+ * Query: Get course enrollments
+ * Returns all enrollments (active and inactive) for a course
+ */
+export const getCourseEnrollments = query({
+  args: {
+    courseId: v.id("courses"),
+  },
+  handler: async (ctx, { courseId }) => {
+    const enrollments = await ctx.db
+      .query("course_enrollments")
+      .withIndex("by_course", (q) => q.eq("courseId", courseId))
+      .collect();
 
+    return enrollments.map((e) => ({
+      _id: e._id,
+      courseId: e.courseId,
+      userId: e.userId,
+      enrolledAt: e.enrolledAt,
+      progressPercent: e.progressPercent,
+      lastViewedLessonId: e.lastViewedLessonId,
+      active: e.active,
+    }));
+  },
+});
+
+/**
+ * Query: Get student enrollment for a specific course
+ * Returns enrollment if exists, otherwise returns empty object
+ */
+export const getStudentEnrollment = query({
+  args: {
+    courseId: v.id("courses"),
+    userId: v.string(),
+  },
+  handler: async (ctx, { courseId, userId }) => {
+    const enrollment = await ctx.db
+      .query("course_enrollments")
+      .withIndex("by_course_user", (q) =>
+        q.eq("courseId", courseId).eq("userId", userId)
+      )
+      .first();
+
+    if (!enrollment) {
+      return {
+        _id: undefined,
+        courseId,
+        userId,
+        enrolledAt: undefined,
+        progressPercent: undefined,
+        lastViewedLessonId: undefined,
+        active: false,
+      };
+    }
+
+    return {
+      _id: enrollment._id,
+      courseId: enrollment.courseId,
+      userId: enrollment.userId,
+      enrolledAt: enrollment.enrolledAt,
+      progressPercent: enrollment.progressPercent,
+      lastViewedLessonId: enrollment.lastViewedLessonId,
+      active: enrollment.active,
+    };
+  },
+});
 
 

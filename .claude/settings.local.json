@@ -9,7 +9,17 @@
       "Bash(bun test:*)",
       "Bash(bun test:favorites:*)",
       "Bash(bun playwright test:*)",
-      "Skill(create-skill)"
+      "Skill(create-skill)",
+      "Bash(bun check-types:*)",
+      "Bash(bun dev:setup:*)",
+      "Bash(timeout 60 bun dev:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(bunx convex dev:*)",
+      "Bash(timeout 30 bun dev:server:*)",
+      "Bash(timeout 40 bun dev:server:*)",
+      "Skill(frontend-design:frontend-design)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(tier2): implement certificate, quiz & progress tracking system\n\nCompleted TIER 2 implementation with:\n\nBackend Features:\n- Added 5 new tables: lesson_completions, certificates, course_quizzes, quiz_questions, quiz_attempts\n- Enhanced course_enrollments with status field (free/pending/active/completed/expired)\n- Lesson progress tracking: recordLessonView, completeLessonIfDone, updateEnrollmentProgress\n- Learning statistics: getLearnerStats with total courses, watch hours, certificates\n- Certificate system: auto-issue certificates with unique codes (DOHY-YYYY-XXXXX) at 100% completion\n- Quiz system: full quiz workflow with grading, retake support, statistics\n- Auto-completion: lessons marked complete at 80% watch time\n\nFrontend Features:\n- Created /dashboard/certificates page with certificate display and sharing\n- Created /dashboard/stats page with learning statistics and achievement badges\n- Enhanced video player with real-time progress tracking and progress bar\n- Track watch time automatically every second\n- Show completion percentage and time display\n\nTechnical:\n- Fixed Convex TypeScript validation errors (removed invalid returns properties)\n- Made enrollment status field optional for database migration compatibility\n- Added proper error handling and type safety throughout\n\n🤖 Generated with Claude Code\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

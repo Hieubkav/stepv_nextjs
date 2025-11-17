@@ -188,6 +188,9 @@ export default defineSchema({
     // Remember me fields
     rememberToken: v.optional(v.string()),
     rememberTokenExpiry: v.optional(v.number()),
+    // OTP rate limiting
+    lastOtpSentAt: v.optional(v.number()),
+    lastOtpBlockedUntil: v.optional(v.number()),
     order: v.number(),
     active: v.boolean(),
     createdAt: v.number(),
@@ -197,19 +200,79 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_active_order", ["active", "order"]),
 
+  // OTP tokens (dung cho password reset)
+  otp_tokens: defineTable({
+    studentId: v.optional(v.id("students")),
+    email: v.string(),
+    otpCode: v.string(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+    attempts: v.number(),
+    blockedUntil: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_email_unused", ["email"])
+    .index("by_student", ["studentId"])
+    .index("by_expires", ["expiresAt"]),
+
+  // Orders (don hang khi hoc vien mua khoa)
+  orders: defineTable({
+    studentId: v.id("students"),
+    courseId: v.id("courses"),
+    amount: v.number(),
+    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("completed"), v.literal("cancelled")),
+    paymentMethod: v.string(), // "vietqr", "stripe", etc.
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_course", ["courseId"])
+    .index("by_status", ["status"])
+    .index("by_student_status", ["studentId", "status"]),
+
+  // Payments (chi tiet thanh toan, goi QR code va chung minh)
+  payments: defineTable({
+    orderId: v.id("orders"),
+    studentId: v.id("students"),
+    email: v.string(),
+    qrCodeUrl: v.optional(v.string()),
+    qrCodeData: v.optional(v.string()),
+    bankAccount: v.optional(v.string()),
+    bankAccountName: v.optional(v.string()),
+    transactionId: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("confirmed"), v.literal("rejected")),
+    screenshotUrl: v.optional(v.string()),
+    paidAt: v.optional(v.number()),
+    confirmedAt: v.optional(v.number()),
+    confirmedByAdminId: v.optional(v.id("students")), // admin student id
+    rejectionReason: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_order", ["orderId"])
+    .index("by_student", ["studentId"])
+    .index("by_status", ["status"])
+    .index("by_pending", ["status", "createdAt"]),
+
   // Course enrollments (quan he user - khoa hoc)
   course_enrollments: defineTable({
     courseId: v.id("courses"),
     userId: v.string(),
     enrolledAt: v.number(),
     progressPercent: v.optional(v.number()),
+    completionPercentage: v.optional(v.number()),
     lastViewedLessonId: v.optional(v.id("course_lessons")),
+    completedAt: v.optional(v.number()),
+    status: v.optional(v.union(v.literal("free"), v.literal("pending"), v.literal("active"), v.literal("completed"), v.literal("expired"))),
+    paidAmount: v.optional(v.number()),
     order: v.number(),
     active: v.boolean(),
   })
     .index("by_course_user", ["courseId", "userId"])
     .index("by_user", ["userId"])
-    .index("by_course", ["courseId"]),
+    .index("by_course", ["courseId"])
+    .index("by_status", ["status"]),
 
   // Course favorites (danh sach yeu thich hoc vien)
   course_favorites: defineTable({
@@ -251,4 +314,97 @@ export default defineSchema({
   })
     .index("by_session_time", ["sessionId", "occurredAt"])
     .index("by_occurred", ["occurredAt"]),
+
+  // Lesson completions (ghi nhan tien do chi tiet tung bai hoc)
+  lesson_completions: defineTable({
+    studentId: v.id("students"),
+    lessonId: v.id("course_lessons"),
+    courseId: v.id("courses"),
+    completedAt: v.optional(v.number()),
+    watchTimeSeconds: v.optional(v.number()),
+    lastWatchedAt: v.number(),
+    isCompleted: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_student_lesson", ["studentId", "lessonId"])
+    .index("by_student_course", ["studentId", "courseId"])
+    .index("by_lesson", ["lessonId"]),
+
+  // Certificates (chung chi hoan thanh khoa)
+  certificates: defineTable({
+    studentId: v.id("students"),
+    courseId: v.id("courses"),
+    certificateCode: v.string(), // DOHY-2024-XXXXX
+    issuedAt: v.number(),
+    expiresAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_student", ["studentId"])
+    .index("by_course", ["courseId"])
+    .index("by_code", ["certificateCode"])
+    .index("by_student_course", ["studentId", "courseId"]),
+
+  // Course quizzes (bai trac nghiem)
+  course_quizzes: defineTable({
+    courseId: v.id("courses"),
+    chapterId: v.optional(v.id("course_chapters")),
+    title: v.string(),
+    description: v.optional(v.string()),
+    passingScore: v.number(), // 50 = 50%
+    timeLimit: v.optional(v.number()), // seconds
+    allowRetake: v.boolean(),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_course", ["courseId"])
+    .index("by_chapter", ["chapterId"])
+    .index("by_active", ["active"]),
+
+  // Quiz questions (cau hoi trong quiz)
+  quiz_questions: defineTable({
+    quizId: v.id("course_quizzes"),
+    questionText: v.string(),
+    questionType: v.union(v.literal("multiple_choice"), v.literal("short_answer"), v.literal("true_false")),
+    options: v.optional(v.array(v.string())), // For multiple choice
+    correctAnswer: v.string(), // Index or text
+    explanation: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_quiz", ["quizId"]),
+
+  // Quiz attempts (bai lam va diem)
+  quiz_attempts: defineTable({
+    studentId: v.id("students"),
+    quizId: v.id("course_quizzes"),
+    courseId: v.id("courses"),
+    answers: v.array(v.object({
+      questionId: v.id("quiz_questions"),
+      answer: v.string(),
+    })),
+    score: v.number(), // 0-100
+    passed: v.boolean(),
+    submittedAt: v.number(),
+    reviewedAt: v.optional(v.number()),
+    createdAt: v.number(),
+  })
+    .index("by_student_quiz", ["studentId", "quizId"])
+    .index("by_student", ["studentId"])
+    .index("by_quiz", ["quizId"])
+    .index("by_course", ["courseId"]),
+
+  // Payment settings (cau hinh tai khoan ngan hang va VietQR)
+  payment_settings: defineTable({
+    bankAccountNumber: v.string(),
+    bankAccountName: v.string(),
+    bankCode: v.string(), // VietQR ACQ ID
+    bankBranch: v.optional(v.string()),
+    adminEmail: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }),
 });
