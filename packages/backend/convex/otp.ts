@@ -103,10 +103,17 @@ export const requestPasswordResetOTP = mutation({
       lastOtpSentAt: now,
     });
 
-    // TODO: Send email (async action)
-    // Email will be sent via a separate action/process
-    // For now, OTP is stored and can be used for testing
+    const studentEmail = student.email ?? email;
+    const studentName = student.fullName ?? studentEmail;
 
+    if (studentEmail) {
+      await ctx.scheduler.runAfter(0, internal.email.sendOTPEmail, {
+        studentEmail,
+        studentName,
+        otpCode,
+        expiresInMinutes: OTP_EXPIRY_MINUTES,
+      });
+    }
     return {
       success: true,
       message: "OTP đã được gửi đến email của bạn. Vui lòng check email.",

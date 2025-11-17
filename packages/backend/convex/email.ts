@@ -1,7 +1,7 @@
 // Email actions using Resend
 'use node';
 
-import { action } from './_generated/server';
+import { internalAction } from './_generated/server';
 import { v } from 'convex/values';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -19,7 +19,7 @@ const sendEmailViaResend = async (params: ResendEmailParams): Promise<boolean> =
         return false;
     }
 
-    const { to, subject, html, from = 'noreply@dohy.dev' } = params;
+    const { to, subject, html, from = 'onboarding@resend.dev' } = params;
 
     try {
         const response = await fetch('https://api.resend.com/emails', {
@@ -49,7 +49,7 @@ const sendEmailViaResend = async (params: ResendEmailParams): Promise<boolean> =
     }
 };
 
-export const sendPasswordResetEmail = action({
+export const sendPasswordResetEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),
@@ -76,13 +76,13 @@ export const sendPasswordResetEmail = action({
               padding: 20px;
             }
             .container {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               border-radius: 8px;
               overflow: hidden;
               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               color: white;
               padding: 30px;
               text-align: center;
@@ -112,7 +112,7 @@ export const sendPasswordResetEmail = action({
               margin: 30px 0;
             }
             .reset-button {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               color: white;
               text-decoration: none;
               padding: 14px 40px;
@@ -193,7 +193,7 @@ export const sendPasswordResetEmail = action({
     },
 });
 
-export const sendWelcomeEmail = action({
+export const sendWelcomeEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),
@@ -335,7 +335,7 @@ export const sendWelcomeEmail = action({
     },
 });
 
-export const sendOTPEmail = action({
+export const sendOTPEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),
@@ -482,7 +482,7 @@ export const sendOTPEmail = action({
     },
 });
 
-export const sendPaymentRequestToAdminEmail = action({
+export const sendPaymentRequestToAdminEmail = internalAction({
     args: {
         studentName: v.string(),
         studentEmail: v.string(),
@@ -538,7 +538,7 @@ export const sendPaymentRequestToAdminEmail = action({
     },
 });
 
-export const sendPaymentReceivedEmail = action({
+export const sendPaymentReceivedEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),
@@ -593,7 +593,7 @@ export const sendPaymentReceivedEmail = action({
     },
 });
 
-export const sendPaymentConfirmedEmail = action({
+export const sendPaymentConfirmedEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),
@@ -650,7 +650,7 @@ export const sendPaymentConfirmedEmail = action({
     },
 });
 
-export const sendPaymentRejectedEmail = action({
+export const sendPaymentRejectedEmail = internalAction({
     args: {
         studentEmail: v.string(),
         studentName: v.string(),

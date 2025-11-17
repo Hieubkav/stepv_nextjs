@@ -22,7 +22,7 @@ export default function ForgotPasswordPage() {
 
             {/* Link Based Method */}
             <Link
-              href="/khoa-hoc/reset-password"
+              href="/khoa-hoc/reset-password-request"
               className="block w-full border-2 border-slate-300 rounded-lg p-4 hover:bg-slate-50 transition text-center"
             >
               <div className="font-semibold text-slate-700 mb-1">🔗 Đường dẫn xác thực</div>

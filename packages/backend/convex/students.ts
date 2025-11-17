@@ -385,18 +385,18 @@ export const requestPasswordReset = mutation({
             updatedAt: Date.now(),
         });
 
-        // TODO: Gửi email reset password qua Resend
-        // const resetLink = `${resetBaseUrl}?token=${resetToken}`;
-        // await ctx.scheduler.runAfter(
-        //     0,
-        //     internal.email.sendPasswordResetEmail,
-        //     {
-        //         studentEmail: normalizedEmail,
-        //         studentName: studentDoc.fullName,
-        //         resetToken,
-        //         resetLink,
-        //     }
-        // );
+        // Gửi email reset password qua Resend
+        const resetLink = `${resetBaseUrl}?token=${resetToken}`;
+        await ctx.scheduler.runAfter(
+            0,
+            internal.email.sendPasswordResetEmail,
+            {
+                studentEmail: normalizedEmail,
+                studentName: studentDoc.fullName,
+                resetToken,
+                resetLink,
+            }
+        );
 
         return { ok: true, resetToken, studentEmail: normalizedEmail } as const;
     },
