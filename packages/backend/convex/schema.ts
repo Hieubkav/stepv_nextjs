@@ -123,18 +123,13 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
-  // Courses (khoa hoc chinh)
-  courses: defineTable({
+  // Course categories (danh muc khoa hoc)
+  course_categories: defineTable({
+    name: v.string(),
     slug: v.string(),
-    title: v.string(),
-    subtitle: v.optional(v.string()),
     description: v.optional(v.string()),
-    thumbnailMediaId: v.optional(v.id("media")),
-    introVideoUrl: v.optional(v.string()),
-    pricingType: v.union(v.literal("free"), v.literal("paid")),
-    priceAmount: v.optional(v.number()),
-    priceNote: v.optional(v.string()),
-    isPriceVisible: v.boolean(),
+    icon: v.optional(v.string()), // emoji hoac icon name
+    imageId: v.optional(v.id("media")),
     order: v.number(),
     active: v.boolean(),
     createdAt: v.number(),
@@ -142,6 +137,33 @@ export default defineSchema({
   })
     .index("by_slug", ["slug"])
     .index("by_active_order", ["active", "order"]),
+
+  // Courses (khoa hoc chinh)
+  courses: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    subtitle: v.optional(v.string()),
+    description: v.optional(v.string()),
+    categoryId: v.optional(v.id("course_categories")),
+    thumbnailMediaId: v.optional(v.id("media")),
+    introVideoUrl: v.optional(v.string()),
+    pricingType: v.union(v.literal("free"), v.literal("paid")),
+    priceAmount: v.optional(v.number()),
+    priceNote: v.optional(v.string()),
+    isPriceVisible: v.boolean(),
+    averageRating: v.optional(v.number()), // Denormalized for quick access
+    totalReviews: v.optional(v.number()), // Denormalized
+    enrollmentCount: v.optional(v.number()), // Denormalized
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"])
+    .index("by_category", ["categoryId"])
+    .index("by_category_order", ["categoryId", "order"])
+    .index("by_rating", ["averageRating"]),
 
   // Course chapters (chuong cua khoa hoc)
   course_chapters: defineTable({

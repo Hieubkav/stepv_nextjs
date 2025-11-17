@@ -13,6 +13,8 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as analytics from "../analytics.js";
+import type * as categories from "../categories.js";
 import type * as certificates from "../certificates.js";
 import type * as comments from "../comments.js";
 import type * as coupons from "../coupons.js";
@@ -33,6 +35,7 @@ import type * as payments from "../payments.js";
 import type * as progress from "../progress.js";
 import type * as quizzes from "../quizzes.js";
 import type * as reviews from "../reviews.js";
+import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
 import type * as students from "../students.js";
@@ -49,6 +52,8 @@ import type * as visitors from "../visitors.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  analytics: typeof analytics;
+  categories: typeof categories;
   certificates: typeof certificates;
   comments: typeof comments;
   coupons: typeof coupons;
@@ -69,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   progress: typeof progress;
   quizzes: typeof quizzes;
   reviews: typeof reviews;
+  search: typeof search;
   seed: typeof seed;
   settings: typeof settings;
   students: typeof students;
