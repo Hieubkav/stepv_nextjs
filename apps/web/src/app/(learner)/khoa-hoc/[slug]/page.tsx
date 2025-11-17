@@ -223,11 +223,12 @@ async function loadCourseDetail(slug: string, { preview }: { preview: boolean })
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    const matched = await client.query(api.courses.getCourseDetail, {
+    const result = await client.query(api.courses.getCourseDetail, {
       slug,
       includeInactive: true,
     });
 
+    const matched = result?.course;
     base.debug.matchedCourse = matched
       ? {
           id: String(matched._id ?? ""),
@@ -257,36 +258,10 @@ async function loadCourseDetail(slug: string, { preview }: { preview: boolean })
       };
     }
 
-    let detail: any = null;
-    let detailError: string | null = null;
-
-    try {
-      detail = await client.query(api.courses.getCourseDetail, {
-        id: matched._id,
-        includeInactive: preview,
-      });
-      if (!detail) {
-        detailError = "DETAIL_NULL";
-      }
-    } catch (error) {
-      console.error("Không thể tải chi tiết khóa học", error);
-      detailError = error instanceof Error ? error.message : "UNKNOWN_DETAIL_ERROR";
-    }
-
-    base.debug.reason = detailError;
-
-    if (!detail) {
-      return {
-        ...base,
-        status: "detail_missing",
-        course: normalizedCourse,
-        introVideoUrl: typeof matched?.introVideoUrl === "string" ? matched.introVideoUrl : null,
-        message: "Chưa có dữ liệu chi tiết cho khóa học này.",
-      };
-    }
-
     const chapters: CourseChapter[] = [];
-    for (const chapter of Array.isArray(detail.chapters) ? detail.chapters : []) {
+    const detailChapters = result?.chapters ?? [];
+    
+    for (const chapter of Array.isArray(detailChapters) ? detailChapters : []) {
       const chapterActive = Boolean(chapter?.active);
       if (!preview && !chapterActive) {
         continue;
@@ -303,10 +278,11 @@ async function loadCourseDetail(slug: string, { preview }: { preview: boolean })
 
       lessons.sort((a, b) => a.order - b.order);
 
+      const chapterData = chapter as any;
       chapters.push({
         id: String(chapter?._id ?? ""),
-        title: typeof chapter?.title === "string" ? chapter.title : "Chương học",
-        summary: typeof chapter?.summary === "string" ? chapter.summary : null,
+        title: typeof chapterData?.title === "string" ? chapterData.title : "Chương học",
+        summary: typeof chapterData?.summary === "string" ? chapterData.summary : null,
         order: Number.isFinite(chapter?.order) ? Number(chapter.order) : Number.MAX_SAFE_INTEGER,
         active: chapterActive,
         lessons,
@@ -373,7 +349,7 @@ async function loadCourseDetail(slug: string, { preview }: { preview: boolean })
       introVideoUrl,
       totals,
       debug: {
-        reason: detailError,
+        reason: null,
         convexUrl,
         matchedCourse: base.debug.matchedCourse,
         availableOrders: base.debug.availableOrders,

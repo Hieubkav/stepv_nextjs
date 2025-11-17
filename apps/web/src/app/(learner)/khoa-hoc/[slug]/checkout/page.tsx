@@ -33,15 +33,16 @@ async function getCourseForCheckout(slug: string) {
   }
 
   const client = new ConvexHttpClient(convexUrl);
-  const course = await client.query(api.courses.getCourseDetail, { 
+  const result = await client.query(api.courses.getCourseDetail, { 
     slug,
     includeInactive: false 
   });
 
-  if (!course) {
+  if (!result || !result.course) {
     throw new Error('Course not found');
   }
 
+  const course = result.course;
   return {
     id: course._id,
     title: course.title,
