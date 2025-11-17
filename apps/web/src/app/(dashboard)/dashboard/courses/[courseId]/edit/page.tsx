@@ -183,10 +183,10 @@ export default function CourseEditPage() {
   const course = detail?.course;
   const courseDetailHref = useMemo(() => {
     if (!course) return null;
-    if (!Number.isFinite(course.order)) {
+    if (!course.slug) {
       return "/khoa-hoc" as const;
     }
-    const base = `/khoa-hoc/${course.order}` as const;
+    const base = `/khoa-hoc/${course.slug}` as const;
     if (course.active) {
       return base;
     }

@@ -93,7 +93,7 @@ function CourseCard({
     thumbnail?: CourseThumbnail;
     studentId: string | null;
 }) {
-    const detailHref = `/khoa-hoc/${course.order}` as Route;
+    const detailHref = `/khoa-hoc/${course.slug}` as Route;
     const priceText = formatPrice(course);
     const subtitle = course.subtitle ?? course.description;
 

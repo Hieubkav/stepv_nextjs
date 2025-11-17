@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CourseDetailClient } from "./components/course-detail-client";
 
-type PageParams = Promise<{ courseOrder: string }>;
+type PageParams = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 type CourseSummary = {
@@ -210,7 +210,7 @@ function createBaseData(): CourseDetailPageData {
   };
 }
 
-async function loadCourseDetail(order: number, { preview }: { preview: boolean }): Promise<CourseDetailPageData> {
+async function loadCourseDetail(slug: string, { preview }: { preview: boolean }): Promise<CourseDetailPageData> {
   const base = createBaseData();
   const convexUrl = base.debug.convexUrl;
   if (!convexUrl) {
@@ -223,12 +223,11 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    const list = await client.query(api.courses.listCourses, { includeInactive: true });
-    base.debug.availableOrders = list
-      .map((item: any) => (Number.isFinite(item?.order) ? Number(item.order) : null))
-      .filter((value: number | null): value is number => value !== null);
+    const matched = await client.query(api.courses.getCourseDetail, {
+      slug,
+      includeInactive: true,
+    });
 
-    const matched = list.find((item: any) => item?.order === order) ?? null;
     base.debug.matchedCourse = matched
       ? {
           id: String(matched._id ?? ""),
@@ -242,7 +241,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
       return {
         ...base,
         status: "not_found",
-        message: "Không tìm thấy khóa học với thứ tự đã yêu cầu.",
+        message: "Không tìm thấy khóa học với slug đã yêu cầu.",
       };
     }
 
@@ -449,24 +448,23 @@ export default async function CourseDetailPage({
   params: PageParams;
   searchParams?: SearchParams;
 }) {
-  const { courseOrder } = await params;
+  const { slug } = await params;
   const resolvedSearch = searchParams ? await searchParams : {};
   const previewRaw = resolvedSearch?.preview;
   const preview = Array.isArray(previewRaw)
     ? previewRaw.some((value) => parsePreviewFlag(value))
     : parsePreviewFlag(previewRaw);
 
-  const numericOrder = Number(courseOrder);
-  if (!Number.isFinite(numericOrder)) {
+  if (!slug || typeof slug !== "string" || !slug.trim()) {
     return (
       <ErrorState
         title="Tham số không hợp lệ"
-        description={`Giá trị "${courseOrder}" không phải là số hợp lệ cho Order của khóa học.`}
+        description="Slug khóa học không được cung cấp hoặc không hợp lệ."
       />
     );
   }
 
-  const data = await loadCourseDetail(numericOrder, { preview });
+  const data = await loadCourseDetail(slug, { preview });
   if (data.status !== "ready" || !data.course) {
     const errorTitleMap: Record<CourseDetailPageData["status"], string> = {
       ready: "",

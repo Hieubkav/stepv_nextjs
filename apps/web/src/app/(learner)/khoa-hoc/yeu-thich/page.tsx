@@ -147,7 +147,7 @@ export default function FavoritesPage() {
                 {/* Grid */}
                 <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {favorites.map((course) => {
-                        const detailHref = `/khoa-hoc/${course.order}` as Route;
+                         const detailHref = `/khoa-hoc/${course.slug}` as Route;
                         const priceText = formatPrice(course);
 
                         return (

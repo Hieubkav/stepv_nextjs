@@ -138,7 +138,7 @@ export function CourseDetailClient({
           comparePriceText={comparePriceText}
           priceNote={course.priceNote}
           pricingType={course.pricingType}
-          courseOrder={course.order}
+          courseSlug={course.slug}
         />
         <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} onLessonSelect={handleLessonSelect} />
       </div>

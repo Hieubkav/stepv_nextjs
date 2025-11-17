@@ -11,13 +11,13 @@ export function CoursePrice({
   comparePriceText,
   priceNote,
   pricingType,
-  courseOrder,
+  courseSlug,
 }: {
   priceText: string;
   comparePriceText: string | null;
   priceNote: string | null;
   pricingType: "free" | "paid";
-  courseOrder?: number;
+  courseSlug?: string;
 }) {
   const { student } = useStudentAuth();
 
@@ -37,13 +37,13 @@ export function CoursePrice({
           ) : null}
         </div>
 
-        {pricingType === "paid" && courseOrder ? (
+        {pricingType === "paid" && courseSlug ? (
           <Button
             asChild
             size="lg"
             className="w-full"
           >
-            <Link href={`/khoa-hoc/${courseOrder}/checkout`}>
+            <Link href={`/khoa-hoc/${courseSlug}/checkout`}>
               Mua khóa học
             </Link>
           </Button>

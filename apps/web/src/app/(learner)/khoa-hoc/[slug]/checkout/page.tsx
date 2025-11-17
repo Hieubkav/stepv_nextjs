@@ -16,7 +16,7 @@ import { AlertCircle } from 'lucide-react';
 import CheckoutForm from '@/features/learner/pages/checkout-form';
 import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
 
-type PageParams = Promise<{ courseOrder: string }>;
+type PageParams = Promise<{ slug: string }>;
 
 const currencyFormatter = new Intl.NumberFormat('vi-VN', {
   style: 'currency',
@@ -26,15 +26,17 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
 
 type MediaWithUrl = Doc<'media'> & { url?: string | null };
 
-async function getCourseForCheckout(order: number) {
+async function getCourseForCheckout(slug: string) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
   if (!convexUrl) {
     throw new Error('CONVEX_URL not configured');
   }
 
   const client = new ConvexHttpClient(convexUrl);
-  const courses = await client.query(api.courses.listCourses, { includeInactive: false });
-  const course = courses.find((c: any) => c?.order === order);
+  const course = await client.query(api.courses.getCourseDetail, { 
+    slug,
+    includeInactive: false 
+  });
 
   if (!course) {
     throw new Error('Course not found');
@@ -73,10 +75,9 @@ export default async function CheckoutPage({
 }: {
   params: PageParams;
 }) {
-  const { courseOrder } = await params;
-  const numericOrder = Number(courseOrder);
+  const { slug } = await params;
 
-  if (!Number.isFinite(numericOrder)) {
+  if (!slug || typeof slug !== 'string' || !slug.trim()) {
     return (
       <div className="min-h-screen bg-muted/20 flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
@@ -84,7 +85,7 @@ export default async function CheckoutPage({
             <CardTitle className="text-red-600">Lỗi</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm">Tham số khóa học không hợp lệ.</p>
+            <p className="text-sm">Slug khóa học không hợp lệ.</p>
             <Button asChild className="w-full">
               <Link href="/khoa-hoc">Quay lại danh sách khóa học</Link>
             </Button>
@@ -95,7 +96,7 @@ export default async function CheckoutPage({
   }
 
   try {
-    const course = await getCourseForCheckout(numericOrder);
+    const course = await getCourseForCheckout(slug);
 
     if (course.pricingType !== 'paid' || !course.priceAmount) {
       return (
@@ -109,7 +110,7 @@ export default async function CheckoutPage({
                 Khóa học này là miễn phí. Bạn có thể truy cập trực tiếp từ trang chi tiết khóa học.
               </p>
               <Button asChild className="w-full">
-                <Link href={`/khoa-hoc/${courseOrder}`}>Xem chi tiết khóa học</Link>
+                <Link href={`/khoa-hoc/${slug}`}>Xem chi tiết khóa học</Link>
               </Button>
             </CardContent>
           </Card>
@@ -124,7 +125,7 @@ export default async function CheckoutPage({
         <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
           <div className="mx-auto max-w-6xl px-4 py-4">
             <Button variant="outline" size="sm" className="gap-2 mb-4" asChild>
-              <Link href={`/khoa-hoc/${courseOrder}`}>
+              <Link href={`/khoa-hoc/${slug}`}>
                 <ArrowLeft className="h-4 w-4" />
                 Quay lại chi tiết khóa học
               </Link>
