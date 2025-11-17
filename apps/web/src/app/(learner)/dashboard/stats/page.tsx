@@ -1,8 +1,8 @@
 'use client';
 
-import { api } from '@/.source';
+import { api } from '@dohy/backend/convex/_generated/api';
 import { useQuery } from 'convex/react';
-import { useAuth } from '@/features/learner/auth/student-auth-context';
+import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
 import { Card } from '@/components/ui/card';
 import {
   BookOpen,
@@ -24,12 +24,11 @@ interface StatCard {
 
 export default function StatsPage() {
   const router = useRouter();
-  const { student } = useAuth();
+  const { student } = useStudentAuth();
 
   const stats = useQuery(
     api.progress.getLearnerStats,
-    student ? { studentId: student._id } : 'skip',
-    { enabled: !!student }
+    student ? { studentId: student._id } : 'skip'
   );
 
   if (!student) {

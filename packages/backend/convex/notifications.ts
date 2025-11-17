@@ -1,6 +1,17 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
+const notificationTypeValidator = v.union(
+  v.literal("order_confirmed"),
+  v.literal("payment_rejected"),
+  v.literal("certificate_issued"),
+  v.literal("new_comment_reply"),
+  v.literal("course_updated"),
+  v.literal("course_new_lesson"),
+  v.literal("enrollment_status_changed"),
+  v.literal("system")
+);
+
 /**
  * Notifications System
  * - Tạo thông báo cho học viên
@@ -57,14 +68,14 @@ export const getUnreadCount = query({
     studentId: v.id("students"),
   },
   async handler(ctx, args) {
-    const count = await ctx.db
+    const unread = await ctx.db
       .query("notifications")
       .withIndex("by_student_read", (q) =>
         q.eq("studentId", args.studentId).eq("isRead", false)
       )
-      .count();
+      .collect();
 
-    return count;
+    return unread.length;
   },
 });
 
@@ -87,20 +98,23 @@ export const getNotification = query({
 export const getNotificationsByType = query({
   args: {
     studentId: v.id("students"),
-    type: v.string(),
+    type: notificationTypeValidator,
     limit: v.optional(v.number()),
   },
   async handler(ctx, args) {
     const limit = args.limit || 20;
 
-    const notifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_student_time", (q) => q.eq("studentId", args.studentId))
-      .filter((doc) => doc.type === args.type)
-      .order("desc")
-      .take(limit);
+    const notifications = (
+      await ctx.db
+        .query("notifications")
+        .withIndex("by_student_time", (q) =>
+          q.eq("studentId", args.studentId)
+        )
+        .order("desc")
+        .collect()
+    ).filter((notification) => notification.type === args.type);
 
-    return notifications;
+    return notifications.slice(0, limit);
   },
 });
 
@@ -112,7 +126,7 @@ export const getNotificationsByType = query({
 export const createNotification = mutation({
   args: {
     studentId: v.id("students"),
-    type: v.string(),
+    type: notificationTypeValidator,
     title: v.string(),
     message: v.string(),
     link: v.optional(v.string()),
@@ -149,7 +163,7 @@ export const createNotification = mutation({
 export const createNotificationBatch = mutation({
   args: {
     studentIds: v.array(v.id("students")),
-    type: v.string(),
+    type: notificationTypeValidator,
     title: v.string(),
     message: v.string(),
     link: v.optional(v.string()),
@@ -279,11 +293,12 @@ export const deleteOldNotifications = mutation({
   async handler(ctx, args) {
     const cutoffTime = Date.now() - args.daysOld * 24 * 60 * 60 * 1000;
 
-    const notifications = await ctx.db
-      .query("notifications")
-      .withIndex("by_student_time", (q) => q.eq("studentId", args.studentId))
-      .filter((doc) => doc.createdAt < cutoffTime)
-      .collect();
+    const notifications = (
+      await ctx.db
+        .query("notifications")
+        .withIndex("by_student_time", (q) => q.eq("studentId", args.studentId))
+        .collect()
+    ).filter((notification) => notification.createdAt < cutoffTime);
 
     await Promise.all(notifications.map((n) => ctx.db.delete(n._id)));
     return notifications.length;

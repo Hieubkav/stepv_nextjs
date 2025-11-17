@@ -23,20 +23,26 @@ export const listLessonComments = query({
     const limit = args.limit || 20;
 
     // Lấy bình luận chính (không phải reply)
-    const comments = await ctx.db
-      .query("comments")
-      .withIndex("by_lesson_time", (q) => q.eq("lessonId", args.lessonId).eq("parentCommentId", undefined))
-      .order("desc")
-      .take(limit);
+    const comments = (
+      await ctx.db
+        .query("comments")
+        .withIndex("by_lesson_time", (q) => q.eq("lessonId", args.lessonId))
+        .order("desc")
+        .collect()
+    )
+      .filter((comment) => !comment.parentCommentId)
+      .slice(0, limit);
 
     // Với mỗi bình luận, lấy tác giả + replies
     const commentsWithDetails = await Promise.all(
       comments.map(async (comment) => {
         const author = await ctx.db.get(comment.studentId);
-        const repliesCount = await ctx.db
-          .query("comments")
-          .withIndex("by_parent", (q) => q.eq("parentCommentId", comment._id))
-          .count();
+        const repliesCount = (
+          await ctx.db
+            .query("comments")
+            .withIndex("by_parent", (q) => q.eq("parentCommentId", comment._id))
+            .collect()
+        ).length;
 
         return {
           ...comment,
@@ -93,9 +99,9 @@ export const getCommentCount = query({
     const count = await ctx.db
       .query("comments")
       .withIndex("by_lesson", (q) => q.eq("lessonId", args.lessonId))
-      .count();
+      .collect();
 
-    return count;
+    return count.length;
   },
 });
 

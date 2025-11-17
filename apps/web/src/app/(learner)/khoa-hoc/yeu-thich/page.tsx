@@ -2,6 +2,7 @@
 
 import { useQuery } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
+import type { Doc } from '@dohy/backend/convex/_generated/dataModel';
 import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
 import Link from 'next/link';
 import { Heart } from 'lucide-react';
@@ -15,12 +16,14 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
     maximumFractionDigits: 0,
 });
 
+type CourseDoc = Doc<'courses'>;
+
 function formatPrice({
     pricingType,
     priceAmount,
     priceNote,
     isPriceVisible,
-}: any) {
+}: Pick<CourseDoc, 'pricingType' | 'priceAmount' | 'priceNote' | 'isPriceVisible'>) {
     if (pricingType === 'free') return 'Miễn phí';
     if (!isPriceVisible) return priceNote ? priceNote : 'Liên hệ';
     if (typeof priceAmount === 'number' && priceAmount > 0) {
@@ -34,7 +37,7 @@ export default function FavoritesPage() {
     const favorites = useQuery(
         api.course_favorites.listStudentFavorites,
         student ? { studentId: student._id } : 'skip'
-    );
+    ) as CourseDoc[] | undefined;
     const [thumbnailUrls, setThumbnailUrls] = useState<Record<string, string>>({});
 
     // Load thumbnail URLs when favorites change
@@ -128,6 +131,8 @@ export default function FavoritesPage() {
         );
     }
 
+    const favoriteCourses = favorites as CourseDoc[];
+
     return (
         <main className="relative min-h-screen overflow-hidden bg-white pb-2 pt-6 text-slate-900 md:pt-8">
             <div className="relative mx-auto max-w-7xl px-4 md:px-6">
@@ -135,14 +140,13 @@ export default function FavoritesPage() {
                 <div className="mb-8">
                     <div className="space-y-2 mb-6">
                         <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Khóa học yêu thích</h1>
-                        <p className="text-slate-600">{favorites.length} khóa học trong danh sách yêu thích của bạn</p>
+                        <p className="text-slate-600">{favoriteCourses.length} khóa học trong danh sách yêu thích của bạn</p>
                     </div>
                 </div>
 
                 {/* Grid */}
                 <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {(favorites || []).map((c) => {
-                        const course = c!;
+                    {favorites.map((course) => {
                         const detailHref = `/khoa-hoc/${course.order}` as Route;
                         const priceText = formatPrice(course);
 

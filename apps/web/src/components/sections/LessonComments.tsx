@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +17,30 @@ interface LessonCommentsProps {
   studentId: string;
   studentName: string;
 }
+
+type CommentAuthor = {
+  _id: Id<"students">;
+  fullName: string;
+};
+
+type LessonComment = {
+  _id: Id<"comments">;
+  studentId: Id<"students">;
+  content: string;
+  createdAt: number;
+  likesCount: number;
+  repliesCount: number;
+  author?: CommentAuthor | null;
+};
+
+type CommentReply = {
+  _id: Id<"comments">;
+  studentId: Id<"students">;
+  content: string;
+  createdAt: number;
+  likesCount: number;
+  author?: CommentAuthor | null;
+};
 
 export function LessonComments({
   lessonId,
@@ -33,7 +58,7 @@ export function LessonComments({
   // Queries
   const comments = useQuery(api.comments.listLessonComments, {
     lessonId: lessonId as any,
-  });
+  }) as LessonComment[] | undefined;
   const commentCount = useQuery(api.comments.getCommentCount, {
     lessonId: lessonId as any,
   });
@@ -327,7 +352,7 @@ export function LessonComments({
 }
 
 interface ReplyListProps {
-  parentCommentId: string;
+  parentCommentId: Id<"comments">;
   studentId: string;
   onDelete: (commentId: string) => void;
   onLike: (commentId: string) => void;
@@ -336,7 +361,7 @@ interface ReplyListProps {
 function ReplyList({ parentCommentId, studentId, onDelete, onLike }: ReplyListProps) {
   const replies = useQuery(api.comments.listCommentReplies, {
     parentCommentId: parentCommentId as any,
-  });
+  }) as CommentReply[] | undefined;
 
   if (!replies) {
     return <div className="text-sm text-gray-500">Đang tải...</div>;

@@ -1,8 +1,8 @@
 'use client';
 
-import { api } from '@/.source';
+import { api } from '@dohy/backend/convex/_generated/api';
 import { useConvex, useQuery } from 'convex/react';
-import { useAuth } from '@/features/learner/auth/student-auth-context';
+import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,13 +11,12 @@ import { useRouter } from 'next/navigation';
 
 export default function CertificatesPage() {
   const router = useRouter();
-  const { student } = useAuth();
+  const { student } = useStudentAuth();
   const convex = useConvex();
 
   const certificates = useQuery(
     api.certificates.getStudentCertificates,
-    student ? { studentId: student._id } : 'skip',
-    { enabled: !!student }
+    student ? { studentId: student._id } : 'skip'
   );
 
   const handleDownload = async (certificateId: string) => {

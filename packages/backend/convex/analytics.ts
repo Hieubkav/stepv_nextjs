@@ -32,11 +32,12 @@ export const getRevenueStats = query({
     }
 
     // Get all confirmed payments in period
-    const payments = await ctx.db
-      .query("payments")
-      .withIndex("by_status", (q) => q.eq("status", "confirmed"))
-      .filter((doc) => doc.confirmedAt && doc.confirmedAt >= startTime)
-      .collect();
+    const payments = (
+      await ctx.db
+        .query("payments")
+        .withIndex("by_status", (q) => q.eq("status", "confirmed"))
+        .collect()
+    ).filter((payment) => payment.confirmedAt && payment.confirmedAt >= startTime);
 
     // Get all orders for reference
     const allOrders = await ctx.db.query("orders").collect();

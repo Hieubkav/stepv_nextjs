@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DollarSign,
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {enrollmentStats!.topCourses.slice(0, 5).map((course, idx) => (
+                {enrollmentStats!.topCourses.slice(0, 5).map((course: any, idx: number) => (
                   <div key={course.courseId} className="flex justify-between items-start">
                     <div>
                       <p className="font-semibold text-sm">
@@ -214,7 +214,7 @@ export default function AnalyticsPage() {
                 <span className="text-gray-600">Trung Bình Đánh Giá</span>
                 <span className="font-bold">
                   {(
-                    enrollmentStats!.stats.reduce((sum, c) => sum + c.averageRating, 0) /
+                    enrollmentStats!.stats.reduce((sum: number, c: any) => sum + c.averageRating, 0) /
                     enrollmentStats!.stats.length
                   ).toFixed(1)}
                   ⭐
@@ -223,13 +223,13 @@ export default function AnalyticsPage() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Tổng Đánh Giá</span>
                 <span className="font-bold">
-                  {enrollmentStats!.stats.reduce((sum, c) => sum + c.totalReviews, 0)}
+                  {enrollmentStats!.stats.reduce((sum: number, c: any) => sum + c.totalReviews, 0)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Tổng Đăng Ký</span>
                 <span className="font-bold">
-                  {enrollmentStats!.stats.reduce((sum, c) => sum + c.enrollments, 0)}
+                  {enrollmentStats!.stats.reduce((sum: number, c: any) => sum + c.enrollments, 0)}
                 </span>
               </div>
             </CardContent>

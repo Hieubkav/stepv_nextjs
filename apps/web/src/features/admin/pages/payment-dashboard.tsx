@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
-import type { Id } from '@dohy/backend/convex/_generated/dataModel';
+import type { Doc, Id } from '@dohy/backend/convex/_generated/dataModel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,6 +16,24 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
   maximumFractionDigits: 0,
 });
 
+type PendingPayment = {
+  _id: Id<'payments'>;
+  orderId: Id<'orders'>;
+  studentName: string;
+  studentEmail: string;
+  courseName: string;
+  amount: number;
+  screenshotUrl?: string | null;
+  createdAt: number;
+};
+
+type PaymentDetail = Doc<'payments'> & {
+  courseName: string;
+  studentName: string;
+  studentEmail: string;
+  orderAmount: number;
+};
+
 export default function PaymentDashboard() {
   const [selectedPaymentId, setSelectedPaymentId] = useState<Id<'payments'> | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -25,9 +43,11 @@ export default function PaymentDashboard() {
   const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   // Queries
-  const pendingPayments = useQuery(api.payments.listPendingPayments);
+  const pendingPayments = useQuery(api.payments.listPendingPayments) as
+    | PendingPayment[]
+    | undefined;
   const selectedPayment = selectedPaymentId
-    ? useQuery(api.payments.getPayment, { paymentId: selectedPaymentId })
+    ? (useQuery(api.payments.getPayment, { paymentId: selectedPaymentId }) as PaymentDetail | undefined)
     : null;
 
   // Mutations

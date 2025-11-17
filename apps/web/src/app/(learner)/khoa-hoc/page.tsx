@@ -1,5 +1,6 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc } from "@dohy/backend/convex/_generated/dataModel";
 
 import CourseListView, {
   type CourseListItem,
@@ -24,7 +25,9 @@ async function loadCourseList(): Promise<CourseListViewProps> {
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    const courses = await client.query(api.courses.listCourses, { includeInactive: true });
+    const courses = (await client.query(api.courses.listCourses, {
+      includeInactive: true,
+    })) as Doc<"courses">[];
     const sorted = courses.slice().sort((a, b) => a.order - b.order);
 
     const normalized: CourseListItem[] = sorted.map((course) => ({

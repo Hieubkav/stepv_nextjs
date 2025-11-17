@@ -76,22 +76,24 @@ export const searchCourses = query({
     }
 
     // Filter by price range
-    if (args.minPrice !== undefined) {
+    const { minPrice, maxPrice, minRating } = args;
+
+    if (minPrice !== undefined) {
       courses = courses.filter(
-        (course) => course.priceAmount === undefined || course.priceAmount >= args.minPrice
+        (course) => course.priceAmount === undefined || course.priceAmount >= minPrice
       );
     }
 
-    if (args.maxPrice !== undefined) {
+    if (maxPrice !== undefined) {
       courses = courses.filter(
-        (course) => course.priceAmount === undefined || course.priceAmount <= args.maxPrice
+        (course) => course.priceAmount === undefined || course.priceAmount <= maxPrice
       );
     }
 
     // Filter by minimum rating
-    if (args.minRating !== undefined) {
+    if (minRating !== undefined) {
       courses = courses.filter(
-        (course) => course.averageRating === undefined || course.averageRating >= args.minRating
+        (course) => course.averageRating === undefined || course.averageRating >= minRating
       );
     }
 
@@ -219,12 +221,14 @@ export const getCoursesByCategory = query({
     const limit = args.limit || 20;
     const offset = args.offset || 0;
 
-    const courses = await ctx.db
-      .query("courses")
-      .withIndex("by_category_order", (q) =>
-        q.eq("categoryId", args.categoryId).eq("active", true)
-      )
-      .collect();
+    const courses = (
+      await ctx.db
+        .query("courses")
+        .withIndex("by_category_order", (q) =>
+          q.eq("categoryId", args.categoryId)
+        )
+        .collect()
+    ).filter((course) => course.active);
 
     const items = courses.slice(offset, offset + limit);
 
@@ -274,7 +278,7 @@ export const getTopRatedCourses = query({
 
     const courses = await ctx.db
       .query("courses")
-      .withIndex("by_rating", (q) => q.eq("active", true))
+      .withIndex("by_active_order", (q) => q.eq("active", true))
       .collect()
       .then((items) =>
         items

@@ -8,7 +8,7 @@ import { ArrowLeft, Loader } from 'lucide-react';
 import Link from 'next/link';
 
 import { api } from '@dohy/backend/convex/_generated/api';
-import type { Id } from '@dohy/backend/convex/_generated/dataModel';
+import type { Doc, Id } from '@dohy/backend/convex/_generated/dataModel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -23,6 +23,8 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
   currency: 'VND',
   maximumFractionDigits: 0,
 });
+
+type MediaWithUrl = Doc<'media'> & { url?: string | null };
 
 async function getCourseForCheckout(order: number) {
   const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -56,9 +58,11 @@ async function getThumbnailUrl(thumbnailMediaId: string | null) {
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    const mediaList = await client.query(api.media.list, { kind: 'image' });
-    const media = mediaList.find((m: any) => m._id.toString() === thumbnailMediaId.toString());
-    return media?.url || null;
+    const mediaList = (await client.query(api.media.list, { kind: 'image' })) as MediaWithUrl[];
+    const media = mediaList.find(
+      (m) => m._id.toString() === thumbnailMediaId.toString()
+    ) as MediaWithUrl | undefined;
+    return media?.url ?? null;
   } catch {
     return null;
   }

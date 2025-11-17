@@ -226,7 +226,7 @@ async function loadCourseDetail(order: number, { preview }: { preview: boolean }
     const list = await client.query(api.courses.listCourses, { includeInactive: true });
     base.debug.availableOrders = list
       .map((item: any) => (Number.isFinite(item?.order) ? Number(item.order) : null))
-      .filter((value): value is number => value !== null);
+      .filter((value: number | null): value is number => value !== null);
 
     const matched = list.find((item: any) => item?.order === order) ?? null;
     base.debug.matchedCourse = matched

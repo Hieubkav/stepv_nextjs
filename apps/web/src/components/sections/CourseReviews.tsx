@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -16,6 +17,23 @@ interface CourseReviewsProps {
   studentId: string;
   studentName: string;
 }
+
+type ReviewAuthor = {
+  _id: Id<"students">;
+  fullName: string;
+};
+
+type CourseReview = {
+  _id: Id<"course_reviews">;
+  studentId: Id<"students">;
+  rating: number;
+  title: string;
+  content: string;
+  helpfulCount: number;
+  unhelpfulCount: number;
+  createdAt: number;
+  author?: ReviewAuthor | null;
+};
 
 export function CourseReviews({
   courseId,
@@ -35,14 +53,14 @@ export function CourseReviews({
   const reviews = useQuery(api.reviews.listCourseReviews, {
     courseId: courseId as any,
     sortBy,
-  });
+  }) as CourseReview[] | undefined;
   const courseRating = useQuery(api.reviews.getCourseRating, {
     courseId: courseId as any,
   });
   const studentReview = useQuery(api.reviews.getStudentCourseReview, {
     courseId: courseId as any,
     studentId: studentId as any,
-  });
+  }) as CourseReview | null | undefined;
 
   // Mutations
   const createReviewMutation = useMutation(api.reviews.createReview);
@@ -305,7 +323,7 @@ export function CourseReviews({
 }
 
 interface ReviewCardProps {
-  review: any;
+  review: CourseReview;
   isOwn: boolean;
   onDelete: () => void;
   courseId: string;
@@ -328,9 +346,11 @@ function ReviewCard({
     studentId: studentId as any,
   });
 
-  if (existingVote !== undefined && userVote === null) {
-    setUserVote(existingVote);
-  }
+  useEffect(() => {
+    if (existingVote !== undefined) {
+      setUserVote(existingVote);
+    }
+  }, [existingVote]);
 
   const handleMarkHelpful = async (isHelpful: boolean) => {
     try {

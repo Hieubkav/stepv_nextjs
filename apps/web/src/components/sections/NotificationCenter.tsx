@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc, Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
@@ -17,22 +18,26 @@ import {
   MessageCircle,
   BookOpen,
   X,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 
 interface NotificationCenterProps {
   studentId: string;
 }
 
+type StudentNotification = Doc<"notifications">;
+
 export function NotificationCenter({ studentId }: NotificationCenterProps) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
-  const [filterType, setFilterType] = useState<string | null>(null);
+  const [filterType, setFilterType] = useState<StudentNotification["type"] | null>(null);
 
   // Queries
   const notifications = useQuery(api.notifications.listNotifications, {
     studentId: studentId as any,
     limit: 20,
-  });
+  }) as StudentNotification[] | undefined;
 
   const unreadCount = useQuery(api.notifications.getUnreadCount, {
     studentId: studentId as any,
@@ -51,9 +56,9 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     api.notifications.markMultipleAsRead
   );
 
-  const handleMarkAsRead = async (notificationId: string) => {
+  const handleMarkAsRead = async (notificationId: Id<"notifications">) => {
     try {
-      await markAsReadMutation({ notificationId: notificationId as any });
+      await markAsReadMutation({ notificationId });
     } catch (error: any) {
       toast({
         title: "Lỗi",
@@ -63,10 +68,10 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     }
   };
 
-  const handleDelete = async (notificationId: string) => {
+  const handleDelete = async (notificationId: Id<"notifications">) => {
     try {
       await deleteNotificationMutation({
-        notificationId: notificationId as any,
+        notificationId,
       });
     } catch (error: any) {
       toast({
@@ -86,7 +91,7 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     if (unreadIds.length === 0) return;
 
     try {
-      await markMultipleAsReadMutation({ notificationIds: unreadIds as any });
+      await markMultipleAsReadMutation({ notificationIds: unreadIds });
       toast({
         title: "Thành công",
         description: "Tất cả thông báo đã được đánh dấu là đã đọc",
@@ -100,7 +105,7 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: StudentNotification["type"]) => {
     switch (type) {
       case "order_confirmed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -112,12 +117,18 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
         return <MessageCircle className="h-5 w-5 text-purple-500" />;
       case "course_new_lesson":
         return <BookOpen className="h-5 w-5 text-orange-500" />;
+      case "course_updated":
+        return <TrendingUp className="h-5 w-5 text-amber-500" />;
+      case "enrollment_status_changed":
+        return <Users className="h-5 w-5 text-emerald-500" />;
+      case "system":
+        return <Bell className="h-5 w-5 text-gray-500" />;
       default:
         return <Mail className="h-5 w-5 text-gray-500" />;
     }
   };
 
-  const typeLabels: Record<string, string> = {
+  const typeLabels: Record<StudentNotification["type"], string> = {
     order_confirmed: "Đơn hàng xác nhận",
     payment_rejected: "Thanh toán bị từ chối",
     certificate_issued: "Chứng chỉ phát hành",
@@ -125,7 +136,23 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     course_updated: "Khóa học cập nhật",
     course_new_lesson: "Bài học mới",
     enrollment_status_changed: "Trạng thái đăng ký thay đổi",
+     system: "Th?ng b?o h? th?ng",
   };
+
+  const notificationTypes: {
+    value: StudentNotification["type"] | null;
+    label: string;
+  }[] = [
+    { value: null, label: "T?t c?" },
+    { value: "order_confirmed", label: "Don h?ng" },
+    { value: "certificate_issued", label: "Ch?ng ch?" },
+    { value: "new_comment_reply", label: "B?nh lu?n" },
+    { value: "course_new_lesson", label: "B?i h?c m?i" },
+    { value: "payment_rejected", label: "Thanh to?n b? t? ch?i" },
+    { value: "course_updated", label: "Kh?a c?p nh?t" },
+    { value: "enrollment_status_changed", label: "Dang ky" },
+    { value: "system", label: "H? th?ng" },
+  ];
 
   if (!notifications || unreadCount === undefined) {
     return (
@@ -295,3 +322,5 @@ export function NotificationCenter({ studentId }: NotificationCenterProps) {
     </div>
   );
 }
+
+

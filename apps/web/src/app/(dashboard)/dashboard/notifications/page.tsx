@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc, Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { useStudent } from "@/features/learner/auth/student-auth-context";
+import { StudentAuthProvider, useStudentAuth } from "@/features/learner/auth/student-auth-context";
 import {
   Bell,
   Trash2,
@@ -18,13 +19,23 @@ import {
   MessageCircle,
   BookOpen,
   Trash,
+  TrendingUp,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
 
+type StudentNotification = Doc<"notifications">;
+
 export default function NotificationsPage() {
-  const { student } = useStudent();
-  const { toast } = useToast();
-  const [filterType, setFilterType] = useState<string | null>(null);
+  return (
+    <StudentAuthProvider>
+      <NotificationsPageContent />
+    </StudentAuthProvider>
+  );
+}
+
+function NotificationsPageContent() {
+  const { student } = useStudentAuth();
 
   if (!student) {
     return (
@@ -42,26 +53,22 @@ export default function NotificationsPage() {
   );
 }
 
-interface NotificationsContentProps {
-  studentId: string;
-}
-
-function NotificationsContent({ studentId }: NotificationsContentProps) {
+function NotificationsContent({ studentId }: { studentId: Id<"students"> }) {
   const { toast } = useToast();
   const [filterType, setFilterType] = useState<string | null>(null);
 
   // Queries
   const notifications = useQuery(api.notifications.listNotifications, {
-    studentId: studentId as any,
+    studentId,
     limit: 100,
-  });
+  }) as StudentNotification[] | undefined;
 
   const unreadCount = useQuery(api.notifications.getUnreadCount, {
-    studentId: studentId as any,
+    studentId,
   });
 
   const filteredNotifications = filterType
-    ? notifications?.filter((n) => n.type === filterType)
+    ? notifications?.filter((n: StudentNotification) => n.type === filterType)
     : notifications;
 
   // Mutations
@@ -77,9 +84,9 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
   );
   const clearAllMutation = useMutation(api.notifications.clearAllNotifications);
 
-  const handleMarkAsRead = async (notificationId: string) => {
+  const handleMarkAsRead = async (notificationId: Id<"notifications">) => {
     try {
-      await markAsReadMutation({ notificationId: notificationId as any });
+      await markAsReadMutation({ notificationId });
     } catch (error: any) {
       toast({
         title: "Lỗi",
@@ -89,10 +96,10 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
     }
   };
 
-  const handleDelete = async (notificationId: string) => {
+  const handleDelete = async (notificationId: Id<"notifications">) => {
     try {
       await deleteNotificationMutation({
-        notificationId: notificationId as any,
+        notificationId,
       });
       toast({
         title: "Thành công",
@@ -122,7 +129,7 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
     }
 
     try {
-      await markMultipleAsReadMutation({ notificationIds: unreadIds as any });
+      await markMultipleAsReadMutation({ notificationIds: unreadIds });
       toast({
         title: "Thành công",
         description: "Tất cả thông báo đã được đánh dấu là đã đọc",
@@ -145,7 +152,7 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
       return;
 
     try {
-      await clearAllMutation({ studentId: studentId as any });
+      await clearAllMutation({ studentId });
       toast({
         title: "Thành công",
         description: "Tất cả thông báo đã xóa",
@@ -159,7 +166,7 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
     }
   };
 
-  const getNotificationIcon = (type: string) => {
+  const getNotificationIcon = (type: StudentNotification["type"]) => {
     switch (type) {
       case "order_confirmed":
         return <CheckCircle className="h-5 w-5 text-green-500" />;
@@ -171,28 +178,41 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
         return <MessageCircle className="h-5 w-5 text-purple-500" />;
       case "course_new_lesson":
         return <BookOpen className="h-5 w-5 text-orange-500" />;
+      case "course_updated":
+        return <TrendingUp className="h-5 w-5 text-amber-500" />;
+      case "enrollment_status_changed":
+        return <Users className="h-5 w-5 text-emerald-500" />;
+      case "system":
+        return <Bell className="h-5 w-5 text-gray-500" />;
       default:
         return <Mail className="h-5 w-5 text-gray-500" />;
     }
   };
 
-  const typeLabels: Record<string, string> = {
+  const typeLabels: Record<StudentNotification["type"], string> = {
     order_confirmed: "Đơn hàng xác nhận",
     payment_rejected: "Thanh toán bị từ chối",
     certificate_issued: "Chứng chỉ phát hành",
     new_comment_reply: "Trả lời bình luận",
     course_updated: "Khóa học cập nhật",
-    course_new_lesson: "Bài học mới",
-    enrollment_status_changed: "Trạng thái đăng ký thay đổi",
+    course_new_lesson: "B?i h?c m?i",
+    enrollment_status_changed: "Tr?ng th?i dang ky thay d?i",
+    system: "Th?ng b?o h? th?ng",
   };
 
-  const notificationTypes = [
+  const notificationTypes: {
+    value: StudentNotification["type"] | null;
+    label: string;
+  }[] = [
     { value: null, label: "Tất cả" },
     { value: "order_confirmed", label: "Đơn hàng" },
     { value: "certificate_issued", label: "Chứng chỉ" },
     { value: "new_comment_reply", label: "Bình luận" },
-    { value: "course_new_lesson", label: "Bài học mới" },
-    { value: "payment_rejected", label: "Thanh toán bị từ chối" },
+    { value: "course_new_lesson", label: "B?i h?c m?i" },
+    { value: "payment_rejected", label: "Thanh to?n b? t? ch?i" },
+    { value: "course_updated", label: "Kh?a c?p nh?t" },
+    { value: "enrollment_status_changed", label: "Dang ky" },
+    { value: "system", label: "H? th?ng" },
   ];
 
   if (!notifications || unreadCount === undefined) {
@@ -250,7 +270,7 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
       {/* Notifications List */}
       <div className="space-y-3">
         {filteredNotifications && filteredNotifications.length > 0 ? (
-          filteredNotifications.map((notification) => (
+          filteredNotifications.map((notification: StudentNotification) => (
             <div
               key={notification._id}
               className={`border rounded-lg p-4 transition ${
@@ -316,11 +336,13 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
                         </Button>
                       )}
                       {notification.link && (
-                        <Link href={notification.link}>
-                          <Button variant="default" size="sm">
-                            Xem chi tiết
-                          </Button>
-                        </Link>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => notification.link && window.location.assign(notification.link)}
+                        >
+                          Xem chi ti?t
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -342,3 +364,5 @@ function NotificationsContent({ studentId }: NotificationsContentProps) {
     </div>
   );
 }
+
+

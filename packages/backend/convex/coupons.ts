@@ -1,5 +1,7 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
+import { api } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 
 /**
  * Coupons & Promotions System
@@ -138,16 +140,34 @@ export const listCoupons = query({
   async handler(ctx, args) {
     const limit = args.limit || 50;
 
-    let query = ctx.db.query("coupons");
+    const { active } = args;
+    const couponsQuery = active === undefined
+      ? ctx.db.query("coupons")
+      : ctx.db
+          .query("coupons")
+          .withIndex("by_active", (q) => q.eq("active", active));
 
-    if (args.active !== undefined) {
-      query = query.withIndex("by_active", (q) => q.eq("active", args.active || false));
-    }
-
-    const coupons = await query.order("desc").take(limit);
+    const coupons = await couponsQuery.order("desc").take(limit);
     return coupons;
   },
 });
+
+type ValidateCouponResult =
+  | {
+      valid: false;
+      error: string;
+    }
+  | {
+      valid: true;
+      coupon: {
+        _id: Id<"coupons">;
+        code: string;
+        description?: string;
+        discountPercent?: number;
+        discountFixed?: number;
+        discountAmount: number;
+      };
+    };
 
 /**
  * Lấy thống kê coupon
@@ -363,12 +383,12 @@ export const applyCoupon = mutation({
     }
 
     // Validate coupon
-    const validation = await ctx.queryGeneric("validateCoupon", {
+    const validation = (await ctx.runQuery(api.coupons.validateCoupon, {
       code: coupon.code,
       courseId: order.courseId,
       amount: order.amount,
       studentId: args.studentId,
-    });
+    })) as ValidateCouponResult;
 
     if (!validation.valid) {
       throw new Error(validation.error);

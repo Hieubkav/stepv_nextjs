@@ -20,7 +20,9 @@ import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 export default function TodosPage() {
 	const [newTodoText, setNewTodoText] = useState("");
 
-	const todos = useQuery(api.todos.getAll);
+	const todos = useQuery(api.todos.getAll) as
+		| { _id: Id<"todos">; text: string; completed: boolean }[]
+		| undefined;
 	const createTodoMutation = useMutation(api.todos.create);
 	const toggleTodoMutation = useMutation(api.todos.toggle);
 	const deleteTodoMutation = useMutation(api.todos.deleteTodo);

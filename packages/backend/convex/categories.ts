@@ -17,13 +17,13 @@ export const listCategories = query({
     includeInactive: v.optional(v.boolean()),
   },
   async handler(ctx, args) {
-    let query = ctx.db.query("course_categories");
+    const categoriesQuery = args.includeInactive
+      ? ctx.db.query("course_categories")
+      : ctx.db
+          .query("course_categories")
+          .withIndex("by_active_order", (q) => q.eq("active", true));
 
-    if (!args.includeInactive) {
-      query = query.withIndex("by_active_order", (q) => q.eq("active", true));
-    }
-
-    const categories = await query.order("asc").collect();
+    const categories = await categoriesQuery.order("asc").collect();
     return categories;
   },
 });
@@ -69,13 +69,17 @@ export const listCoursesByCategory = query({
   async handler(ctx, args) {
     const limit = args.limit || 20;
 
-    const courses = await ctx.db
-      .query("courses")
-      .withIndex("by_category_order", (q) =>
-        q.eq("categoryId", args.categoryId).eq("active", true)
-      )
-      .order("asc")
-      .take(limit);
+    const courses = (
+      await ctx.db
+        .query("courses")
+        .withIndex("by_category_order", (q) =>
+          q.eq("categoryId", args.categoryId)
+        )
+        .order("asc")
+        .collect()
+    )
+      .filter((course) => course.active)
+      .slice(0, limit);
 
     return courses;
   },
@@ -216,14 +220,14 @@ export const deleteCategory = mutation({
     }
 
     // Kiểm tra có khóa học nào thuộc danh mục này không
-    const courseCount = await ctx.db
+    const coursesInCategory = await ctx.db
       .query("courses")
       .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
-      .count();
+      .collect();
 
-    if (courseCount > 0) {
+    if (coursesInCategory.length > 0) {
       throw new Error(
-        `Không thể xóa danh mục này vì có ${courseCount} khóa học thuộc danh mục này`
+        `Kh�ng th? x�a danh m?c n�y v� c� ${coursesInCategory.length} kh�a h?c thu?c danh m?c n�y`
       );
     }
 

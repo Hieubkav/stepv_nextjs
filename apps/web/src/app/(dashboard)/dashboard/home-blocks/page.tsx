@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc } from "@dohy/backend/convex/_generated/dataModel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,11 +13,14 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { getTemplate } from "@/components/blocks/block-templates";
 
-type Block = any;
+type Block = Doc<"page_blocks">;
 
 export default function HomeBlocksPage() {
   const page = useQuery(api.pages.getBySlug, { slug: "home" });
-  const blocks = useQuery(api.pageBlocks.getForPage, page?._id ? { pageId: page._id as any } : "skip");
+  const blocks = useQuery(
+    api.pageBlocks.getForPage,
+    page?._id ? { pageId: page._id as any } : "skip"
+  ) as Block[] | undefined;
 
   const seed = useMutation(api.seed.seedHome);
   const reorder = useMutation(api.pageBlocks.reorder);
@@ -201,4 +205,3 @@ export default function HomeBlocksPage() {
     </div>
   );
 }
-

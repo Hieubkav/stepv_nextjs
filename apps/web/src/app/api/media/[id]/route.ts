@@ -1,5 +1,6 @@
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc } from "@dohy/backend/convex/_generated/dataModel";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
@@ -17,8 +18,10 @@ export async function GET(
     const client = new ConvexHttpClient(convexUrl);
 
     // Get all media and find by ID
-    const media = await client.query(api.media.list, { kind: "image" });
-    const mediaRecord = media.find((m: any) => m._id === id);
+    const media = (await client.query(api.media.list, {
+      kind: "image",
+    })) as (Doc<"media"> & { url?: string | null })[];
+    const mediaRecord = media.find((m) => m._id === id);
 
     if (!mediaRecord) {
       return new Response("Image not found", { status: 404 });

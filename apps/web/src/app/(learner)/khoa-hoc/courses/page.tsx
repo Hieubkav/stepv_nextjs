@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Doc, Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,20 +19,46 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Users } from "lucide-react";
 import Link from "next/link";
 
+type CourseCategory = Doc<"course_categories">;
+type CourseResult = Doc<"courses">;
+
+type CourseStats = {
+  totalCourses: number;
+  freeCourses: number;
+  paidCourses: number;
+  priceRange: { min: number; max: number };
+  averageRatingRange: { min: number; max: number };
+  enrollmentRange: { min: number; max: number };
+  categories: Record<string, number>;
+};
+
+type CourseSearchResponse = {
+  items: CourseResult[];
+  totalCount: number;
+  hasMore: boolean;
+};
+
+type SortOption = "newest" | "popular" | "rating" | "price_asc" | "price_desc";
+
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [pricingType, setPricingType] = useState<"all" | "free" | "paid">("all");
-  const [priceRange, setPriceRange] = useState([0, 5000000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    0,
+    5_000_000,
+  ]);
   const [minRating, setMinRating] = useState(0);
-  const [sortBy, setSortBy] = useState<
-    "newest" | "popular" | "rating" | "price_asc" | "price_desc"
-  >("newest");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [offset, setOffset] = useState(0);
 
   // Queries
-  const categories = useQuery(api.categories.listCategories, {});
-  const stats = useQuery(api.search.getCourseStatistics, {});
+  const categories = useQuery(api.categories.listCategories, {}) as
+    | CourseCategory[]
+    | undefined;
+  const stats = useQuery(api.search.getCourseStatistics, {}) as
+    | CourseStats
+    | undefined;
   const searchResults = useQuery(api.search.searchCourses, {
     q: searchQuery || undefined,
     categoryId: (selectedCategory as any) || undefined,
@@ -42,7 +69,7 @@ export default function CoursesPage() {
     sortBy,
     limit: 12,
     offset,
-  });
+  }) as CourseSearchResponse | undefined;
 
   const handleReset = () => {
     setSearchQuery("");
@@ -93,7 +120,7 @@ export default function CoursesPage() {
               <label className="block text-sm font-medium mb-2">Danh Mục</label>
               <Select
                 value={selectedCategory || "all"}
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                   setSelectedCategory(value === "all" ? null : value);
                   setOffset(0);
                 }}
@@ -117,7 +144,7 @@ export default function CoursesPage() {
               <label className="block text-sm font-medium mb-2">Loại Khóa</label>
               <Select
                 value={pricingType}
-                onValueChange={(value: any) => {
+                onValueChange={(value: "all" | "free" | "paid") => {
                   setPricingType(value);
                   setOffset(0);
                 }}
@@ -144,7 +171,10 @@ export default function CoursesPage() {
                 </div>
                 <Slider
                   value={priceRange}
-                  onValueChange={setPriceRange}
+                  onValueChange={(value) => {
+                    setPriceRange(value as [number, number]);
+                    setOffset(0);
+                  }}
                   min={stats.priceRange.min}
                   max={stats.priceRange.max}
                   step={100000}
@@ -157,8 +187,8 @@ export default function CoursesPage() {
               <label className="block text-sm font-medium mb-2">Đánh Giá Tối Thiểu</label>
               <Select
                 value={minRating.toString()}
-                onValueChange={(value) => {
-                  setMinRating(parseInt(value));
+                onValueChange={(value: string) => {
+                  setMinRating(parseInt(value, 10));
                   setOffset(0);
                 }}
               >
@@ -179,7 +209,7 @@ export default function CoursesPage() {
               <label className="block text-sm font-medium mb-2">Sắp Xếp</label>
               <Select
                 value={sortBy}
-                onValueChange={(value: any) => {
+                onValueChange={(value: SortOption) => {
                   setSortBy(value);
                   setOffset(0);
                 }}
@@ -245,7 +275,7 @@ export default function CoursesPage() {
 }
 
 interface CourseCardProps {
-  course: any;
+  course: CourseResult;
 }
 
 function CourseCard({ course }: CourseCardProps) {

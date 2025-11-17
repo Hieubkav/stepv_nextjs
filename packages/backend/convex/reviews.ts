@@ -24,15 +24,15 @@ export const listCourseReviews = query({
     const limit = args.limit || 20;
     const sortBy = args.sortBy || "helpful";
 
-    let query = ctx.db
-      .query("course_reviews")
-      .withIndex("by_course_time", (q) => q.eq("courseId", args.courseId));
-
-    // Filter deleted reviews
-    const reviews = await query
-      .filter((doc) => !doc.deletedAt)
-      .order("desc")
-      .take(limit);
+    const reviews = (
+      await ctx.db
+        .query("course_reviews")
+        .withIndex("by_course_time", (q) => q.eq("courseId", args.courseId))
+        .order("desc")
+        .collect()
+    )
+      .filter((review) => !review.deletedAt)
+      .slice(0, limit);
 
     // Sort by criteria
     let sorted = reviews;
@@ -68,11 +68,12 @@ export const getCourseRating = query({
     courseId: v.id("courses"),
   },
   async handler(ctx, args) {
-    const reviews = await ctx.db
-      .query("course_reviews")
-      .withIndex("by_course", (q) => q.eq("courseId", args.courseId))
-      .filter((doc) => !doc.deletedAt)
-      .collect();
+    const reviews = (
+      await ctx.db
+        .query("course_reviews")
+        .withIndex("by_course", (q) => q.eq("courseId", args.courseId))
+        .collect()
+    ).filter((review) => !review.deletedAt);
 
     if (reviews.length === 0) {
       return {
@@ -113,13 +114,14 @@ export const getStudentCourseReview = query({
     studentId: v.id("students"),
   },
   async handler(ctx, args) {
-    const review = await ctx.db
-      .query("course_reviews")
-      .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
-      .filter((doc) => doc.courseId === args.courseId && !doc.deletedAt)
-      .first();
+    const review = (
+      await ctx.db
+        .query("course_reviews")
+        .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
+        .collect()
+    ).find((doc) => doc.courseId === args.courseId && !doc.deletedAt);
 
-    return review || null;
+    return review ?? null;
   },
 });
 
@@ -179,11 +181,12 @@ export const createReview = mutation({
     }
 
     // Kiểm tra đã đánh giá chưa
-    const existing = await ctx.db
-      .query("course_reviews")
-      .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
-      .filter((doc) => doc.courseId === args.courseId && !doc.deletedAt)
-      .first();
+    const existing = (
+      await ctx.db
+        .query("course_reviews")
+        .withIndex("by_student", (q) => q.eq("studentId", args.studentId))
+        .collect()
+    ).find((doc) => doc.courseId === args.courseId && !doc.deletedAt);
 
     if (existing) {
       throw new Error("Bạn đã đánh giá khóa này rồi. Vui lòng cập nhật đánh giá cũ.");
@@ -192,8 +195,9 @@ export const createReview = mutation({
     // Kiểm tra học viên đã hoàn thành khóa này (optional)
     const enrollment = await ctx.db
       .query("course_enrollments")
-      .withIndex("by_course_user", (q) => q.eq("courseId", args.courseId))
-      .filter((doc) => doc.userId === args.studentId)
+      .withIndex("by_course_user", (q) =>
+        q.eq("courseId", args.courseId).eq("userId", args.studentId)
+      )
       .first();
 
     if (!enrollment) {

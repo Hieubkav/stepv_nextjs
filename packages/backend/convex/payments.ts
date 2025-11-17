@@ -462,6 +462,7 @@ export const getPayment = query({
       ...payment,
       courseName: course?.title || "Unknown",
       studentName: student?.fullName || "Unknown",
+      studentEmail: student?.email || payment.email,
       orderAmount: order?.amount || 0,
     };
   },

@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "@/.source";
+import { api } from "@dohy/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +23,7 @@ export default function CouponsPage() {
 
   // Queries
   const coupons = useQuery(api.coupons.listCoupons, {
-    active: filterActive,
+    active: filterActive ?? undefined,
   });
 
   return (
@@ -48,13 +48,13 @@ export default function CouponsPage() {
           variant={filterActive === true ? "default" : "outline"}
           onClick={() => setFilterActive(true)}
         >
-          Hoạt động ({coupons?.filter((c) => c.active).length || 0})
+          Hoạt động ({coupons?.filter((c: any) => c.active).length || 0})
         </Button>
         <Button
           variant={filterActive === false ? "default" : "outline"}
           onClick={() => setFilterActive(false)}
         >
-          Bị vô hiệu hóa ({coupons?.filter((c) => !c.active).length || 0})
+          Bị vô hiệu hóa ({coupons?.filter((c: any) => !c.active).length || 0})
         </Button>
       </div>
 
@@ -73,7 +73,7 @@ export default function CouponsPage() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {coupons.map((coupon) => (
+          {coupons.map((coupon: any) => (
             <CouponCard key={coupon._id} coupon={coupon} />
           ))}
         </div>

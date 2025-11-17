@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { extractYoutubeVideoId } from "@/lib/youtube";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "@/.source";
-import { useAuth } from "@/features/learner/auth/student-auth-context";
+import { api } from "@dohy/backend/convex/_generated/api";
+import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 
 type ThumbnailInfo = {
   url?: string;
@@ -43,7 +43,7 @@ export function VideoPlayer({
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
-  const { student } = useAuth();
+  const { student } = useStudentAuth();
 
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);

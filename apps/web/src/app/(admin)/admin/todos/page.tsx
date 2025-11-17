@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
+import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -14,6 +15,18 @@ import { toast } from "sonner";
 
 type Status = "all" | "active" | "completed";
 
+type TodoItem = {
+  _id: Id<"todos">;
+  text: string;
+  completed: boolean;
+  _creationTime: number;
+};
+
+type TodosResponse = {
+  items: TodoItem[];
+  total: number;
+};
+
 export default function AdminTodosListPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<Status>("all");
@@ -24,7 +37,7 @@ export default function AdminTodosListPage() {
     [search, status, page]
   );
 
-  const data = useQuery(api.todos.list, args);
+  const data = useQuery(api.todos.list, args) as TodosResponse | undefined;
   const toggleTodo = useMutation(api.todos.toggle);
   const deleteTodo = useMutation(api.todos.deleteTodo);
   const bulkToggle = useMutation(api.todos.bulkToggle);
@@ -36,7 +49,7 @@ export default function AdminTodosListPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const items = data?.items ?? [];
-  const idsOnPage = items.map((t) => t._id as unknown as string);
+  const idsOnPage = items.map((t) => String(t._id));
   const allSelectedOnPage = idsOnPage.length > 0 && idsOnPage.every((id) => selected.includes(id));
 
   function toggleSelect(id: string, checked: boolean) {
@@ -220,4 +233,3 @@ export default function AdminTodosListPage() {
     </div>
   );
 }
-

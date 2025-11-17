@@ -24,9 +24,28 @@ const RANGE_OPTIONS = [
 
 type RangeValue = (typeof RANGE_OPTIONS)[number]["value"];
 
+type StatsTimelinePoint = {
+  label: string;
+  from: number;
+  to: number;
+  visits: number;
+};
+
+type VisitorsStats = {
+  range: RangeValue;
+  totalVisits: number;
+  uniqueVisitors: number;
+  uniqueSessions: number;
+  activeNow: number;
+  start: number | null;
+  end: number;
+  timeline: StatsTimelinePoint[];
+};
+
+
 export function VisitorOverview() {
   const [range, setRange] = useState<RangeValue>("today");
-  const stats = useQuery(api.visitors.stats, { range });
+  const stats = useQuery(api.visitors.stats, { range }) as VisitorsStats | undefined;
 
   const isLoading = stats === undefined;
   const rangeOption = RANGE_OPTIONS.find((option) => option.value === range);
@@ -233,3 +252,4 @@ function EmptyState() {
 function formatNumber(input: number) {
   return new Intl.NumberFormat("vi-VN").format(input ?? 0);
 }
+
