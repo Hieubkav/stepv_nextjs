@@ -510,5 +510,70 @@ export const updateRememberToken = mutation({
     },
 });
 
+// Course Favorites: Toggle favorite status
+export const toggleCourseFavorite = mutation({
+    args: {
+        studentId: v.id("students"),
+        courseId: v.id("courses"),
+    },
+    handler: async (ctx, { studentId, courseId }) => {
+        const existing = await ctx.db
+            .query("course_favorites")
+            .withIndex("by_student_course", (q) =>
+                q.eq("studentId", studentId).eq("courseId", courseId)
+            )
+            .first();
 
+        if (existing) {
+            // Remove favorite
+            await ctx.db.delete(existing._id);
+            return { ok: true, isFavorite: false } as const;
+        } else {
+            // Add favorite
+            await ctx.db.insert("course_favorites", {
+                studentId,
+                courseId,
+                createdAt: Date.now(),
+            });
+            return { ok: true, isFavorite: true } as const;
+        }
+    },
+});
+
+// Check if course is favorited by student
+export const isCourseFavorited = query({
+    args: {
+        studentId: v.id("students"),
+        courseId: v.id("courses"),
+    },
+    handler: async (ctx, { studentId, courseId }) => {
+        const favorite = await ctx.db
+            .query("course_favorites")
+            .withIndex("by_student_course", (q) =>
+                q.eq("studentId", studentId).eq("courseId", courseId)
+            )
+            .first();
+
+        return { isFavorite: !!favorite };
+    },
+});
+
+// Get list of favorited courses for a student
+export const getStudentFavoriteCourses = query({
+    args: { studentId: v.id("students") },
+    handler: async (ctx, { studentId }) => {
+        const favorites = await ctx.db
+            .query("course_favorites")
+            .withIndex("by_student", (q) => q.eq("studentId", studentId))
+            .collect();
+
+        const courses = [];
+        for (const fav of favorites) {
+            const course = await ctx.db.get(fav.courseId);
+            if (course) courses.push(course);
+        }
+
+        return courses;
+    },
+});
 

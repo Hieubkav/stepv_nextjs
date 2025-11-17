@@ -59,7 +59,7 @@ export function CourseCard({ course, studentId, className = '' }: CourseCardProp
             </div>
 
             {/* Course Content */}
-            <Link href={detailHref} className="block p-4 hover:no-underline">
+            <Link href={detailHref as any} className="block p-4 hover:no-underline">
                 <h3 className="font-semibold text-gray-900 line-clamp-2 group-hover:text-blue-600 transition">
                     {course.title}
                 </h3>

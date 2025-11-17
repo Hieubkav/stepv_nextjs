@@ -60,6 +60,7 @@ type CourseDetail = {
     introVideoUrl?: string;
     pricingType: "free" | "paid";
     priceAmount?: number;
+    comparePriceAmount?: number;
     priceNote?: string;
     isPriceVisible: boolean;
     order: number;
@@ -107,6 +108,7 @@ const buildCourseInitial = (course?: CourseDetail["course"]): CourseFormValues =
   introVideoUrl: course?.introVideoUrl ?? "",
   pricingType: course?.pricingType ?? "free",
   priceAmount: course?.priceAmount !== undefined ? String(course.priceAmount) : "",
+  comparePriceAmount: course?.comparePriceAmount !== undefined ? String(course.comparePriceAmount) : "",
   priceNote: course?.priceNote ?? "",
   isPriceVisible: course?.isPriceVisible ?? false,
   order: String(course?.order ?? 0),
@@ -263,6 +265,7 @@ export default function CourseEditPage() {
         introVideoUrl: values.introVideoUrl.trim() || null,
         pricingType: values.pricingType,
         priceAmount: values.pricingType === "paid" ? Number(values.priceAmount) || 0 : null,
+        comparePriceAmount: values.pricingType === "paid" ? Number(values.comparePriceAmount) || null : null,
         priceNote: values.priceNote.trim() || null,
         isPriceVisible: values.pricingType === "paid" ? values.isPriceVisible : false,
         order,

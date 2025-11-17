@@ -561,6 +561,7 @@ export const createCourse = mutation({
     introVideoUrl: v.optional(v.string()),
     pricingType: v.union(v.literal("free"), v.literal("paid")),
     priceAmount: v.optional(v.number()),
+    comparePriceAmount: v.optional(v.number()),
     priceNote: v.optional(v.string()),
     isPriceVisible: v.boolean(),
     order: v.number(),
@@ -582,6 +583,7 @@ export const createCourse = mutation({
       introVideoUrl: args.introVideoUrl,
       pricingType: args.pricingType,
       priceAmount: args.priceAmount,
+      comparePriceAmount: args.comparePriceAmount,
       priceNote: args.priceNote,
       isPriceVisible: args.isPriceVisible,
       order: args.order,
@@ -604,13 +606,14 @@ export const updateCourse = mutation({
     introVideoUrl: v.optional(v.union(v.string(), v.null())),
     pricingType: v.optional(v.union(v.literal("free"), v.literal("paid"))),
     priceAmount: v.optional(v.union(v.number(), v.null())),
+    comparePriceAmount: v.optional(v.union(v.number(), v.null())),
     priceNote: v.optional(v.union(v.string(), v.null())),
     isPriceVisible: v.optional(v.boolean()),
     order: v.optional(v.number()),
     active: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { id, slug, subtitle, description, thumbnailMediaId, introVideoUrl, pricingType, priceAmount, priceNote, isPriceVisible, ...rest } = args;
+    const { id, slug, subtitle, description, thumbnailMediaId, introVideoUrl, pricingType, priceAmount, comparePriceAmount, priceNote, isPriceVisible, ...rest } = args;
     const existing = await ctx.db.get(id);
     if (!existing) throw new Error("Course not found");
     const normalizedSlug =
@@ -634,6 +637,7 @@ export const updateCourse = mutation({
     }
     if (pricingType !== undefined) patch.pricingType = pricingType;
     if (priceAmount !== undefined) patch.priceAmount = priceAmount ?? undefined;
+    if (comparePriceAmount !== undefined) patch.comparePriceAmount = comparePriceAmount ?? undefined;
     if (priceNote !== undefined) patch.priceNote = priceNote ?? undefined;
     if (isPriceVisible !== undefined) patch.isPriceVisible = isPriceVisible;
     patch.updatedAt = Date.now();

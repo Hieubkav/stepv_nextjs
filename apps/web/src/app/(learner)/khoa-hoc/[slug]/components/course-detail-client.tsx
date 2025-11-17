@@ -62,6 +62,7 @@ export function CourseDetailClient({
   curriculumSummary,
   badges,
   heroDescription,
+  courseId,
 }: {
   course: CourseSummary;
   chapters: CourseChapter[];
@@ -76,6 +77,7 @@ export function CourseDetailClient({
   curriculumSummary: string;
   badges: string[];
   heroDescription: string;
+  courseId: string;
 }) {
   const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
 
@@ -139,6 +141,7 @@ export function CourseDetailClient({
           priceNote={course.priceNote}
           pricingType={course.pricingType}
           courseSlug={course.slug}
+          courseId={courseId}
         />
         <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} onLessonSelect={handleLessonSelect} />
       </div>

@@ -22,6 +22,7 @@ export type CourseFormValues = {
   introVideoUrl: string;
   pricingType: "free" | "paid";
   priceAmount: string;
+  comparePriceAmount: string;
   priceNote: string;
   isPriceVisible: boolean;
   order: string;
@@ -51,14 +52,15 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
   const [previewOpen, setPreviewOpen] = useState(false);
 
   useEffect(() => {
-    if (values.pricingType === "free" && (values.priceAmount !== "" || values.isPriceVisible)) {
+    if (values.pricingType === "free" && (values.priceAmount !== "" || values.comparePriceAmount !== "" || values.isPriceVisible)) {
       setValues((prev) => ({
         ...prev,
         priceAmount: "",
+        comparePriceAmount: "",
         isPriceVisible: false,
       }));
     }
-  }, [values.pricingType, values.priceAmount, values.isPriceVisible]);
+  }, [values.pricingType, values.priceAmount, values.comparePriceAmount, values.isPriceVisible]);
 
   const selectedThumbnail = useMemo(() => {
     if (!values.thumbnailMediaId) return null;
@@ -202,8 +204,23 @@ export function CourseForm({ initialValues, submitting, submitLabel, onSubmit, o
               <p className="text-xs text-muted-foreground">Hiển thị: {formatCurrency(values.priceAmount)} VND</p>
             )}
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Giá gốc (để so sánh)</label>
+            <Input
+              type="number"
+              value={values.comparePriceAmount}
+              onChange={(event) => update("comparePriceAmount", event.target.value)}
+              placeholder="599000"
+              disabled={values.pricingType === "free"}
+              min="0"
+              step="1000"
+            />
+            {values.pricingType === "paid" && values.comparePriceAmount && (
+              <p className="text-xs text-muted-foreground">Hiển thị: {formatCurrency(values.comparePriceAmount)} VND</p>
+            )}
+          </div>
           <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-medium">Ghi chú về giá</label>
+            <label className="text-sm font-medium">Ghi chú về chương trình khuyến mãi</label>
             <Input
               value={values.priceNote}
               onChange={(event) => update("priceNote", event.target.value)}

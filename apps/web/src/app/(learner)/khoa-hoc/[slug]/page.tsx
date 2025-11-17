@@ -20,6 +20,7 @@ type CourseSummary = {
   description: string | null;
   pricingType: "free" | "paid";
   priceAmount: number | null;
+  comparePriceAmount: number | null;
   priceNote: string | null;
   isPriceVisible: boolean;
   active: boolean;
@@ -93,22 +94,22 @@ function formatPrice(
   if (course.pricingType === "free") {
     return "Miễn phí";
   }
-  if (!course.isPriceVisible) {
-    return course.priceNote ? course.priceNote : "Liên hệ";
-  }
   if (typeof course.priceAmount === "number" && Number.isFinite(course.priceAmount) && course.priceAmount > 0) {
     return currencyFormatter.format(course.priceAmount);
   }
-  return course.priceNote ? course.priceNote : "Liên hệ";
+  if (!course.isPriceVisible) {
+    return "Liên hệ";
+  }
+  return "Liên hệ";
 }
 
-function computeComparePrice(course: Pick<CourseSummary, "pricingType" | "priceNote">, main: string) {
+function computeComparePrice(course: Pick<CourseSummary, "pricingType" | "comparePriceAmount">, main: string) {
   if (course.pricingType !== "paid") return null;
-  const note = course.priceNote?.trim();
-  if (!note) return null;
-  if (!/\d/.test(note)) return null;
-  if (note.replace(/\s+/g, "") === main.replace(/\s+/g, "")) return null;
-  return note;
+  if (typeof course.comparePriceAmount !== "number" || !Number.isFinite(course.comparePriceAmount) || course.comparePriceAmount <= 0) {
+    return null;
+  }
+  if (course.comparePriceAmount.toString().replace(/\s+/g, "") === main.replace(/\s+/g, "")) return null;
+  return currencyFormatter.format(course.comparePriceAmount);
 }
 
 function normalizeCourseDoc(doc: any): CourseSummary {
@@ -121,6 +122,7 @@ function normalizeCourseDoc(doc: any): CourseSummary {
     description: typeof doc?.description === "string" ? doc.description : null,
     pricingType: doc?.pricingType === "paid" ? "paid" : "free",
     priceAmount: typeof doc?.priceAmount === "number" ? doc.priceAmount : null,
+    comparePriceAmount: typeof doc?.comparePriceAmount === "number" ? doc.comparePriceAmount : null,
     priceNote: typeof doc?.priceNote === "string" ? doc.priceNote : null,
     isPriceVisible: Boolean(doc?.isPriceVisible),
     active: Boolean(doc?.active),
@@ -509,6 +511,7 @@ export default async function CourseDetailPage({
             curriculumSummary={curriculumSummary}
             badges={badges}
             heroDescription={heroDescription}
+            courseId={course.id}
           />
         </div>
       </main>

@@ -149,7 +149,8 @@ export default defineSchema({
     introVideoUrl: v.optional(v.string()),
     pricingType: v.union(v.literal("free"), v.literal("paid")),
     priceAmount: v.optional(v.number()),
-    priceNote: v.optional(v.string()),
+    comparePriceAmount: v.optional(v.number()), // Original price for comparison (sale pricing)
+    priceNote: v.optional(v.string()), // Promotion program notes
     isPriceVisible: v.boolean(),
     averageRating: v.optional(v.number()), // Denormalized for quick access
     totalReviews: v.optional(v.number()), // Denormalized

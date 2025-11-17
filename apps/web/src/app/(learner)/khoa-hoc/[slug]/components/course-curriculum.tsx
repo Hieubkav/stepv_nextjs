@@ -41,7 +41,7 @@ export function CourseCurriculum({
   return (
     <div className="space-y-6">
       {/* Course Actions */}
-      <Card>
+      {/* <Card>
         <CardContent className="space-y-4 pt-6">
           <div className="flex flex-wrap gap-2">
             {badges.map((badge) => (
@@ -61,7 +61,7 @@ export function CourseCurriculum({
             </Button>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Course Curriculum */}
       <Card id="curriculum">

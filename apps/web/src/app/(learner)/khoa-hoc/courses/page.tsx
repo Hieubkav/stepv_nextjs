@@ -281,7 +281,7 @@ interface CourseCardProps {
 
 function CourseCard({ course }: CourseCardProps) {
   const detailSlug = normalizeSlug(course.slug || course.title || "");
-  const detailHref = detailSlug ? `/khoa-hoc/${detailSlug}` : "/khoa-hoc";
+  const detailHref: any = detailSlug ? `/khoa-hoc/${detailSlug}` : "/khoa-hoc";
   return (
     <Link href={detailHref}>
       <Card className="hover:shadow-lg transition cursor-pointer h-full">
