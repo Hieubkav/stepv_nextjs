@@ -273,43 +273,6 @@ export const recordPayment = mutation({
   },
 });
 
-async function upsertEnrollment(
-  ctx: MutationCtx,
-  {
-    courseId,
-    studentId,
-    enrolledAt,
-  }: { courseId: Id<"courses">; studentId: Id<"students">; enrolledAt: number },
-) {
-  const existingEnrollment = await ctx.db
-    .query("course_enrollments")
-    .withIndex("by_course_user", (q) =>
-      q.eq("courseId", courseId).eq("userId", studentId.toString()),
-    )
-    .first();
-
-  if (!existingEnrollment) {
-    await ctx.db.insert("course_enrollments", {
-      courseId,
-      userId: studentId.toString(),
-      enrolledAt,
-      progressPercent: 0,
-      status: "active" as const,
-      lastViewedLessonId: undefined,
-      order: 0,
-      active: true,
-    });
-    return;
-  }
-
-  if (!existingEnrollment.active) {
-    await ctx.db.patch(existingEnrollment._id, {
-      active: true,
-      enrolledAt,
-    });
-  }
-}
-
 /**
  * Mutation: Admin confirms payment
  * - Updates payment status to "confirmed"
