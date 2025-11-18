@@ -59,13 +59,13 @@ export default function CheckoutForm({
         setSuccessMessage(
           result.activated
             ? 'Bạn đã có quyền truy cập khóa học này.'
-            : 'Bạn đã có một đơn đang xử lý cho khóa học này.',
+            : 'Bạn đã có một đơn đang chờ xác nhận cho khóa học này.',
         );
       } else {
         setSuccessMessage(
           result.activated
             ? 'Đơn đã được ghi nhận và khóa học mở ngay lập tức.'
-            : 'Đơn đã được ghi nhận.',
+            : 'Đơn đã được ghi nhận. Vui lòng chờ admin xác nhận.',
         );
       }
 

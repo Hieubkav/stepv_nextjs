@@ -41,19 +41,19 @@ const dateTimeFormatter = new Intl.DateTimeFormat('vi-VN', {
 
 const ORDER_STATUS_LABELS: Record<StudentOrder['status'], { label: string; tone: string; description: string }> = {
   pending: {
-    label: 'Đang xử lý',
+    label: 'Chờ xác nhận',
     tone: 'border-amber-200 bg-amber-50 text-amber-800',
-    description: 'Đơn vừa tạo và sẽ được kích hoạt trong giây lát.',
+    description: 'Đơn vừa được đặt, chờ admin xác nhận thanh toán.',
   },
   paid: {
-    label: 'Đã xử lý',
-    tone: 'border-sky-200 bg-sky-50 text-sky-800',
-    description: 'Đơn đã được hệ thống tiếp nhận.',
+    label: 'Đã xác nhận',
+    tone: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    description: 'Thanh toán đã được xác nhận, bạn có quyền truy cập khóa học.',
   },
   completed: {
-    label: 'Đã kích hoạt',
-    tone: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    description: 'Bạn đã có thể học toàn bộ nội dung khóa.',
+    label: 'Hoàn thành',
+    tone: 'border-blue-200 bg-blue-50 text-blue-800',
+    description: 'Bạn đã hoàn thành khóa học này.',
   },
   cancelled: {
     label: 'Đã hủy',
@@ -107,7 +107,7 @@ export default function OrdersPageClient({ highlightOrderId }: OrdersPageClientP
         <p className="text-xs font-semibold uppercase tracking-[0.4em] text-muted-foreground">Learner</p>
         <h1 className="text-2xl font-semibold leading-tight">Đơn đặt khóa học</h1>
         <p className="text-sm text-muted-foreground">
-          Đây là phiên bản MVP nên sau khi đặt đơn hệ thống sẽ kích hoạt khóa học tự động, không cần gửi minh chứng.
+          Sau khi đặt đơn, chờ admin xác nhận thanh toán. Khi xác nhận xong, bạn sẽ có quyền truy cập khóa học ngay.
         </p>
       </div>
 
@@ -232,12 +232,12 @@ function OrderProgress({ currentStepIndex }: { currentStepIndex: number }) {
       description: 'Bạn đã xác nhận mua khóa.',
     },
     {
-      label: 'Hệ thống xử lý',
-      description: 'Đơn được kích hoạt tự động trong giây lát.',
+      label: 'Chờ xác nhận',
+      description: 'Đơn đã gửi, chờ admin xác nhận thanh toán.',
     },
     {
       label: 'Vào học',
-      description: 'Khóa đã mở toàn bộ nội dung.',
+      description: 'Khóa đã mở, bạn có thể truy cập toàn bộ nội dung.',
     },
   ];
 

@@ -55,8 +55,8 @@ export const createOrder = mutation({
       return {
         orderId: existingOrder._id,
         message: "Order already exists",
-        alreadyPending: existingOrder.status !== "completed",
-        activated: existingOrder.status === "completed",
+        alreadyPending: existingOrder.status === "pending" || existingOrder.status === "paid",
+        activated: false,
       };
     }
 
@@ -66,24 +66,18 @@ export const createOrder = mutation({
       studentId,
       courseId,
       amount,
-      status: "completed",
+      status: "pending",
       paymentMethod: "manual",
       notes: undefined,
       createdAt: now,
       updatedAt: now,
     });
 
-    await upsertEnrollment(ctx, {
-      courseId,
-      studentId,
-      enrolledAt: now,
-    });
-
     return {
       orderId,
       message: "Order created successfully",
-      alreadyPending: false,
-      activated: true,
+      alreadyPending: true,
+      activated: false,
     };
   },
 });

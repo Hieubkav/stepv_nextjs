@@ -235,18 +235,16 @@ export const deleteOrder = mutation({
       throw new Error("Đơn hàng không tồn tại");
     }
 
-    // Remove enrollment if order was completed
-    if (order.status === "completed") {
-      const enrollment = await ctx.db
-        .query("course_enrollments")
-        .withIndex("by_course_user", (q) =>
-          q.eq("courseId", order.courseId).eq("userId", order.studentId.toString())
-        )
-        .first();
+    // Always remove enrollment when deleting order
+    const enrollment = await ctx.db
+      .query("course_enrollments")
+      .withIndex("by_course_user", (q) =>
+        q.eq("courseId", order.courseId).eq("userId", order.studentId.toString())
+      )
+      .first();
 
-      if (enrollment) {
-        await ctx.db.delete(enrollment._id);
-      }
+    if (enrollment) {
+      await ctx.db.delete(enrollment._id);
     }
 
     // Hard delete order
