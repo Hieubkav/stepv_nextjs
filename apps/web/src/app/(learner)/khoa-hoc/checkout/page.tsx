@@ -6,7 +6,7 @@ import { api } from "@dohy/backend/convex/_generated/api";
 import type { Doc, Id } from "@dohy/backend/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckoutPageContent } from "./checkout-page-content";
+import { CheckoutWrapper } from "./checkout-wrapper";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -135,7 +135,7 @@ export default async function CheckoutPage({
         </header>
 
         <main className="mx-auto max-w-7xl px-4 py-2">
-          <CheckoutPageContent
+          <CheckoutWrapper
             courseId={course.id}
             courseName={course.title}
             coursePrice={priceAmount}
