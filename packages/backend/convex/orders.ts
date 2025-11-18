@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 const DEFAULT_LIMIT = 200;
 const MAX_LIMIT = 500;
@@ -239,6 +240,20 @@ export const updateOrder = mutation({
             lastViewedLessonId: undefined,
             order: 0,
             active: true,
+          });
+        }
+        
+        // Get student and course info to send email
+        const student = await ctx.db.get(order.studentId);
+        const course = await ctx.db.get(order.courseId);
+
+        // Schedule onboarding email
+        if (student && course) {
+          await ctx.scheduler.runAfter(0, internal.email.sendCourseOnboardingEmail, {
+            studentEmail: student.email,
+            studentName: student.fullName || student.account || "Học viên",
+            courseName: course.title,
+            courseSlug: course.slug,
           });
         }
       } 

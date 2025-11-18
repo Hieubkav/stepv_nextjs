@@ -129,7 +129,6 @@ export default function OrderEditPage() {
         notes: notes.trim(),
       });
       toast.success("Cập nhật đơn hàng thành công");
-      router.push(`/dashboard/order/${order._id}`);
     } catch (error) {
       toast.error("Lỗi khi cập nhật đơn hàng");
       console.error(error);
