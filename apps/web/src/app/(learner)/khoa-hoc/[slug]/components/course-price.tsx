@@ -19,6 +19,7 @@ export function CoursePrice({
   pricingType,
   courseSlug,
   courseId,
+  hasFullAccess,
 }: {
   priceText: string;
   comparePriceText: string | null;
@@ -26,6 +27,7 @@ export function CoursePrice({
   pricingType: "free" | "paid";
   courseSlug?: string;
   courseId: string;
+  hasFullAccess: boolean;
 }) {
   const { student } = useStudentAuth();
   const [isFavorite, setIsFavorite] = useState(false);

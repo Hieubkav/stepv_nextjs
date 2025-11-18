@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 
@@ -117,6 +117,143 @@ function uniqueIds<T>(ids: T[]): T[] {
   return [...new Set(ids)];
 }
 
+export const getOrderById = query({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("orders"),
+      studentId: v.id("students"),
+      studentName: v.string(),
+      studentEmail: v.optional(v.string()),
+      studentPhone: v.optional(v.string()),
+      courseId: v.id("courses"),
+      courseTitle: v.string(),
+      courseSlug: v.optional(v.string()),
+      amount: v.number(),
+      status: v.union(
+        v.literal("pending"),
+        v.literal("paid"),
+        v.literal("completed"),
+        v.literal("cancelled")
+      ),
+      paymentMethod: v.string(),
+      notes: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      paymentStatus: v.optional(
+        v.union(v.literal("pending"), v.literal("confirmed"), v.literal("rejected"))
+      ),
+      paymentId: v.optional(v.id("payments")),
+      paymentRecordedAt: v.optional(v.number()),
+      paymentScreenshotUrl: v.optional(v.string()),
+    })
+  ),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      return null;
+    }
+
+    const [student, course, payment] = await Promise.all([
+      ctx.db.get(order.studentId),
+      ctx.db.get(order.courseId),
+      ctx.db
+        .query("payments")
+        .withIndex("by_order", (q) => q.eq("orderId", orderId))
+        .order("desc")
+        .first(),
+    ]);
+
+    return {
+      _id: order._id,
+      studentId: order.studentId,
+      studentName: student?.fullName || student?.account || "Học viên ẩn danh",
+      studentEmail: student?.email,
+      studentPhone: student?.phone,
+      courseId: order.courseId,
+      courseTitle: course?.title || "Khóa học chưa đặt tên",
+      courseSlug: course?.slug,
+      amount: order.amount,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      notes: order.notes,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      paymentStatus: payment?.status,
+      paymentId: payment?._id,
+      paymentRecordedAt: payment?.createdAt,
+      paymentScreenshotUrl: payment?.screenshotUrl,
+    };
+  },
+});
+
+export const updateOrder = mutation({
+  args: {
+    orderId: v.id("orders"),
+    status: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("paid"),
+        v.literal("completed"),
+        v.literal("cancelled")
+      )
+    ),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, { orderId, status, notes }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      throw new Error("Đơn hàng không tồn tại");
+    }
+
+    const updates: any = {
+      updatedAt: Date.now(),
+    };
+
+    if (status !== undefined) {
+      updates.status = status;
+    }
+    if (notes !== undefined) {
+      updates.notes = notes;
+    }
+
+    await ctx.db.patch(orderId, updates);
+    return { success: true };
+  },
+});
+
+export const deleteOrder = mutation({
+  args: {
+    orderId: v.id("orders"),
+  },
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      throw new Error("Đơn hàng không tồn tại");
+    }
+
+    // Remove enrollment if order was completed
+    if (order.status === "completed") {
+      const enrollment = await ctx.db
+        .query("course_enrollments")
+        .withIndex("by_course_user", (q) =>
+          q.eq("courseId", order.courseId).eq("userId", order.studentId.toString())
+        )
+        .first();
+
+      if (enrollment) {
+        await ctx.db.delete(enrollment._id);
+      }
+    }
+
+    // Hard delete order
+    await ctx.db.delete(orderId);
+    return { success: true };
+  },
+});
 export const getOrderDetail = query({
   args: {
     orderId: v.id("orders"),

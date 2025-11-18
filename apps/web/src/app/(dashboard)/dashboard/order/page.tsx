@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ComponentType, type ReactNode } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
@@ -24,11 +24,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   BadgeCheck,
   Clock3,
   Coins,
-  CreditCard,
+  Pencil,
+  Trash2,
   Loader2,
   ReceiptText,
   RefreshCw,
@@ -105,7 +107,10 @@ export default function OrdersResourcePage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
-  const [detailOrder, setDetailOrder] = useState<AdminOrder | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<AdminOrder | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const deleteOrderMutation = useMutation(api.orders.deleteOrder);
 
   const orders = useQuery(api.orders.listOrders, {
     limit: ORDERS_FETCH_LIMIT,
@@ -168,6 +173,25 @@ export default function OrdersResourcePage() {
 
   const isLoading = orders === undefined;
   const hasOrders = !isLoading && orders && orders.length > 0;
+
+  const handleDelete = async () => {
+    if (!deleteConfirm) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteOrderMutation({
+        orderId: deleteConfirm._id,
+      });
+      toast.success("Xóa đơn hàng thành công");
+      setDeleteConfirm(null);
+      router.refresh();
+    } catch (error) {
+      toast.error("Lỗi khi xóa đơn hàng");
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -328,9 +352,23 @@ export default function OrdersResourcePage() {
                       </p>
                     </div>
 
-                    <div className="flex justify-start md:justify-end">
-                      <Button variant="outline" size="sm" onClick={() => setDetailOrder(order)}>
-                        Xem chi tiết
+                    <div className="flex justify-start gap-2 md:justify-end">
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        title="Sửa/Xem"
+                        onClick={() => router.push(`/dashboard/order/${order._id}/edit`)}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        title="Xóa"
+                        onClick={() => setDeleteConfirm(order)}
+                        className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="size-4" />
                       </Button>
                     </div>
                   </div>
@@ -340,114 +378,33 @@ export default function OrdersResourcePage() {
         </CardContent>
       </Card>
 
-      <Dialog
-        open={Boolean(detailOrder)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setDetailOrder(null);
-          }
-        }}
-      >
-        <DialogContent className="max-w-2xl">
-          {detailOrder && (
-            <>
-              <DialogHeader>
-                <DialogTitle>Đơn {shortId(detailOrder._id)}</DialogTitle>
-                <DialogDescription>
-                  Tạo lúc {formatDate(detailOrder.createdAt)} • {ORDER_STATUS_LABELS[detailOrder.status]}
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-6">
-                <section className="grid gap-4 md:grid-cols-2">
-                  <DetailField label="Trạng thái đơn">
-                    <Badge className={cn("text-xs", ORDER_STATUS_STYLES[detailOrder.status])}>
-                      {ORDER_STATUS_LABELS[detailOrder.status]}
-                    </Badge>
-                  </DetailField>
-                  <DetailField label="Trạng thái thanh toán">
-                    <Badge
-                      className={cn(
-                        "text-xs",
-                        detailOrder.paymentStatus
-                          ? PAYMENT_STATUS_STYLES[detailOrder.paymentStatus]
-                          : "border-slate-200 bg-slate-50 text-slate-700"
-                      )}
-                    >
-                      {detailOrder.paymentStatus
-                        ? PAYMENT_STATUS_LABELS[detailOrder.paymentStatus]
-                        : "Chưa ghi nhận"}
-                    </Badge>
-                  </DetailField>
-                  <DetailField label="Tổng tiền">
-                    {currencyFormatter.format(detailOrder.amount)}
-                  </DetailField>
-                  <DetailField label="Phương thức">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="size-4 text-muted-foreground" />
-                      <span className="font-medium uppercase tracking-wide">{detailOrder.paymentMethod}</span>
-                    </div>
-                  </DetailField>
-                  <DetailField label="Mã đơn">
-                    <code className="rounded bg-muted px-2 py-1 text-xs">{detailOrder._id}</code>
-                  </DetailField>
-                  <DetailField label="Cập nhật lần cuối">
-                    {formatDate(detailOrder.updatedAt)}
-                  </DetailField>
-                </section>
-
-                <section className="grid gap-4 md:grid-cols-2">
-                  <DetailField label="Học viên">
-                    <div>
-                      <p className="font-medium">{detailOrder.studentName}</p>
-                      <p className="text-sm text-muted-foreground">{detailOrder.studentEmail ?? "Chưa có email"}</p>
-                      {detailOrder.studentPhone && (
-                        <p className="text-sm text-muted-foreground">SĐT: {detailOrder.studentPhone}</p>
-                      )}
-                    </div>
-                  </DetailField>
-                  <DetailField label="Khóa học">
-                    <div>
-                      <p className="font-medium">{detailOrder.courseTitle}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {detailOrder.courseSlug ? `/${detailOrder.courseSlug}` : "Không có slug"}
-                      </p>
-                    </div>
-                  </DetailField>
-                </section>
-
-                <section className="grid gap-4 md:grid-cols-2">
-                  <DetailField label="Mã thanh toán">
-                    {detailOrder.paymentId ? (
-                      <code className="rounded bg-muted px-2 py-1 text-xs">{detailOrder.paymentId}</code>
-                    ) : (
-                      "Chưa ghi nhận"
-                    )}
-                  </DetailField>
-                  <DetailField label="Thời điểm ghi nhận">
-                    {detailOrder.paymentStatus ? formatDate(detailOrder.paymentRecordedAt) : "—"}
-                  </DetailField>
-                  <DetailField label="Minh chứng">
-                    {detailOrder.paymentScreenshotUrl ? (
-                      <a
-                        href={detailOrder.paymentScreenshotUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-primary hover:underline"
-                      >
-                        Mở ảnh/video
-                      </a>
-                    ) : (
-                      "Không có"
-                    )}
-                  </DetailField>
-                  <DetailField label="Ghi chú nội bộ">
-                    {detailOrder.notes ?? "Không có"}
-                  </DetailField>
-                </section>
-              </div>
-            </>
+      <Dialog open={Boolean(deleteConfirm)} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Xác nhận xóa đơn hàng?</DialogTitle>
+            <DialogDescription>
+              Bạn chắc chắn muốn xóa đơn hàng này? Thao tác này không thể hoàn tác.
+            </DialogDescription>
+          </DialogHeader>
+          {deleteConfirm && (
+            <div className="my-4 space-y-2 rounded-lg bg-muted p-3 text-sm">
+              <p><span className="font-medium">Học viên:</span> {deleteConfirm.studentName}</p>
+              <p><span className="font-medium">Khóa học:</span> {deleteConfirm.courseTitle}</p>
+              <p><span className="font-medium">Giá:</span> {currencyFormatter.format(deleteConfirm.amount)}</p>
+            </div>
           )}
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)} disabled={isDeleting}>
+              Hủy
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
@@ -478,15 +435,6 @@ function StatCard({
         <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
     </Card>
-  );
-}
-
-function DetailField({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="space-y-1">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-      <div className="text-sm">{children}</div>
-    </div>
   );
 }
 
