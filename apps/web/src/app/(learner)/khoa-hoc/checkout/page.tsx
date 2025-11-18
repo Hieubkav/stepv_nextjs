@@ -135,14 +135,13 @@ export default async function CheckoutPage({
         </header>
 
         <main className="mx-auto max-w-7xl px-4 py-2">
-         <CheckoutPageContent
-           courseId={course.id}
-           courseSlug={course.slug}
-           courseName={course.title}
-           coursePrice={priceAmount}
-           comparePriceAmount={course.comparePriceAmount}
-           courseThumbnailUrl={thumbnailUrl}
-         />
+          <CheckoutPageContent
+            courseId={course.id}
+            courseName={course.title}
+            coursePrice={priceAmount}
+            comparePriceAmount={course.comparePriceAmount}
+            courseThumbnailUrl={thumbnailUrl}
+          />
         </main>
       </div>
     );

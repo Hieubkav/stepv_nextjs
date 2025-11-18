@@ -177,7 +177,7 @@ function CurriculumLessonRow({
               {lesson.title}
             </p>
             {showUnlockedBadge ? (
-              <Badge variant="secondary" className="hidden sm:flex items-center gap-1 bg-emerald-100 text-emerald-800">
+              <Badge variant="outline" className="hidden sm:flex items-center gap-1 bg-emerald-100 text-emerald-800">
                 <Unlock className="h-3 w-3" />
                 Đã mở
               </Badge>
