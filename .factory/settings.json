@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[Console]::Beep(4000, 500)",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}
