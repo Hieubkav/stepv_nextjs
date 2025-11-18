@@ -9,3 +9,5 @@
 - Với Convex thì khi thực hiện phải đảm bảo tuân thủ rule ở file \convex_rule.md
 
 - Khi làm xong hoặc hỏi lại người hỏi hãy phát ra âm thật lớn [Console]::Beep(4000, 500) 
+
+- Không được tự ý dùng lệnh git như git commit , git checkout , hay các lệnh làm thay đổi github , lệnh để xem thì được 

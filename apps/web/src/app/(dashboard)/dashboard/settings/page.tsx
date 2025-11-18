@@ -201,6 +201,16 @@ export default function DashboardSettingsPage() {
                             <CardTitle>Thông tin ngân hàng</CardTitle>
                         </CardHeader>
                         <CardContent className="grid gap-4">
+                            {bankCode && bankAccountNumber && bankAccountName && (
+                                <div className="rounded-lg border bg-blue-50 p-3 space-y-2">
+                                    <p className="text-sm font-semibold text-blue-900">Thông tin hiện tại:</p>
+                                    <div className="text-sm text-blue-800 space-y-1">
+                                        <p><span className="font-medium">Ngân hàng:</span> {getBankName(bankCode)}</p>
+                                        <p><span className="font-medium">Số tài khoản:</span> {bankAccountNumber}</p>
+                                        <p><span className="font-medium">Chủ tài khoản:</span> {bankAccountName}</p>
+                                    </div>
+                                </div>
+                            )}
                             <div className="grid gap-4 md:grid-cols-3">
                                  <div className="space-y-2">
                                      <Label htmlFor="bankAccountNumber">Số tài khoản</Label>

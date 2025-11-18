@@ -78,29 +78,12 @@ export default function CheckoutForm({
 
   return (
     <Card className="shadow-none border rounded-2xl">
-      <CardHeader className="pb-2">
-        <CardTitle>Đặt khóa học</CardTitle>
-      </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         ) : null}
-
-        {courseThumbnailUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={courseThumbnailUrl}
-            alt={courseName}
-            className="w-full rounded-xl border object-cover"
-          />
-        ) : null}
-
-        <div className="space-y-1">
-          <p className="text-sm text-muted-foreground">Sau khi đặt đơn, khóa học sẽ được kích hoạt tự động.</p>
-          <p className="text-2xl font-semibold text-foreground">{currencyFormatter.format(coursePrice)}</p>
-        </div>
 
         <Button size="lg" className="w-full font-semibold" onClick={handlePlaceOrder} disabled={loading}>
           {loading ? (
