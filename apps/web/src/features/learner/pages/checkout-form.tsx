@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle, Upload, Loader } from 'lucide-react';
 import { buildVietQRImageUrl } from '@/lib/vietqr';
+import { getBankName } from '@/lib/bank-codes';
 
 interface CheckoutFormProps {
   courseId: Id<'courses'>;
@@ -136,6 +137,10 @@ export default function CheckoutForm({
     <div className="bg-amber-50 rounded-lg p-4 space-y-3">
       <p className="text-sm font-semibold text-amber-900">ℹ️ Thông tin chuyển khoản</p>
       <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Ngân hàng:</span>
+          <span className="font-semibold">{getBankName(effectivePaymentSettings.bankCode)}</span>
+        </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Số tài khoản:</span>
           <span className="font-mono font-semibold">{effectivePaymentSettings.bankAccountNumber}</span>

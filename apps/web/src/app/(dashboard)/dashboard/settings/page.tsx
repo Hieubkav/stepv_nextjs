@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 import { toast } from "sonner";
 import { buildVietQRImageUrl } from "@/lib/vietqr";
+import { BANK_CODES_MAP, getBankName } from "@/lib/bank-codes";
 
 export default function DashboardSettingsPage() {
     // Load settings 'site'
@@ -200,25 +202,36 @@ export default function DashboardSettingsPage() {
                         </CardHeader>
                         <CardContent className="grid gap-4">
                             <div className="grid gap-4 md:grid-cols-3">
-                                <div className="space-y-2">
-                                    <Label htmlFor="bankAccountNumber">Số tài khoản</Label>
-                                    <Input id="bankAccountNumber" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} placeholder="1234567890" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="bankAccountName">Tên chủ tài khoản</Label>
-                                    <Input id="bankAccountName" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="Nguyễn Văn A" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="bankCode">Mã ngân hàng</Label>
-                                    <Input id="bankCode" value={bankCode} onChange={(e) => setBankCode(e.target.value)} placeholder="970012" />
-                                </div>
-                            </div>
+                                 <div className="space-y-2">
+                                     <Label htmlFor="bankAccountNumber">Số tài khoản</Label>
+                                     <Input id="bankAccountNumber" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} placeholder="1234567890" />
+                                 </div>
+                                 <div className="space-y-2">
+                                     <Label htmlFor="bankAccountName">Tên chủ tài khoản</Label>
+                                     <Input id="bankAccountName" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="Nguyễn Văn A" />
+                                 </div>
+                                 <div className="space-y-2">
+                                     <Label htmlFor="bankCode">Ngân hàng</Label>
+                                     <Select value={bankCode} onValueChange={setBankCode}>
+                                         <SelectTrigger id="bankCode">
+                                             <SelectValue placeholder="Chọn ngân hàng" />
+                                         </SelectTrigger>
+                                         <SelectContent className="max-h-[300px]">
+                                             {Object.entries(BANK_CODES_MAP).map(([code, name]) => (
+                                                 <SelectItem key={code} value={code}>
+                                                     {name} ({code})
+                                                 </SelectItem>
+                                             ))}
+                                         </SelectContent>
+                                     </Select>
+                                 </div>
+                             </div>
                         {vietqrPreviewUrl ? (
                             <div className="space-y-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                     <div>
                                         <p className="text-sm font-semibold text-primary">Preview QR (img.vietqr.io)</p>
-                                        <p className="text-xs text-muted-foreground">Template `qr_only` với {bankCode}-{bankAccountNumber}</p>
+                                        <p className="text-xs text-muted-foreground">Template `qr_only` với {getBankName(bankCode)}-{bankAccountNumber}</p>
                                     </div>
                                     <Button variant="outline" size="sm" asChild>
                                         <a href={vietqrPreviewUrl} target="_blank" rel="noopener noreferrer">Mở QR</a>
@@ -228,7 +241,7 @@ export default function DashboardSettingsPage() {
                                 <p className="text-xs text-muted-foreground break-all">Link: {vietqrPreviewUrl}</p>
                             </div>
                         ) : (
-                            <p className="text-xs text-muted-foreground">Nhập Mã ngân hàng (vd: 970432 hoặc TPB) và Số TK để xem preview QR.</p>
+                            <p className="text-xs text-muted-foreground">Chọn Ngân hàng và nhập Số tài khoản để xem preview QR.</p>
                         )}
                         </CardContent>
                     </Card>

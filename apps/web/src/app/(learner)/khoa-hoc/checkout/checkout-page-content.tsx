@@ -12,6 +12,7 @@ import { CheckCircle, Banknote, FileText } from 'lucide-react';
 import CheckoutForm, { type PaymentConfig, buildTransferNote } from '@/features/learner/pages/checkout-form';
 import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
 import { buildVietQRImageUrl } from '@/lib/vietqr';
+import { getBankName } from '@/lib/bank-codes';
 
 export type CheckoutPageContentProps = {
   courseId: Id<'courses'>;
@@ -202,11 +203,11 @@ export function CheckoutPageContent({
 
               {summaryPaymentConfig ? (
                 <div className="flex-[1.2] space-y-2">
-                  <div className="space-y-1">
-                    <p className="font-medium text-xs md:text-sm">Thông tin chuyển khoản</p>
-                    <p>
-                      <span className="font-medium">Ngân hàng:</span> {summaryPaymentConfig.bankCode}
-                    </p>
+                 <div className="space-y-1">
+                   <p className="font-medium text-xs md:text-sm">Thông tin chuyển khoản</p>
+                   <p>
+                     <span className="font-medium">Ngân hàng:</span> {getBankName(summaryPaymentConfig.bankCode)}
+                   </p>
                     <p>
                       <span className="font-medium">Số tài khoản:</span>{' '}
                       {summaryPaymentConfig.bankAccountNumber}
