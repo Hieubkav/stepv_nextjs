@@ -73,6 +73,15 @@ export const createOrder = mutation({
       updatedAt: now,
     });
 
+    // Schedule order placed email
+    await ctx.scheduler.runAfter(0, internal.email.sendOrderPlacedEmail, {
+      studentEmail: student.email,
+      studentName: student.fullName || "Học viên",
+      courseName: course.title,
+      coursePrice: amount,
+      orderId: orderId.toString(),
+    });
+
     return {
       orderId,
       message: "Order created successfully",

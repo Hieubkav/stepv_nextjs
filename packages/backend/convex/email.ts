@@ -5,6 +5,7 @@ import { internalAction } from './_generated/server';
 import { v } from 'convex/values';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const BASE_URL = process.env.BASE_URL || 'https://www.dohystudio.com';
 
 interface ResendEmailParams {
     to: string;
@@ -195,7 +196,7 @@ export const sendPasswordResetEmail = internalAction({
 
 export const sendWelcomeEmail = internalAction({
     args: {
-        studentEmail: v.string(),
+         studentEmail: v.string(),
         studentName: v.string(),
     },
     returns: v.boolean(),
@@ -218,13 +219,13 @@ export const sendWelcomeEmail = internalAction({
               padding: 20px;
             }
             .container {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               border-radius: 8px;
               overflow: hidden;
               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               color: white;
               padding: 30px;
               text-align: center;
@@ -254,7 +255,7 @@ export const sendWelcomeEmail = internalAction({
               margin: 30px 0;
             }
             .login-button {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               color: white;
               text-decoration: none;
               padding: 14px 40px;
@@ -268,7 +269,7 @@ export const sendWelcomeEmail = internalAction({
             }
             .features {
               background: #f8f9fa;
-              border-left: 4px solid #667eea;
+              border-left: 4px solid #f7c948;
               padding: 15px;
               margin: 20px 0;
               border-radius: 4px;
@@ -311,7 +312,7 @@ export const sendWelcomeEmail = internalAction({
               </div>
 
               <div class="button-container">
-                <a href="https://dohy.dev/khoa-hoc" class="login-button">Bắt đầu học ngay</a>
+                <a href="${BASE_URL}/khoa-hoc" class="login-button">Bắt đầu học ngay</a>
               </div>
 
               <p class="message">
@@ -362,13 +363,13 @@ export const sendOTPEmail = internalAction({
               padding: 20px;
             }
             .container {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               border-radius: 8px;
               overflow: hidden;
               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             }
             .header {
-              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
               color: white;
               padding: 30px;
               text-align: center;
@@ -395,7 +396,7 @@ export const sendOTPEmail = internalAction({
             }
             .otp-box {
               background: #f8f9fa;
-              border: 2px solid #667eea;
+              border: 2px solid #f7c948;
               border-radius: 8px;
               padding: 30px;
               text-align: center;
@@ -405,7 +406,7 @@ export const sendOTPEmail = internalAction({
               font-size: 32px;
               font-weight: 700;
               font-family: 'Courier New', monospace;
-              color: #667eea;
+              color: #f7c948;
               letter-spacing: 8px;
               word-break: break-all;
             }
@@ -494,7 +495,7 @@ export const sendPaymentRequestToAdminEmail = internalAction({
     handler: async (ctx, args) => {
         const { studentName, studentEmail, amount, paymentId } = args;
 
-        const adminEmail = 'admin@dohy.dev'; // Replace with actual admin email from settings
+        const adminEmail = process.env.ADMIN_EMAIL || 'admin@dohystudio.com';
 
         const html = `
       <!DOCTYPE html>
@@ -522,7 +523,7 @@ export const sendPaymentRequestToAdminEmail = internalAction({
               <p style="margin-top: 20px;">Vui lòng kiểm tra chứng minh thanh toán và xác nhận trong admin dashboard.</p>
 
               <p style="margin-top: 20px;">
-                <a href="https://dohy.dev/dashboard/payments" class="button">Xem chi tiết thanh toán</a>
+                <a href="${BASE_URL}/dashboard/payments" class="button">Xem chi tiết thanh toán</a>
               </p>
             </div>
           </div>
@@ -630,7 +631,7 @@ export const sendPaymentConfirmedEmail = internalAction({
               <h3 style="color: #667eea; margin-top: 30px;">${courseName}</h3>
 
               <p style="margin-top: 30px;">
-                <a href="https://dohy.dev/khoa-hoc/${courseSlug}" class="button">Bắt đầu học ngay</a>
+                <a href="${BASE_URL}/khoa-hoc/${courseSlug}" class="button">Bắt đầu học ngay</a>
               </p>
 
               <p style="margin-top: 30px; color: #999; font-size: 12px;">
@@ -691,7 +692,7 @@ export const sendPaymentRejectedEmail = internalAction({
               <p>Vui lòng kiểm tra lại thông tin thanh toán và thử lại.</p>
 
               <p style="margin-top: 30px;">
-                <a href="https://dohy.dev/khoa-hoc" class="button">Quay lại để thử lại</a>
+                <a href="${BASE_URL}/khoa-hoc" class="button">Quay lại để thử lại</a>
               </p>
 
               <p style="margin-top: 30px; color: #999; font-size: 12px;">
@@ -706,6 +707,199 @@ export const sendPaymentRejectedEmail = internalAction({
         return await sendEmailViaResend({
             to: studentEmail,
             subject: 'Thanh toán bị từ chối - Dohy',
+            html,
+        });
+    },
+});
+
+export const sendOrderPlacedEmail = internalAction({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        courseName: v.string(),
+        coursePrice: v.number(),
+        orderId: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, courseName, coursePrice, orderId } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 16px;
+              color: #333;
+              margin-bottom: 20px;
+            }
+            .message {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 20px;
+              line-height: 1.8;
+            }
+            .order-details {
+             background: #fefaed;
+             border-left: 4px solid #f7c948;
+             padding: 20px;
+             margin: 30px 0;
+             border-radius: 4px;
+            }
+            .order-detail-row {
+             display: flex;
+             justify-content: space-between;
+             margin: 10px 0;
+             font-size: 14px;
+            }
+            .order-label {
+             font-weight: 600;
+             color: #333;
+            }
+            .order-value {
+             color: #f7c948;
+             font-weight: 600;
+            }
+            .steps {
+             background: #fafafa;
+             border: 1px solid #e0e0e0;
+             padding: 20px;
+             margin: 20px 0;
+             border-radius: 4px;
+             font-size: 13px;
+            }
+            .steps strong {
+             display: block;
+             margin-bottom: 12px;
+             color: #333;
+             font-size: 14px;
+            }
+            .step-item {
+             margin: 10px 0;
+             padding-left: 20px;
+             position: relative;
+            }
+            .step-item:before {
+             content: "→";
+             position: absolute;
+             left: 0;
+             font-weight: bold;
+             color: #f7c948;
+            }
+            .button-container {
+             text-align: center;
+             margin: 30px 0;
+            }
+            .view-button {
+             background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
+             color: white;
+             text-decoration: none;
+             padding: 14px 40px;
+             border-radius: 6px;
+             font-weight: 600;
+             display: inline-block;
+             transition: opacity 0.3s;
+            }
+            .view-button:hover {
+              opacity: 0.9;
+            }
+            .footer {
+              background: #f8f9fa;
+              border-top: 1px solid #e9ecef;
+              padding: 20px 30px;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📋 Đơn hàng đã được đặt</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Xin chào ${studentName},</p>
+              
+              <p class="message">
+                Cảm ơn bạn đã đặt hàng! 🎓 Chúng tôi đã nhận được yêu cầu mua khóa học của bạn. Dưới đây là chi tiết đơn hàng:
+              </p>
+
+              <div class="order-details">
+                <div class="order-detail-row">
+                  <span class="order-label">Khóa học:</span>
+                  <span class="order-value">${courseName}</span>
+                </div>
+                <div class="order-detail-row">
+                  <span class="order-label">Học phí:</span>
+                  <span class="order-value">${coursePrice.toLocaleString('vi-VN')} VND</span>
+                </div>
+                <div class="order-detail-row">
+                  <span class="order-label">Mã đơn hàng:</span>
+                  <span class="order-value">${orderId}</span>
+                </div>
+              </div>
+
+              <div class="steps">
+                <strong>📝 Bước tiếp theo:</strong>
+                <div class="step-item">Chuyển khoản đến tài khoản ngân hàng được cung cấp với nội dung thanh toán tương ứng</div>
+                <div class="step-item">Sau khi chuyển khoản, quay lại trang đơn hàng để upload chứng minh thanh toán</div>
+                <div class="step-item">Admin sẽ xác nhận thanh toán trong vài phút (thường là nhanh lắm)</div>
+                <div class="step-item">Bạn sẽ nhận được email xác nhận và có quyền truy cập khóa học ngay lập tức</div>
+              </div>
+
+              <div class="button-container">
+                <a href="${BASE_URL}/khoa-hoc/don-dat?orderId=${orderId}" class="view-button">Xem chi tiết đơn hàng</a>
+              </div>
+
+              <p class="message">
+                Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Dohy. Tất cả quyền được bảo lưu.</p>
+              <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: `Đơn hàng #${orderId} - Khóa học ${courseName}`,
             html,
         });
     },
@@ -850,7 +1044,7 @@ export const sendCourseOnboardingEmail = internalAction({
               </div>
 
               <div class="button-container">
-                <a href="https://dohy.dev/khoa-hoc/${courseSlug}" class="start-button">Bắt đầu học ngay</a>
+                <a href="${BASE_URL}/khoa-hoc/${courseSlug}" class="start-button">Bắt đầu học ngay</a>
               </div>
 
               <div class="tips">
