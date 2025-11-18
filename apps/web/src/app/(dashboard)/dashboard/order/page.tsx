@@ -38,9 +38,7 @@ import {
 } from "lucide-react";
 
 type OrderStatus = "pending" | "paid" | "completed" | "cancelled";
-type PaymentStatus = "pending" | "confirmed" | "rejected";
 type StatusFilter = "all" | OrderStatus;
-type PaymentFilter = "all" | PaymentStatus | "none";
 
 type AdminOrder = {
   _id: Id<"orders">;
@@ -88,25 +86,12 @@ const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
   cancelled: "border-slate-200 bg-slate-50 text-slate-700",
 };
 
-const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
-  pending: "Chờ duyệt",
-  confirmed: "Đã xác nhận",
-  rejected: "Từ chối",
-};
-
-const PAYMENT_STATUS_STYLES: Record<PaymentStatus, string> = {
-  pending: "border-amber-200 bg-amber-50 text-amber-800",
-  confirmed: "border-emerald-200 bg-emerald-50 text-emerald-800",
-  rejected: "border-rose-200 bg-rose-50 text-rose-800",
-};
-
 const ORDERS_FETCH_LIMIT = 200;
 
 export default function OrdersResourcePage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [paymentFilter, setPaymentFilter] = useState<PaymentFilter>("all");
   const [deleteConfirm, setDeleteConfirm] = useState<AdminOrder | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -141,16 +126,6 @@ export default function OrdersResourcePage() {
         return false;
       }
 
-      if (paymentFilter === "none") {
-        if (order.paymentStatus) {
-          return false;
-        }
-      } else if (paymentFilter !== "all") {
-        if (order.paymentStatus !== paymentFilter) {
-          return false;
-        }
-      }
-
       if (!searchTerm) {
         return true;
       }
@@ -169,7 +144,7 @@ export default function OrdersResourcePage() {
 
       return haystack.includes(searchTerm);
     });
-  }, [orders, statusFilter, paymentFilter, searchTerm]);
+  }, [orders, statusFilter, searchTerm]);
 
   const isLoading = orders === undefined;
   const hasOrders = !isLoading && orders && orders.length > 0;
@@ -198,10 +173,6 @@ export default function OrdersResourcePage() {
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Đơn hàng khóa học</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Resource kiểu Filament 4.x cho phép xem nhanh đơn học viên đặt mua, lọc trạng thái và mở chi
-            tiết ngay trên dashboard.
-          </p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => router.refresh()} className="gap-2">
@@ -221,7 +192,7 @@ export default function OrdersResourcePage() {
         <StatCard
           title="Đang chờ thanh toán"
           value={stats.pending.toLocaleString("vi-VN")}
-          description="Đơn vừa khởi tạo và chưa có minh chứng"
+          description="Vừa tạo, chưa thanh toán"
           icon={Clock3}
         />
         <StatCard
@@ -264,29 +235,16 @@ export default function OrdersResourcePage() {
                   <SelectItem value="cancelled">Đã hủy</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={paymentFilter} onValueChange={(value) => setPaymentFilter(value as PaymentFilter)}>
-                <SelectTrigger className="w-48">
-                  <SelectValue placeholder="Trạng thái thanh toán" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tất cả thanh toán</SelectItem>
-                  <SelectItem value="none">Chưa có minh chứng</SelectItem>
-                  <SelectItem value="pending">Chờ duyệt</SelectItem>
-                  <SelectItem value="confirmed">Đã xác nhận</SelectItem>
-                  <SelectItem value="rejected">Bị từ chối</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-lg border">
-            <div className="hidden grid-cols-[1.5fr_1.2fr_0.8fr_0.9fr_0.9fr_auto] gap-3 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid">
+            <div className="hidden grid-cols-[1.5fr_1.2fr_0.8fr_0.9fr_auto] gap-3 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground md:grid">
               <span>Học viên</span>
               <span>Khóa học</span>
               <span>Tổng tiền</span>
               <span>Đơn hàng</span>
-              <span>Thanh toán</span>
               <span className="text-right">Thao tác</span>
             </div>
             <div className="divide-y">
@@ -309,7 +267,7 @@ export default function OrdersResourcePage() {
                 filteredOrders.map((order) => (
                   <div
                     key={order._id}
-                    className="flex flex-col gap-4 px-4 py-4 text-sm md:grid md:grid-cols-[1.5fr_1.2fr_0.8fr_0.9fr_0.9fr_auto] md:items-center md:gap-3"
+                    className="flex flex-col gap-4 px-4 py-4 text-sm md:grid md:grid-cols-[1.5fr_1.2fr_0.8fr_0.9fr_auto] md:items-center md:gap-3"
                   >
                     <div>
                       <p className="font-medium">{order.studentName}</p>
@@ -336,20 +294,6 @@ export default function OrdersResourcePage() {
                         {ORDER_STATUS_LABELS[order.status]}
                       </Badge>
                       <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
-                    </div>
-
-                    <div className="flex flex-col gap-1">
-                      <Badge
-                        className={cn(
-                          "w-fit text-xs",
-                          order.paymentStatus ? PAYMENT_STATUS_STYLES[order.paymentStatus] : "border-slate-200 bg-slate-50 text-slate-700"
-                        )}
-                      >
-                        {order.paymentStatus ? PAYMENT_STATUS_LABELS[order.paymentStatus] : "Chưa ghi nhận"}
-                      </Badge>
-                      <p className="text-xs text-muted-foreground">
-                        {order.paymentStatus ? formatDate(order.paymentRecordedAt) : "—"}
-                      </p>
                     </div>
 
                     <div className="flex justify-start gap-2 md:justify-end">

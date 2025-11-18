@@ -1,5 +1,5 @@
 - ✅ **Tiếng Việt** luôn
-- ✅ **Build**: chạy `bunx tsc` trước, rồi `bun run --cwd apps/web build` khi code xong chức năng lớn (báo trước, đừng tự chạy)
+- ✅ **Build**: chạy `bunx tsc --project apps/web/tsconfig.json --noEmit` trước, rồi `bun run --cwd apps/web build` khi code xong chức năng lớn (báo trước, đừng tự chạy)
 - ✅ **SAP** = Scaffold + Approach + Pattern
 - ✅ **Schema.ts**: thêm `order` & `active` cho bảng động (sản phẩm, danh mục,...)
 - ✅ **Convex**: tuân thủ `convex_rule.md`

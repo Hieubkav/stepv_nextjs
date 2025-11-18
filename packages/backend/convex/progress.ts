@@ -147,7 +147,6 @@ async function updateEnrollmentProgress(
       progressPercent: completionPercentage,
       status: newStatus,
       completedAt: newStatus === "completed" ? now : enrollment.completedAt,
-      updatedAt: now,
     });
 
     // Auto-issue certificate if completed

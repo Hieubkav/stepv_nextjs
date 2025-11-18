@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useMemo, useState } from "react";
-import { Play, Maximize2, CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { extractYoutubeVideoId } from "@/lib/youtube";
 import { useMutation } from "convex/react";
@@ -43,7 +42,6 @@ export function VideoPlayer({
 }) {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const playerWrapperRef = useRef<HTMLDivElement>(null);
   const playerHostRef = useRef<HTMLDivElement | null>(null);
   const { student } = useStudentAuth();
 
@@ -140,13 +138,13 @@ export function VideoPlayer({
         videoId: videoId,
         playerVars: {
           modestbranding: 1,
-          controls: 0,
+          controls: 1,
           showinfo: 0,
           rel: 0,
           fs: 1,
           iv_load_policy: 3,
           autoplay: 0,
-          disablekb: 1,
+          disablekb: 0,
         },
         events: {
           onReady: (event: any) => {
@@ -193,13 +191,6 @@ export function VideoPlayer({
         iframe.setAttribute('allowfullscreen', 'true');
         const allowAttr = iframe.getAttribute('allow');
         iframe.setAttribute('allow', allowAttr ? `${allowAttr}; fullscreen` : 'fullscreen');
-        const hideYouTubeUI = () => {
-          const ytElements = iframe.parentElement?.querySelectorAll('[role="status"], [role="button"]');
-          ytElements?.forEach((el: any) => {
-            el.style.display = 'none';
-          });
-        };
-        setTimeout(hideYouTubeUI, 100);
       }
     };
 
@@ -209,23 +200,6 @@ export function VideoPlayer({
       teardownPlayer();
     };
   }, [videoId, selectedLesson?.id, student?._id, courseId, recordLessonView, completeLessonIfDone]);
-
-  const handleFullscreenToggle = () => {
-    if (typeof document === "undefined") return;
-    const container = playerWrapperRef.current;
-    if (!container) return;
-
-    const doc: any = document;
-    const isFullscreen = doc.fullscreenElement || doc.webkitFullscreenElement || doc.msFullscreenElement;
-
-    if (!isFullscreen) {
-      const request = container.requestFullscreen || (container as any).webkitRequestFullscreen || (container as any).msRequestFullscreen;
-      request?.call(container);
-    } else {
-      const exit = doc.exitFullscreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-      exit?.call(document);
-    }
-  };
 
   if (!videoId) {
     if (thumbnail?.url) {
@@ -262,31 +236,13 @@ export function VideoPlayer({
   return (
     <Card className="overflow-hidden py-0">
       <div
-        ref={playerWrapperRef}
-        className="group relative aspect-video bg-black overflow-hidden"
+        ref={playerContainerRef}
+        className="relative aspect-video bg-black overflow-hidden"
       >
         <div
-          ref={playerContainerRef}
           className="w-full h-full"
           id="youtube-player"
         />
-        {selectedLesson && (
-          <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/80 to-transparent p-4 text-white pointer-events-none opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
-            <div className="text-sm font-medium">{displayTitle}</div>
-            {displayDuration && (
-              <div className="text-xs text-white/70">~ {displayDuration}</div>
-            )}
-          </div>
-        )}
-        <Button
-          type="button"
-          size="icon"
-          className="absolute bottom-4 right-4 z-20 rounded-full bg-black/60 text-white hover:bg-black/80"
-          onClick={handleFullscreenToggle}
-          aria-label="M? d?ng toàn màn hình"
-        >
-          <Maximize2 className="h-4 w-4" />
-        </Button>
       </div>
 
       {/* Progress Bar */}
