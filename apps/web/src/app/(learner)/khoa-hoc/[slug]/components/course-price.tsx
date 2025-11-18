@@ -101,25 +101,16 @@ export function CoursePrice({
           ) : null}
         </div>
 
-        {pricingType === "paid" && checkoutHref ? (
-          <Button
-            asChild
-            size="lg"
-            className="w-full font-semibold"
-          >
-            <Link href={checkoutHref}>
-              Mua khóa học
-            </Link>
+        {hasFullAccess ? (
+          <Button asChild size="lg" className="w-full font-semibold">
+            <Link href={courseSlug ? `/khoa-hoc/${courseSlug}#curriculum` : "#curriculum"}>Vào học ngay</Link>
           </Button>
-        ) : null}
-
-        {pricingType === "free" ? (
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full"
-            disabled
-          >
+        ) : pricingType === "paid" && checkoutHref ? (
+          <Button asChild size="lg" className="w-full font-semibold">
+            <Link href={checkoutHref}>Mua khóa học</Link>
+          </Button>
+        ) : pricingType === "free" ? (
+          <Button variant="outline" size="lg" className="w-full" disabled>
             Miễn phí - Đăng ký ở phần "Chương trình học"
           </Button>
         ) : null}

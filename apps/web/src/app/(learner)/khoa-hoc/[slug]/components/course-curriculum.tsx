@@ -1,22 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Play, Clock, ChevronDown } from "lucide-react";
+import { Play, Clock, ChevronDown, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { CourseLesson, CourseChapter } from "./course-detail-client";
+import { cn } from "@/lib/utils";
 
-export function CourseCurriculum({ 
-  chapters, 
+export function CourseCurriculum({
+  chapters,
   summary,
   badges,
   onLessonSelect,
-}: { 
+  hasFullAccess = false,
+}: {
   chapters: CourseChapter[];
   summary: string;
   badges: string[];
   onLessonSelect?: (lesson: CourseLesson) => void;
+  hasFullAccess?: boolean;
 }) {
   const [expandedChapters, setExpandedChapters] = useState<Set<string>>(() => {
     const initial = new Set<string>();
@@ -98,40 +101,13 @@ export function CourseCurriculum({
                   {expandedChapters.has(chapter.id) && (
                     <div className="bg-muted/30">
                       {chapter.lessons.map((lesson) => (
-                        <button
+                        <CurriculumLessonRow
                           key={lesson.id}
-                          onClick={() => lesson.isPreview && onLessonSelect?.(lesson)}
-                          disabled={!lesson.isPreview}
-                          className={`w-full border-l-4 p-4 text-left transition-colors ${
-                            lesson.isPreview 
-                              ? 'border-l-primary hover:bg-primary/5 cursor-pointer' 
-                              : 'border-l-muted text-muted-foreground opacity-60'
-                          }`}
-                          type="button"
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div
-                                className={`flex h-6 w-6 items-center justify-center rounded-full flex-shrink-0 ${
-                                  lesson.isPreview ? "bg-primary text-primary-foreground" : "bg-muted"
-                                }`}
-                              >
-                                <Play className="h-2.5 w-2.5" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className={`text-sm font-medium text-pretty truncate ${
-                                  lesson.isPreview ? "text-foreground" : ""
-                                }`}>
-                                  {lesson.title}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
-                              <Clock className="h-3 w-3" />
-                              <span>{lesson.durationLabel ?? "00:00"}</span>
-                            </div>
-                          </div>
-                        </button>
+                          lesson={lesson}
+                          isUnlocked={hasFullAccess || lesson.isPreview}
+                          showUnlockedBadge={hasFullAccess && !lesson.isPreview}
+                          onSelect={onLessonSelect}
+                        />
                       ))}
                     </div>
                   )}
@@ -160,5 +136,59 @@ export function CourseCurriculum({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function CurriculumLessonRow({
+  lesson,
+  isUnlocked,
+  showUnlockedBadge,
+  onSelect,
+}: {
+  lesson: CourseLesson;
+  isUnlocked: boolean;
+  showUnlockedBadge: boolean;
+  onSelect?: (lesson: CourseLesson) => void;
+}) {
+  return (
+    <button
+      onClick={() => isUnlocked && onSelect?.(lesson)}
+      disabled={!isUnlocked}
+      className={cn(
+        "w-full border-l-4 p-4 text-left transition-colors",
+        isUnlocked
+          ? "border-l-primary hover:bg-primary/5 cursor-pointer"
+          : "border-l-muted text-muted-foreground opacity-60 cursor-not-allowed",
+      )}
+      type="button"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <div
+            className={cn(
+              "flex h-6 w-6 items-center justify-center rounded-full flex-shrink-0",
+              isUnlocked ? "bg-primary text-primary-foreground" : "bg-muted",
+            )}
+          >
+            <Play className="h-2.5 w-2.5" />
+          </div>
+          <div className="min-w-0 flex items-center gap-2">
+            <p className={cn("text-sm font-medium text-pretty truncate", isUnlocked ? "text-foreground" : "")}>
+              {lesson.title}
+            </p>
+            {showUnlockedBadge ? (
+              <Badge variant="secondary" className="hidden sm:flex items-center gap-1 bg-emerald-100 text-emerald-800">
+                <Unlock className="h-3 w-3" />
+                Đã mở
+              </Badge>
+            ) : null}
+          </div>
+        </div>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+          <Clock className="h-3 w-3" />
+          <span>{lesson.durationLabel ?? "00:00"}</span>
+        </div>
+      </div>
+    </button>
   );
 }

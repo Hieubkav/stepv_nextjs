@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import PaymentDashboard from '@/features/admin/pages/payment-dashboard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AdminPaymentPage() {
   return (
@@ -23,8 +23,19 @@ export default function AdminPaymentPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-2">
-        <PaymentDashboard />
+      <main className="mx-auto max-w-4xl px-4 py-6">
+        <Card className="border-dashed">
+          <CardHeader>
+            <CardTitle>Thanh toán (MVP)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              Hệ thống hiện dùng bản MVP: khi học viên nhấn “Xác nhận đặt khóa”, khóa học được kích hoạt ngay và
+              không cần gửi minh chứng hay duyệt tay.
+            </p>
+            <p>Trang này tạm thời không có tác vụ nào khác.</p>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

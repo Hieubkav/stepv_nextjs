@@ -19,61 +19,71 @@ export const createOrder = mutation({
   handler: async (ctx, { studentId, courseId }) => {
     const now = Date.now();
 
-    // Verify student exists
     const student = await ctx.db.get(studentId);
     if (!student) {
       throw new Error("Student not found");
     }
 
-    // Verify course exists and get price
     const course = await ctx.db.get(courseId);
     if (!course) {
       throw new Error("Course not found");
     }
 
-    // Check if student already has active order or enrollment for this course
     const existingEnrollment = await ctx.db
       .query("course_enrollments")
       .withIndex("by_course_user", (q) =>
-        q.eq("courseId", courseId).eq("userId", student._id.toString())
+        q.eq("courseId", courseId).eq("userId", student._id.toString()),
       )
       .first();
 
-    if (existingEnrollment && existingEnrollment.active) {
-      throw new Error("Student already enrolled in this course");
-    }
-
-    // Check for pending order
-    const pendingOrder = await ctx.db
+    const existingOrder = await ctx.db
       .query("orders")
-      .withIndex("by_student_status", (q) =>
-        q.eq("studentId", studentId).eq("status", "pending")
-      )
+      .withIndex("by_student", (q) => q.eq("studentId", studentId))
       .filter((q) => q.eq(q.field("courseId"), courseId))
       .first();
 
-    if (pendingOrder) {
-      throw new Error("Order already exists and is pending payment");
+    if (existingEnrollment && existingEnrollment.active && existingOrder) {
+      return {
+        orderId: existingOrder._id,
+        message: "Student already enrolled in this course",
+        alreadyPending: false,
+        activated: true,
+      };
     }
 
-    // Get course price
+    if (existingOrder && existingOrder.status !== "cancelled") {
+      return {
+        orderId: existingOrder._id,
+        message: "Order already exists",
+        alreadyPending: existingOrder.status !== "completed",
+        activated: existingOrder.status === "completed",
+      };
+    }
+
     const amount = course.priceAmount || 0;
 
-    // Create order
     const orderId = await ctx.db.insert("orders", {
-      studentId: studentId,
-      courseId: courseId,
-      amount: amount,
-      status: "pending",
-      paymentMethod: "vietqr",
+      studentId,
+      courseId,
+      amount,
+      status: "completed",
+      paymentMethod: "manual",
       notes: undefined,
       createdAt: now,
       updatedAt: now,
     });
 
+    await upsertEnrollment(ctx, {
+      courseId,
+      studentId,
+      enrolledAt: now,
+    });
+
     return {
       orderId,
       message: "Order created successfully",
+      alreadyPending: false,
+      activated: true,
     };
   },
 });
@@ -151,17 +161,30 @@ export const listStudentOrders = query({
       orders = orders.filter((o) => o.status === status);
     }
 
+    orders.sort((a, b) => b.createdAt - a.createdAt);
+
     // Fetch course names
     const result = await Promise.all(
       orders.map(async (order) => {
         const course = await ctx.db.get(order.courseId);
+        const payment = await ctx.db
+          .query("payments")
+          .withIndex("by_order", (q) => q.eq("orderId", order._id))
+          .order("desc")
+          .first();
         return {
           _id: order._id,
           courseId: order.courseId,
           amount: order.amount,
           status: order.status,
           createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
           courseName: course?.title || "Unknown Course",
+          courseSlug: course?.slug,
+          paymentStatus: payment?.status,
+          paymentId: payment?._id,
+          paymentScreenshotUrl: payment?.screenshotUrl,
+          paymentSubmittedAt: payment?.createdAt,
         };
       })
     );
@@ -255,6 +278,43 @@ export const recordPayment = mutation({
     };
   },
 });
+
+async function upsertEnrollment(
+  ctx: MutationCtx,
+  {
+    courseId,
+    studentId,
+    enrolledAt,
+  }: { courseId: Id<"courses">; studentId: Id<"students">; enrolledAt: number },
+) {
+  const existingEnrollment = await ctx.db
+    .query("course_enrollments")
+    .withIndex("by_course_user", (q) =>
+      q.eq("courseId", courseId).eq("userId", studentId.toString()),
+    )
+    .first();
+
+  if (!existingEnrollment) {
+    await ctx.db.insert("course_enrollments", {
+      courseId,
+      userId: studentId.toString(),
+      enrolledAt,
+      progressPercent: 0,
+      status: "active" as const,
+      lastViewedLessonId: undefined,
+      order: 0,
+      active: true,
+    });
+    return;
+  }
+
+  if (!existingEnrollment.active) {
+    await ctx.db.patch(existingEnrollment._id, {
+      active: true,
+      enrolledAt,
+    });
+  }
+}
 
 /**
  * Mutation: Admin confirms payment

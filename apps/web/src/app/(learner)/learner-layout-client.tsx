@@ -33,6 +33,7 @@ const NAV_LINKS = [{ label: "Tất cả khóa học", href: "/khoa-hoc" }];
 
 const STUDENT_MENU_LINKS = [
   { label: "Thông tin học viên", href: "/khoa-hoc/thong-tin" },
+  { label: "Đơn đặt khóa học", href: "/khoa-hoc/don-dat" },
   { label: "Khóa học yêu thích", href: "/khoa-hoc/yeu-thich" },
   { label: "Khóa học đã mua", href: "/khoa-hoc/da-mua" },
 ];

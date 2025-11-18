@@ -116,3 +116,152 @@ export const listOrders = query({
 function uniqueIds<T>(ids: T[]): T[] {
   return [...new Set(ids)];
 }
+
+export const getOrderDetail = query({
+  args: {
+    orderId: v.id("orders"),
+  },
+  returns: v.object({
+    exists: v.boolean(),
+    order: v.optional(
+      v.object({
+        _id: v.id("orders"),
+        amount: v.number(),
+        status: v.union(
+          v.literal("pending"),
+          v.literal("paid"),
+          v.literal("completed"),
+          v.literal("cancelled"),
+        ),
+        paymentMethod: v.string(),
+        notes: v.optional(v.string()),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+      }),
+    ),
+    student: v.optional(
+      v.object({
+        _id: v.id("students"),
+        fullName: v.string(),
+        email: v.optional(v.string()),
+        phone: v.optional(v.string()),
+      }),
+    ),
+    course: v.optional(
+      v.object({
+        _id: v.id("courses"),
+        title: v.string(),
+        slug: v.optional(v.string()),
+        pricingType: v.union(v.literal("free"), v.literal("paid")),
+        priceAmount: v.optional(v.number()),
+      }),
+    ),
+    payment: v.optional(
+      v.object({
+        _id: v.id("payments"),
+        status: v.union(
+          v.literal("pending"),
+          v.literal("confirmed"),
+          v.literal("rejected"),
+        ),
+        screenshotUrl: v.optional(v.string()),
+        createdAt: v.number(),
+        confirmedAt: v.optional(v.number()),
+        rejectionReason: v.optional(v.string()),
+      }),
+    ),
+    enrollment: v.object({
+      exists: v.boolean(),
+      active: v.boolean(),
+      enrolledAt: v.optional(v.number()),
+    }),
+  }),
+  handler: async (ctx, { orderId }) => {
+    const order = await ctx.db.get(orderId);
+    if (!order) {
+      return {
+        exists: false,
+        enrollment: {
+          exists: false,
+          active: false,
+          enrolledAt: undefined,
+        },
+      };
+    }
+
+    const [student, course, payment, enrollment] = await Promise.all([
+      ctx.db.get(order.studentId),
+      ctx.db.get(order.courseId),
+      ctx.db
+        .query("payments")
+        .withIndex("by_order", (q) => q.eq("orderId", orderId))
+        .order("desc")
+        .first(),
+      ctx.db
+        .query("course_enrollments")
+        .withIndex("by_course_user", (q) =>
+          q.eq("courseId", order.courseId).eq("userId", order.studentId.toString()),
+        )
+        .first(),
+    ]);
+
+    const studentPayload = student
+      ? {
+          _id: student._id,
+          fullName: student.fullName || student.account,
+          email: student.email,
+          phone: student.phone,
+        }
+      : undefined;
+
+    const coursePayload = course
+      ? {
+          _id: course._id,
+          title: course.title,
+          slug: course.slug,
+          pricingType: course.pricingType,
+          priceAmount: course.priceAmount,
+        }
+      : undefined;
+
+    const paymentPayload = payment
+      ? {
+          _id: payment._id,
+          status: payment.status,
+          screenshotUrl: payment.screenshotUrl,
+          createdAt: payment.createdAt,
+          confirmedAt: payment.confirmedAt,
+          rejectionReason: payment.rejectionReason,
+        }
+      : undefined;
+
+    const enrollmentPayload = enrollment
+      ? {
+          exists: true,
+          active: Boolean(enrollment.active),
+          enrolledAt: enrollment.enrolledAt,
+        }
+      : {
+          exists: false,
+          active: false,
+          enrolledAt: undefined,
+        };
+
+    return {
+      exists: true,
+      order: {
+        _id: order._id,
+        amount: order.amount,
+        status: order.status,
+        paymentMethod: order.paymentMethod,
+        notes: order.notes,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+      },
+      student: studentPayload,
+      course: coursePayload,
+      payment: paymentPayload,
+      enrollment: enrollmentPayload,
+    };
+  },
+});

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@dohy/backend/convex/_generated/api";
+import type { Id } from "@dohy/backend/convex/_generated/dataModel";
+import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 import { VideoPlayer } from "./video-player";
 import { CourseDetails } from "./course-details";
 import { CourseCurriculum } from "./course-curriculum";
@@ -80,6 +84,12 @@ export function CourseDetailClient({
   courseId: string;
 }) {
   const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
+  const { student } = useStudentAuth();
+  const enrollment = useQuery(
+    api.enrollment.getEnrollmentProgress,
+    student ? { courseId: course.id as Id<"courses">, userId: student._id } : "skip",
+  ) as { exists: boolean; active: boolean } | undefined;
+  const hasFullAccess = Boolean(student && enrollment?.exists && enrollment.active);
 
   const handleLessonSelect = (lesson: CourseLesson) => {
     setSelectedLesson(lesson);
@@ -142,8 +152,15 @@ export function CourseDetailClient({
           pricingType={course.pricingType}
           courseSlug={course.slug}
           courseId={courseId}
+          hasFullAccess={hasFullAccess}
         />
-        <CourseCurriculum chapters={chapters} summary={curriculumSummary} badges={badges} onLessonSelect={handleLessonSelect} />
+        <CourseCurriculum
+          chapters={chapters}
+          summary={curriculumSummary}
+          badges={badges}
+          onLessonSelect={handleLessonSelect}
+          hasFullAccess={hasFullAccess}
+        />
       </div>
     </>
   );
