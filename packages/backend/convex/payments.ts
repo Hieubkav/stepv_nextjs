@@ -166,7 +166,7 @@ export const listStudentOrders = query({
 
     orders.sort((a, b) => b.createdAt - a.createdAt);
 
-    // Fetch course names
+    // Fetch course names and thumbnails
     const result = await Promise.all(
       orders.map(async (order) => {
         const course = await ctx.db.get(order.courseId);
@@ -175,6 +175,19 @@ export const listStudentOrders = query({
           .withIndex("by_order", (q) => q.eq("orderId", order._id))
           .order("desc")
           .first();
+        
+        let thumbnailUrl = undefined;
+        if (course?.thumbnailMediaId) {
+          try {
+            const media = await ctx.db.get(course.thumbnailMediaId);
+            if (media?.storageId) {
+              thumbnailUrl = await ctx.storage.getUrl(media.storageId);
+            }
+          } catch (_) {
+            // Storage file not found, continue without thumbnail
+          }
+        }
+        
         return {
           _id: order._id,
           courseId: order.courseId,
@@ -184,6 +197,7 @@ export const listStudentOrders = query({
           updatedAt: order.updatedAt,
           courseName: course?.title || "Unknown Course",
           courseSlug: course?.slug,
+          thumbnailUrl,
           paymentStatus: payment?.status,
           paymentId: payment?._id,
           paymentScreenshotUrl: payment?.screenshotUrl,

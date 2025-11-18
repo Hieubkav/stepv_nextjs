@@ -18,6 +18,7 @@ type StudentOrder = {
   courseId: Id<'courses'>;
   courseName: string;
   courseSlug?: string;
+  thumbnailUrl?: string;
   amount: number;
   status: 'pending' | 'paid' | 'completed' | 'cancelled';
   createdAt: number;
@@ -102,30 +103,21 @@ export default function OrdersPageClient({ highlightOrderId }: OrdersPageClientP
   }
 
   return (
-    <div className="space-y-6 py-6">
-      <div className="space-y-1">
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-muted-foreground">Learner</p>
-        <h1 className="text-2xl font-semibold leading-tight">Đơn đặt khóa học</h1>
-        <p className="text-sm text-muted-foreground">
-          Sau khi đặt đơn, chờ admin xác nhận thanh toán. Khi xác nhận xong, bạn sẽ có quyền truy cập khóa học ngay.
-        </p>
-      </div>
+    <div className="space-y-4 py-4">
+      <h1 className="text-2xl font-semibold leading-tight">Đơn đặt khóa học</h1>
 
       <Card className="border-dashed border-blue-200 bg-blue-50/60">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-blue-900">Quy trình đơn giản</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-3">
-          {['Nhấn “Xác nhận đặt khóa” tại trang Checkout', 'Hệ thống kích hoạt khóa ngay', 'Vào học trong mục khóa học đã mua'].map(
-            (label, index) => (
-              <div key={label} className="flex items-start gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700">
+        <CardContent className="pt-3 pb-3">
+          <div className="grid gap-3 sm:grid-cols-3">
+            {['Xác nhận đặt khóa', 'Hệ thống kích hoạt', 'Vào học'].map((label, index) => (
+              <div key={label} className="flex items-start gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 text-sm shrink-0">
                   {index + 1}
                 </div>
-                <p className="text-sm text-blue-900">{label}</p>
+                <p className="text-xs text-blue-900 leading-tight pt-0.5">{label}</p>
               </div>
-            ),
-          )}
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -178,20 +170,29 @@ function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: b
   return (
     <Card className={cn('border border-border/60 shadow-sm', highlighted && 'border-primary shadow-lg')}>
       <CardHeader className="space-y-3">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <CardTitle className="text-lg">{order.courseName}</CardTitle>
-            <p className="text-xs text-muted-foreground">Mã đơn: {shortId(order._id)}</p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="flex gap-3 sm:flex-1">
+            {order.thumbnailUrl && (
+              <img
+                src={order.thumbnailUrl}
+                alt={order.courseName}
+                className="h-16 w-24 rounded-lg object-cover"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg truncate">{order.courseName}</CardTitle>
+              <p className="text-xs text-muted-foreground">Mã đơn: {shortId(order._id)}</p>
+              <p className="text-sm font-semibold text-foreground mt-1">{currencyFormatter.format(order.amount)}</p>
+            </div>
           </div>
-          <Badge className={cn('text-xs', orderStatus.tone)}>{orderStatus.label}</Badge>
+          <Badge className={cn('text-xs shrink-0', orderStatus.tone)}>{orderStatus.label}</Badge>
         </div>
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{currencyFormatter.format(order.amount)}</span>
-          <span>Đặt ngày: {dateTimeFormatter.format(new Date(order.createdAt))}</span>
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span>Đặt: {dateTimeFormatter.format(new Date(order.createdAt))}</span>
           <span>Cập nhật: {dateTimeFormatter.format(new Date(order.updatedAt))}</span>
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-4">
         {order.status === 'cancelled' ? (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -199,25 +200,25 @@ function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: b
             <AlertDescription>Liên hệ đội ngũ hỗ trợ nếu bạn cần kích hoạt lại đơn này.</AlertDescription>
           </Alert>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+          <div className="grid gap-3 lg:grid-cols-[1fr_1fr]">
             <OrderProgress currentStepIndex={currentStepIndex} />
-            <div className="rounded-xl border bg-muted/40 p-4 text-sm leading-relaxed">
-              <p className="font-semibold text-foreground">Tình trạng</p>
+            <div className="rounded-lg border bg-muted/40 p-3 text-xs leading-relaxed">
+              <p className="font-semibold text-foreground text-sm">{orderStatus.label}</p>
               <p className="text-muted-foreground">{orderStatus.description}</p>
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {order.courseSlug ? (
-            <Button asChild>
+            <Button asChild size="sm">
               <Link href={`/khoa-hoc/${order.courseSlug}`}>
-                {order.status === 'completed' ? 'Vào học ngay' : 'Xem chi tiết khóa học'}
+                {order.status === 'completed' ? 'Vào học ngay' : 'Xem chi tiết'}
               </Link>
             </Button>
           ) : null}
-          <Button asChild variant="outline">
-            <Link href="/khoa-hoc">Khám phá khóa khác</Link>
+          <Button asChild variant="outline" size="sm">
+            <Link href="/khoa-hoc">Khóa khác</Link>
           </Button>
         </div>
       </CardContent>
@@ -227,31 +228,22 @@ function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: b
 
 function OrderProgress({ currentStepIndex }: { currentStepIndex: number }) {
   const steps = [
-    {
-      label: 'Đặt đơn',
-      description: 'Bạn đã xác nhận mua khóa.',
-    },
-    {
-      label: 'Chờ xác nhận',
-      description: 'Đơn đã gửi, chờ admin xác nhận thanh toán.',
-    },
-    {
-      label: 'Vào học',
-      description: 'Khóa đã mở, bạn có thể truy cập toàn bộ nội dung.',
-    },
+    { label: 'Đặt đơn', desc: 'Bạn xác nhận mua' },
+    { label: 'Chờ xác nhận', desc: 'Admin xác nhận' },
+    { label: 'Vào học', desc: 'Truy cập khóa' },
   ];
 
   return (
-    <div className="space-y-3 rounded-xl border bg-background p-4">
+    <div className="space-y-2 rounded-lg border bg-background p-3">
       {steps.map((step, index) => {
         const reached = currentStepIndex >= index;
         const Icon = reached ? CheckCircle : Clock;
         return (
-          <div key={step.label} className="flex gap-3">
-            <Icon className={cn('h-4 w-4 mt-1', reached ? 'text-emerald-600' : 'text-muted-foreground')} />
-            <div>
-              <p className="text-sm font-semibold text-foreground">{step.label}</p>
-              <p className="text-xs text-muted-foreground">{step.description}</p>
+          <div key={step.label} className="flex gap-2 items-start">
+            <Icon className={cn('h-4 w-4 mt-0.5 shrink-0', reached ? 'text-emerald-600' : 'text-muted-foreground')} />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-foreground leading-tight">{step.label}</p>
+              <p className="text-xs text-muted-foreground leading-tight">{step.desc}</p>
             </div>
           </div>
         );
