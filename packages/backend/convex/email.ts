@@ -710,3 +710,177 @@ export const sendPaymentRejectedEmail = internalAction({
         });
     },
 });
+
+export const sendCourseOnboardingEmail = internalAction({
+    args: {
+        studentEmail: v.string(),
+        studentName: v.string(),
+        courseName: v.string(),
+        courseSlug: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { studentEmail, studentName, courseName, courseSlug } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 700;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 16px;
+              color: #333;
+              margin-bottom: 20px;
+            }
+            .message {
+              font-size: 14px;
+              color: #666;
+              margin-bottom: 20px;
+              line-height: 1.8;
+            }
+            .course-info {
+              background: #f0f7f0;
+              border-left: 4px solid #4caf50;
+              padding: 20px;
+              margin: 30px 0;
+              border-radius: 4px;
+            }
+            .course-name {
+              font-size: 18px;
+              font-weight: 600;
+              color: #4caf50;
+              margin-bottom: 10px;
+            }
+            .button-container {
+              text-align: center;
+              margin: 30px 0;
+            }
+            .start-button {
+              background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+              color: white;
+              text-decoration: none;
+              padding: 14px 40px;
+              border-radius: 6px;
+              font-weight: 600;
+              display: inline-block;
+              transition: opacity 0.3s;
+            }
+            .start-button:hover {
+              opacity: 0.9;
+            }
+            .tips {
+              background: #fafafa;
+              border: 1px solid #e0e0e0;
+              padding: 20px;
+              margin: 20px 0;
+              border-radius: 4px;
+              font-size: 13px;
+            }
+            .tips strong {
+              display: block;
+              margin-bottom: 10px;
+              color: #333;
+            }
+            .tips ul {
+              margin: 0;
+              padding-left: 20px;
+            }
+            .tips li {
+              margin: 8px 0;
+              color: #666;
+            }
+            .footer {
+              background: #f8f9fa;
+              border-top: 1px solid #e9ecef;
+              padding: 20px 30px;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🎓 Chúc mừng bạn!</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Xin chào ${studentName},</p>
+              
+              <p class="message">
+                Đơn hàng của bạn đã được xác nhận thành công! 🎉 Bạn hiện đã có quyền truy cập vào khóa học dưới đây.
+              </p>
+
+              <div class="course-info">
+                <div class="course-name">📚 ${courseName}</div>
+                <p style="margin: 0; color: #666; font-size: 13px;">
+                  Bạn đã sẵn sàng bắt đầu hành trình học tập của mình. Hãy đăng nhập vào tài khoản Dohy để xem bài học.
+                </p>
+              </div>
+
+              <div class="button-container">
+                <a href="https://dohy.dev/khoa-hoc/${courseSlug}" class="start-button">Bắt đầu học ngay</a>
+              </div>
+
+              <div class="tips">
+                <strong>💡 Mẹo để bắt đầu:</strong>
+                <ul>
+                  <li>Đăng nhập vào tài khoản Dohy của bạn</li>
+                  <li>Truy cập khóa học từ danh sách khóa học của bạn</li>
+                  <li>Bắt đầu với bài học đầu tiên</li>
+                  <li>Làm theo video hướng dẫn từng bước</li>
+                  <li>Hoàn thành các bài tập để lấy chứng chỉ</li>
+                </ul>
+              </div>
+
+              <p class="message">
+                Nếu bạn gặp bất kỳ vấn đề nào hoặc có câu hỏi, vui lòng không ngần ngại liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Dohy. Tất cả quyền được bảo lưu.</p>
+              <p>Đây là email tự động, vui lòng không trả lời email này.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaResend({
+            to: studentEmail,
+            subject: `Chúc mừng! Bạn đã được ghi danh vào khóa học ${courseName}`,
+            html,
+        });
+    },
+});

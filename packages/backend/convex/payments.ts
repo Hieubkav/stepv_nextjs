@@ -258,13 +258,26 @@ export const recordPayment = mutation({
       updatedAt: now,
     });
 
-    // Send notification email to admin
-    // TODO: Implement email sending via separate action
-    // await ctx.runAction(internal.email.sendPaymentRequestToAdminEmail, {...});
+    // Get course info for email
+    const course = await ctx.db.get(order.courseId);
 
-    // Send confirmation email to student
-    // TODO: Implement email sending via separate action
-    // await ctx.runAction(internal.email.sendPaymentReceivedEmail, {...});
+    // Schedule notification email to admin
+    if (course) {
+      await ctx.scheduler.runAfter(0, internal.email.sendPaymentRequestToAdminEmail, {
+        studentName: student.fullName || "Học viên",
+        studentEmail: student.email,
+        courseId: order.courseId.toString(),
+        amount: order.amount,
+        paymentId: paymentId.toString(),
+      });
+    }
+
+    // Schedule confirmation email to student
+    await ctx.scheduler.runAfter(0, internal.email.sendPaymentReceivedEmail, {
+      studentEmail: student.email,
+      studentName: student.fullName || "Học viên",
+      amount: order.amount,
+    });
 
     return {
       paymentId,
@@ -355,14 +368,15 @@ export const adminConfirmPayment = mutation({
     const student = await ctx.db.get(payment.studentId);
     const course = await ctx.db.get(order.courseId);
 
-    // Send confirmation email
-    // TODO: Implement email sending via separate action
-    // if (student && course) {
-    //   await ctx.runAction(
-    //     internal.email.sendPaymentConfirmedEmail,
-    //     {...}
-    //   );
-    // }
+    // Schedule confirmation email to student
+    if (student && course) {
+      await ctx.scheduler.runAfter(0, internal.email.sendCourseOnboardingEmail, {
+        studentEmail: student.email,
+        studentName: student.fullName || "Học viên",
+        courseName: course.title,
+        courseSlug: course.slug,
+      });
+    }
 
     return {
       success: true,
@@ -409,15 +423,15 @@ export const adminRejectPayment = mutation({
       updatedAt: now,
     });
 
-    // Get student
+    // Get student and schedule rejection email
     const student = await ctx.db.get(payment.studentId);
-    // TODO: Implement email sending via separate action
-    // if (student) {
-    //   await ctx.runAction(
-    //     internal.email.sendPaymentRejectedEmail,
-    //     {...}
-    //   );
-    // }
+    if (student) {
+      await ctx.scheduler.runAfter(0, internal.email.sendPaymentRejectedEmail, {
+        studentEmail: student.email,
+        studentName: student.fullName || "Học viên",
+        reason: reason,
+      });
+    }
 
     return {
       success: true,
