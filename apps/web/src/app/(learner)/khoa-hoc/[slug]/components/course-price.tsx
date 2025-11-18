@@ -49,6 +49,11 @@ export function CoursePrice({
     }
   }, [favoriteCheck?.isFavorite]);
 
+  const checkoutHref =
+    courseSlug && typeof courseSlug === "string"
+      ? { pathname: "/khoa-hoc/checkout", query: { slug: courseSlug } }
+      : null;
+
   async function handleToggleFavorite() {
     if (!student) {
       toast.error("Vui lòng đăng nhập để thêm vào danh sách yêu thích");
@@ -96,13 +101,13 @@ export function CoursePrice({
           ) : null}
         </div>
 
-        {pricingType === "paid" && courseSlug ? (
+        {pricingType === "paid" && checkoutHref ? (
           <Button
             asChild
             size="lg"
             className="w-full font-semibold"
           >
-            <Link href={`/khoa-hoc/${courseSlug}/checkout`}>
+            <Link href={checkoutHref}>
               Mua khóa học
             </Link>
           </Button>

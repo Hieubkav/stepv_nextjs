@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useAction } from 'convex/react';
 import { useRouter } from 'next/navigation';
 import { api } from '@dohy/backend/convex/_generated/api';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CheckCircle, Upload, Loader } from 'lucide-react';
+import { buildVietQRImageUrl } from '@/lib/vietqr';
 
 interface CheckoutFormProps {
   courseId: Id<'courses'>;
@@ -24,7 +25,20 @@ const currencyFormatter = new Intl.NumberFormat('vi-VN', {
   maximumFractionDigits: 0,
 });
 
+const CONFIRM_STEP_TILES = [
+  { title: 'Bước 1', detail: 'Nhấn "Tiếp tục" để tạo đơn hàng & mã QR' },
+  { title: 'Bước 2', detail: 'Quét VietQR hoặc chuyển khoản thủ công' },
+  { title: 'Bước 3', detail: 'Tải minh chứng để admin duyệt trong 1-2 giờ' },
+];
+
 type Step = 'confirm' | 'qr' | 'upload' | 'success';
+
+export type PaymentConfig = {
+  bankAccountNumber: string;
+  bankAccountName: string;
+  bankCode: string;
+  bankBranch?: string | null;
+};
 
 export default function CheckoutForm({
   courseId,
@@ -41,10 +55,111 @@ export default function CheckoutForm({
   const [error, setError] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [transferNote, setTransferNote] = useState(() => buildTransferNote(courseName));
+
+  useEffect(() => {
+    setTransferNote(buildTransferNote(courseName));
+  }, [courseName]);
 
   // Queries
   const paymentSettings = useQuery(api.paymentSettings.getPaymentSettings);
+  const siteSettings = useQuery(api.settings.getByKey, { key: 'site' });
+
+  const effectivePaymentSettings = useMemo<PaymentConfig | null>(() => {
+    if (
+      paymentSettings &&
+      paymentSettings.exists &&
+      paymentSettings.bankAccountNumber &&
+      paymentSettings.bankAccountName &&
+      paymentSettings.bankCode
+    ) {
+      return {
+        bankAccountNumber: paymentSettings.bankAccountNumber,
+        bankAccountName: paymentSettings.bankAccountName,
+        bankCode: paymentSettings.bankCode,
+        bankBranch: paymentSettings.bankBranch,
+      };
+    }
+
+    const siteValue = (siteSettings?.value ?? {}) as Record<string, any>;
+    const siteAccountNumber =
+      typeof siteValue.bankAccountNumber === 'string' ? siteValue.bankAccountNumber.trim() : '';
+    const siteAccountName =
+      typeof siteValue.bankAccountName === 'string' ? siteValue.bankAccountName.trim() : '';
+    const siteBankCode = typeof siteValue.bankCode === 'string' ? siteValue.bankCode.trim() : '';
+
+    if (siteAccountNumber && siteAccountName && siteBankCode) {
+      return {
+        bankAccountNumber: siteAccountNumber,
+        bankAccountName: siteAccountName,
+        bankCode: siteBankCode,
+        bankBranch:
+          typeof siteValue.bankBranch === 'string' && siteValue.bankBranch.trim().length > 0
+            ? siteValue.bankBranch
+            : undefined,
+      };
+    }
+
+    return null;
+  }, [
+    paymentSettings?.exists,
+    paymentSettings?.bankAccountNumber,
+    paymentSettings?.bankAccountName,
+    paymentSettings?.bankCode,
+    siteSettings?._id,
+    siteSettings?.updatedAt,
+    siteSettings?.value?.bankAccountNumber,
+    siteSettings?.value?.bankAccountName,
+    siteSettings?.value?.bankCode,
+    siteSettings?.value?.bankBranch,
+  ]);
+  const fallbackQrUrl = useMemo(() => {
+    if (!effectivePaymentSettings) {
+      return null;
+    }
+    return buildVietQRImageUrl({
+      bankCode: effectivePaymentSettings.bankCode,
+      accountNumber: effectivePaymentSettings.bankAccountNumber,
+      accountName: effectivePaymentSettings.bankAccountName,
+      amount: coursePrice,
+      addInfo: transferNote,
+    });
+  }, [
+    effectivePaymentSettings?.bankAccountNumber,
+    effectivePaymentSettings?.bankAccountName,
+    effectivePaymentSettings?.bankCode,
+    coursePrice,
+    transferNote,
+  ]);
   const order = orderId ? useQuery(api.payments.getOrder, { orderId }) : null;
+  const transferInfoPanel = effectivePaymentSettings ? (
+    <div className="bg-amber-50 rounded-lg p-4 space-y-3">
+      <p className="text-sm font-semibold text-amber-900">ℹ️ Thông tin chuyển khoản</p>
+      <div className="space-y-2 text-sm">
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Số tài khoản:</span>
+          <span className="font-mono font-semibold">{effectivePaymentSettings.bankAccountNumber}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Chủ tài khoản:</span>
+          <span className="font-semibold">{effectivePaymentSettings.bankAccountName}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Số tiền:</span>
+          <span className="font-bold text-blue-600">{currencyFormatter.format(coursePrice)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-muted-foreground">Nội dung:</span>
+          <span className="font-mono text-xs">{transferNote}</span>
+        </div>
+      </div>
+    </div>
+  ) : null;
+  const qrGuidePanel = (
+    <div className="bg-green-50 rounded-lg p-4">
+      <p className="text-sm text-green-900">👉 Quét mã QR bằng ứng dụng ngân hàng hoặc copy thông tin để chuyển khoản</p>
+    </div>
+  );
 
   // Actions
   const generateVietQRAction = useAction(api.vietqr.generateVietQRCode);
@@ -60,6 +175,11 @@ export default function CheckoutForm({
   const recordPaymentMutation = useMutation(api.payments.recordPayment);
 
   const handleCreateOrder = async () => {
+    if (!effectivePaymentSettings) {
+      setError('Chưa có cấu hình thanh toán. Liên hệ admin.');
+      return;
+    }
+
     try {
       setError('');
       setLoading(true);
@@ -68,32 +188,43 @@ export default function CheckoutForm({
         courseId,
       });
       setOrderId(result.orderId);
+      const note = buildTransferNote(courseName, result.orderId);
+      setTransferNote(note);
 
-      // Generate VietQR code immediately after order creation
-      if (paymentSettings) {
-        setGeneratingQR(true);
-        const qrResult = await generateVietQRAction({
-          accountNumber: paymentSettings.bankAccountNumber,
-          accountName: paymentSettings.bankAccountName,
-          bankCode: paymentSettings.bankCode,
-          amount: coursePrice,
-          transactionInfo: `DOHY-${courseName.slice(0, 10).toUpperCase()}-${result.orderId.slice(-6)}`,
-        });
-        setVietqrCode(qrResult);
-        setGeneratingQR(false);
-      }
+      setGeneratingQR(true);
+      const qrResult = await generateVietQRAction({
+        accountNumber: effectivePaymentSettings.bankAccountNumber,
+        accountName: effectivePaymentSettings.bankAccountName,
+        bankCode: effectivePaymentSettings.bankCode,
+        amount: coursePrice,
+        transactionInfo: note,
+      });
+      setVietqrCode(qrResult);
+      setGeneratingQR(false);
 
       setStep('qr');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tạo đơn hàng');
+      const errorMsg = err instanceof Error ? err.message : 'Không thể tạo đơn hàng';
+      // Check if error is "already enrolled"
+      if (errorMsg.includes('already enrolled')) {
+        router.push('/khoa-hoc/don-dat');
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
+      setGeneratingQR(false);
     }
   };
 
-  const handleRecordPayment = async () => {
+  
+const handleRecordPayment = async () => {
     if (!orderId) {
       setError('Không tìm thấy đơn hàng');
+      return;
+    }
+    if (!effectivePaymentSettings) {
+      setError('Chưa có cấu hình thanh toán. Liên hệ admin.');
       return;
     }
 
@@ -116,8 +247,8 @@ export default function CheckoutForm({
         studentId,
         qrCodeUrl: vietqrCode?.qrCodeUrl,
         qrCodeData: vietqrCode?.qrDataUrl,
-        bankAccount: paymentSettings?.bankAccountNumber,
-        bankAccountName: paymentSettings?.bankAccountName,
+        bankAccount: effectivePaymentSettings.bankAccountNumber,
+        bankAccountName: effectivePaymentSettings.bankAccountName,
         screenshotUrl,
       });
 
@@ -131,7 +262,8 @@ export default function CheckoutForm({
     }
   };
 
-  const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  
+const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
@@ -151,7 +283,7 @@ export default function CheckoutForm({
     router.push(`/khoa-hoc/${courseId}`);
   };
 
-  if (!paymentSettings && step !== 'confirm') {
+  if (!effectivePaymentSettings && step !== 'confirm') {
     return (
       <div className="space-y-4">
         <Alert variant="destructive">
@@ -174,53 +306,27 @@ export default function CheckoutForm({
       {/* Step 1: Confirm Order */}
       {step === 'confirm' && (
         <Card>
-          <CardHeader>
-            <CardTitle>Xác nhận đơn hàng</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {courseThumbnailUrl && (
-              <img
-                src={courseThumbnailUrl}
-                alt={courseName}
-                className="w-full h-48 object-cover rounded-lg"
-              />
+          <CardContent className="space-y-4">
+            {!effectivePaymentSettings && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  Chưa cấu hình tài khoản thanh toán. Liên hệ admin để cập nhật trong trang Settings.
+                </AlertDescription>
+              </Alert>
             )}
-
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Tên khóa học</p>
-              <p className="text-lg font-semibold">{courseName}</p>
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Học phí</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {currencyFormatter.format(coursePrice)}
-              </p>
-            </div>
-
-            <div className="bg-blue-50 rounded-lg p-4 space-y-2">
-              <p className="text-sm font-medium">ℹ️ Quá trình thanh toán:</p>
-              <ol className="text-sm space-y-1 text-muted-foreground list-decimal list-inside">
-                <li>Bạn sẽ nhận QR code để chuyển khoản</li>
-                <li>Quét QR hoặc chuyển khoản theo thông tin hiển thị</li>
-                <li>Chụp ảnh hoặc video bằng chứng chuyển khoản</li>
-                <li>Tải lên để xác nhận (admin sẽ xác thực)</li>
-                <li>Khi được duyệt, bạn sẽ được truy cập khóa học</li>
-              </ol>
-            </div>
 
             <Button
               size="lg"
               onClick={handleCreateOrder}
-              disabled={loading}
+              disabled={loading || !effectivePaymentSettings}
               className="w-full"
             >
-              {loading ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
+              {loading ? 'Đang xử lý...' : 'Xác nhận mua'}
             </Button>
           </CardContent>
         </Card>
       )}
-
       {/* Step 2: VietQR Code Display */}
       {step === 'qr' && orderId && (
         <Card>
@@ -251,39 +357,50 @@ export default function CheckoutForm({
                   ) : null}
                 </div>
 
-                <div className="bg-amber-50 rounded-lg p-4 space-y-3">
-                  <p className="text-sm font-semibold text-amber-900">📋 Thông tin chuyển khoản</p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Số tài khoản:</span>
-                      <span className="font-mono font-semibold">
-                        {paymentSettings?.bankAccountNumber}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Chủ tài khoản:</span>
-                      <span className="font-semibold">{paymentSettings?.bankAccountName}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Số tiền:</span>
-                      <span className="font-bold text-blue-600">
-                        {currencyFormatter.format(coursePrice)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Nội dung:</span>
-                      <span className="font-mono text-xs">
-                        DOHY-{courseName.slice(0, 10).toUpperCase()}-{orderId.slice(-6)}
-                      </span>
-                    </div>
-                  </div>
+                {transferInfoPanel}
+
+                {qrGuidePanel}
+
+                {(vietqrCode.qrCodeUrl || fallbackQrUrl) && (
+                  <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                    <a href={(vietqrCode.qrCodeUrl ?? fallbackQrUrl)!} target="_blank" rel="noopener noreferrer">
+                      Mở QR trong tab mới
+                    </a>
+                  </Button>
+                )}
+
+                <Button
+                  size="lg"
+                  onClick={() => setStep('upload')}
+                  className="w-full"
+                >
+                  Tôi đã chuyển khoản rồi
+                </Button>
+              </>
+            ) : fallbackQrUrl ? (
+              <>
+                <div className="text-center">
+                  <img
+                    src={fallbackQrUrl}
+                    alt="VietQR Code"
+                    className="w-full max-w-sm mx-auto border-2 border-blue-200 rounded-lg p-4"
+                  />
                 </div>
 
-                <div className="bg-green-50 rounded-lg p-4">
-                  <p className="text-sm text-green-900">
-                    ✅ Quét mã QR bằng ứng dụng ngân hàng hoặc copy thông tin để chuyển khoản
-                  </p>
-                </div>
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>Không thể tạo mã QR từ API. Hiển thị QR mặc định từ cấu hình.</AlertDescription>
+                </Alert>
+
+                {transferInfoPanel}
+
+                {qrGuidePanel}
+
+                <Button variant="outline" size="sm" asChild className="w-full sm:w-auto">
+                  <a href={fallbackQrUrl} target="_blank" rel="noopener noreferrer">
+                    Mở QR trong tab mới
+                  </a>
+                </Button>
 
                 <Button
                   size="lg"
@@ -294,6 +411,7 @@ export default function CheckoutForm({
                 </Button>
               </>
             ) : (
+
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>Không thể tạo mã QR. Vui lòng thử lại.</AlertDescription>
@@ -423,4 +541,19 @@ export default function CheckoutForm({
       )}
     </div>
   );
+}
+
+export function buildTransferNote(courseName: string, orderId?: Id<'orders'> | null) {
+  const normalized = courseName
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .slice(0, 10)
+    .toUpperCase();
+  const safeCourse = normalized || 'COURSE';
+  if (orderId) {
+    const suffix = orderId.toString().slice(-6).toUpperCase();
+    return `DOHY-${safeCourse}-${suffix}`;
+  }
+  return `DOHY-${safeCourse}`;
 }

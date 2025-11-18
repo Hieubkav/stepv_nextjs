@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 import { toast } from "sonner";
+import { buildVietQRImageUrl } from "@/lib/vietqr";
 
 export default function DashboardSettingsPage() {
     // Load settings 'site'
@@ -39,6 +40,21 @@ export default function DashboardSettingsPage() {
     const [useRaw, setUseRaw] = useState(false);
     const [logoPickerOpen, setLogoPickerOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const vietqrPreviewUrl = useMemo(() => {
+        const code = bankCode.trim();
+        const account = bankAccountNumber.trim();
+        if (!code || !account) {
+            return "";
+        }
+        return (
+            buildVietQRImageUrl({
+                bankCode: code,
+                accountNumber: account,
+                accountName: bankAccountName.trim() || undefined,
+                template: "qr_only",
+            }) ?? ""
+        );
+    }, [bankCode, bankAccountNumber, bankAccountName]);
 
     // Dong bo tu server
     useEffect(() => {
@@ -134,6 +150,7 @@ export default function DashboardSettingsPage() {
                             </div>
                             <Input id="logoUrl" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://.../logo.png" />
                             <p className="text-xs text-muted-foreground">Logo này sẽ được dùng làm favicon và preview trên tab trình duyệt.</p>
+
                         </div>
                     </CardContent>
                 </Card>
@@ -196,6 +213,23 @@ export default function DashboardSettingsPage() {
                                     <Input id="bankCode" value={bankCode} onChange={(e) => setBankCode(e.target.value)} placeholder="970012" />
                                 </div>
                             </div>
+                        {vietqrPreviewUrl ? (
+                            <div className="space-y-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-4">
+                                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="text-sm font-semibold text-primary">Preview QR (img.vietqr.io)</p>
+                                        <p className="text-xs text-muted-foreground">Template `qr_only` với {bankCode}-{bankAccountNumber}</p>
+                                    </div>
+                                    <Button variant="outline" size="sm" asChild>
+                                        <a href={vietqrPreviewUrl} target="_blank" rel="noopener noreferrer">Mở QR</a>
+                                    </Button>
+                                </div>
+                                <img src={vietqrPreviewUrl} alt="VietQR preview" className="w-full max-w-xs rounded-lg border bg-white p-3" />
+                                <p className="text-xs text-muted-foreground break-all">Link: {vietqrPreviewUrl}</p>
+                            </div>
+                        ) : (
+                            <p className="text-xs text-muted-foreground">Nhập Mã ngân hàng (vd: 970432 hoặc TPB) và Số TK để xem preview QR.</p>
+                        )}
                         </CardContent>
                     </Card>
                 </div>

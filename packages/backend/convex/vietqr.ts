@@ -1,28 +1,18 @@
 // VietQR QR Code Generation
-// Using VietQR API: https://vietqr.io/
+// Using VietQR Quick Link: https://vietqr.io/
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 
 /**
- * Generate VietQR code for bank transfer
- * VietQR API endpoint: https://api.vietqr.io/v2/generate
- *
- * Required params:
- * - accountNo: Bank account number
- * - accountName: Account holder name
- * - acqId: Bank code (ACQ ID)
- * - amount: Amount in VND
- * - addInfo: Additional info (e.g., invoice number)
- *
- * Response:
- * - qrDataURL: Base64 encoded QR code
- * - qrUrl: Direct URL to QR image
+ * Generate VietQR code URL for bank transfer using Quick Link syntax:
+ * https://img.vietqr.io/image/<BANK_ID>-<ACCOUNT_NO>-<TEMPLATE>.png?amount=<AMOUNT>&addInfo=<DESCRIPTION>&accountName=<ACCOUNT_NAME>
+ * This syntax is documented publicly so we don't need API keys for most use cases.
  */
 export const generateVietQRCode = action({
   args: {
     accountNumber: v.string(),
     accountName: v.string(),
-    bankCode: v.string(), // e.g., "970422" for VietCombank, "970407" for Vietinbank
+    bankCode: v.string(), // Can be BIN (e.g. "970422") or bank short name (e.g. "vcb")
     amount: v.number(),
     transactionInfo: v.string(), // e.g., invoice number, order ID
   },
@@ -32,72 +22,34 @@ export const generateVietQRCode = action({
     qrDataUrl: v.optional(v.string()),
     message: v.string(),
   }),
-  handler: async (ctx, { accountNumber, accountName, bankCode, amount, transactionInfo }) => {
+  handler: async (_ctx, { accountNumber, accountName, bankCode, amount, transactionInfo }) => {
     try {
-      // Validate inputs
-      if (!accountNumber || !accountName || !bankCode || amount <= 0 || !transactionInfo) {
+      const trimmedAccount = accountNumber.trim();
+      const trimmedBankCode = bankCode.trim();
+      const sanitizedInfo = transactionInfo.trim();
+      if (!trimmedAccount || !accountName || !trimmedBankCode || amount <= 0 || !sanitizedInfo) {
         return {
           success: false,
           message: "Invalid input parameters",
         };
       }
 
-      // VietQR API endpoint
-      const vietqrUrl = "https://api.vietqr.io/v2/generate";
+      const templateId = "qr_only";
+      const qrUrl = new URL(
+        `https://img.vietqr.io/image/${encodeURIComponent(trimmedBankCode)}-${encodeURIComponent(
+          trimmedAccount,
+        )}-${templateId}.png`,
+      );
+      qrUrl.searchParams.set("amount", Math.round(amount).toString());
+      qrUrl.searchParams.set("addInfo", sanitizedInfo);
+      qrUrl.searchParams.set("accountName", accountName);
 
-      // Prepare request body for VietQR API
-      const payload = {
-        accountNo: accountNumber,
-        accountName: accountName,
-        acqId: bankCode,
-        amount: amount,
-        addInfo: transactionInfo,
-        templateId: "compact", // or "default"
+      return {
+        success: true,
+        qrCodeUrl: qrUrl.toString(),
+        qrDataUrl: undefined,
+        message: "QR code URL generated successfully",
       };
-
-      // Call VietQR API
-      const response = await fetch(vietqrUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error("VietQR API error:", error);
-        return {
-          success: false,
-          message: `VietQR API error: ${error.message || "Unknown error"}`,
-        };
-      }
-
-      const result = await response.json();
-
-      // VietQR API returns:
-      // {
-      //   code: "00",
-      //   message: "success",
-      //   data: {
-      //     qrDataURL: "base64_encoded_image",
-      //     qrUrl: "https://img.vietqr.io/..."
-      //   }
-      // }
-
-      if (result.code === "00" && result.data) {
-        return {
-          success: true,
-          qrDataUrl: result.data.qrDataURL, // Base64
-          qrCodeUrl: result.data.qrUrl, // Direct URL
-          message: "QR code generated successfully",
-        };
-      } else {
-        return {
-          success: false,
-          message: result.message || "Failed to generate QR code",
-        };
-      }
     } catch (error) {
       console.error("VietQR generation error:", error);
       return {

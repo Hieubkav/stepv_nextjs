@@ -83,7 +83,7 @@ export default function LearnerLayoutClient({ children }: LearnerLayoutClientPro
         <div className="flex min-h-screen flex-col bg-background">
           <LearnerTopBar logo={headerProps.logo} />
           <main className="flex-1 bg-muted/30">
-            <div className="mx-auto w-full max-w-7xl px-4 py-6">{children}</div>
+            <div className="mx-auto w-full max-w-7xl px-4 py-2">{children}</div>
           </main>
         </div>
       </StudentAuthProvider>
