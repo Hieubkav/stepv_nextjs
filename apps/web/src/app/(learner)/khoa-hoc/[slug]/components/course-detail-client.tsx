@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
@@ -91,8 +91,16 @@ export function CourseDetailClient({
   ) as { exists: boolean; active: boolean } | undefined;
   const hasFullAccess = Boolean(student && enrollment?.exists && enrollment.active);
 
+  useEffect(() => {
+    if (selectedLesson && !hasFullAccess && !selectedLesson.isPreview) {
+      setSelectedLesson(null);
+    }
+  }, [hasFullAccess, selectedLesson]);
+
   const handleLessonSelect = (lesson: CourseLesson) => {
-    setSelectedLesson(lesson);
+    if (hasFullAccess || lesson.isPreview) {
+      setSelectedLesson(lesson);
+    }
   };
 
   const handleClearSelection = () => {
@@ -107,9 +115,10 @@ export function CourseDetailClient({
           totalDurationText={selectedLesson ? selectedLesson.durationLabel : totalDurationText}
           introVideoUrl={introVideoUrl}
           selectedLesson={selectedLesson ? {
-            id: selectedLesson.youtubeUrl || "",
+            id: selectedLesson.id,
             title: selectedLesson.title,
             durationLabel: selectedLesson.durationLabel,
+            youtubeUrl: selectedLesson.youtubeUrl,
           } : null}
           courseId={course.id}
         />

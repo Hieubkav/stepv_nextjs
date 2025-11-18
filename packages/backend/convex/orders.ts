@@ -215,7 +215,41 @@ export const updateOrder = mutation({
 
     if (status !== undefined) {
       updates.status = status;
+      
+      // Sync enrollment.active với order status
+      const enrollment = await ctx.db
+        .query("course_enrollments")
+        .withIndex("by_course_user", (q) =>
+          q.eq("courseId", order.courseId).eq("userId", order.studentId.toString())
+        )
+        .first();
+
+      // Nếu status = "completed" → activate enrollment (học viên có thể học)
+      if (status === "completed") {
+        if (enrollment) {
+          await ctx.db.patch(enrollment._id, { active: true });
+        } else {
+          // Tạo enrollment mới nếu chưa có
+          await ctx.db.insert("course_enrollments", {
+            courseId: order.courseId,
+            userId: order.studentId.toString(),
+            enrolledAt: Date.now(),
+            progressPercent: 0,
+            status: "active" as const,
+            lastViewedLessonId: undefined,
+            order: 0,
+            active: true,
+          });
+        }
+      } 
+      // Nếu status khác → deactivate enrollment (học viên không thể học)
+      else {
+        if (enrollment) {
+          await ctx.db.patch(enrollment._id, { active: false });
+        }
+      }
     }
+    
     if (notes !== undefined) {
       updates.notes = notes;
     }

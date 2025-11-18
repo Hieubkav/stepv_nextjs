@@ -20,3 +20,6 @@
 
 
  đọc kỹ 2 skill E:\NextJS\job\dohyy\dohy\.claude\skills\ui-styling và E:\NextJS\job\dohyy\dohy\.claude\skills\ux-designer từng file 1 để nắm rõ nguyên tắc thiết kế nha
+
+ - bỏ trang view đơn hàng chỉ giữ edit thôi
+ - Tính năng tiến độ khóa học , và quan sát tiến độ ở admin

@@ -5,7 +5,7 @@ import { Play, Maximize2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { extractYoutubeVideoId } from "@/lib/youtube";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 
@@ -18,6 +18,7 @@ type VideoInfo = {
   id: string;
   title: string;
   durationLabel: string | null;
+  youtubeUrl?: string | null;
 };
 
 declare global {
@@ -43,6 +44,7 @@ export function VideoPlayer({
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerWrapperRef = useRef<HTMLDivElement>(null);
+  const playerHostRef = useRef<HTMLDivElement | null>(null);
   const { student } = useStudentAuth();
 
   const [watchedSeconds, setWatchedSeconds] = useState(0);
@@ -54,36 +56,85 @@ export function VideoPlayer({
   const completeLessonIfDone = useMutation(api.progress.completeLessonIfDone);
 
   const videoId = useMemo(() => {
-    if (selectedLesson?.id) {
-      return extractYoutubeVideoId(selectedLesson.id);
+    if (selectedLesson?.youtubeUrl) {
+      return extractYoutubeVideoId(selectedLesson.youtubeUrl);
     }
     return introVideoUrl ? extractYoutubeVideoId(introVideoUrl) : null;
-  }, [selectedLesson?.id, introVideoUrl]);
+  }, [selectedLesson?.youtubeUrl, introVideoUrl]);
 
   const displayTitle = selectedLesson?.title || "Video giới thiệu";
   const displayDuration = selectedLesson?.durationLabel || totalDurationText;
 
   useEffect(() => {
-    if (!videoId) return;
+    const stopTrackingProgress = () => {
+      if (trackingIntervalRef.current) {
+        clearInterval(trackingIntervalRef.current);
+        trackingIntervalRef.current = null;
+      }
+    };
+
+    const teardownPlayer = () => {
+      stopTrackingProgress();
+      if (playerRef.current && typeof playerRef.current.destroy === 'function') {
+        try {
+          playerRef.current.destroy();
+        } catch (error) {
+          console.warn("YT destroy error", error);
+        }
+      }
+      playerRef.current = null;
+
+      if (playerHostRef.current) {
+        if (playerHostRef.current.parentNode) {
+          playerHostRef.current.parentNode.removeChild(playerHostRef.current);
+        }
+        playerHostRef.current = null;
+      }
+
+      if (playerContainerRef.current) {
+        playerContainerRef.current.textContent = '';
+      }
+    };
+
+    if (!videoId) {
+      teardownPlayer();
+      return;
+    }
 
     const loadYouTubeAPI = () => {
       if (window.YT?.Player) {
         initializePlayer();
       } else {
-        window.onYouTubeIframeAPIReady = initializePlayer;
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        if (firstScriptTag?.parentNode) {
-          firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        const previousReady = window.onYouTubeIframeAPIReady;
+        window.onYouTubeIframeAPIReady = () => {
+          previousReady?.();
+          initializePlayer();
+        };
+        if (!document.getElementById('youtube-iframe-api')) {
+          const tag = document.createElement('script');
+          tag.id = 'youtube-iframe-api';
+          tag.src = 'https://www.youtube.com/iframe_api';
+          const firstScriptTag = document.getElementsByTagName('script')[0];
+          if (firstScriptTag?.parentNode) {
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+          } else {
+            document.body.appendChild(tag);
+          }
         }
       }
     };
 
     const initializePlayer = () => {
-      if (playerRef.current || !playerContainerRef.current) return;
+      if (!playerContainerRef.current) return;
 
-      playerRef.current = new window.YT.Player(playerContainerRef.current, {
+      teardownPlayer();
+
+      const mountNode = document.createElement('div');
+      mountNode.className = 'h-full w-full';
+      playerContainerRef.current.appendChild(mountNode);
+      playerHostRef.current = mountNode;
+
+      playerRef.current = new window.YT.Player(mountNode, {
         height: '100%',
         width: '100%',
         videoId: videoId,
@@ -155,15 +206,9 @@ export function VideoPlayer({
     loadYouTubeAPI();
 
     return () => {
-      if (trackingIntervalRef.current) {
-        clearInterval(trackingIntervalRef.current);
-      }
-      if (playerRef.current && typeof playerRef.current.destroy === 'function') {
-        playerRef.current.destroy();
-        playerRef.current = null;
-      }
+      teardownPlayer();
     };
-  }, [videoId, selectedLesson, student, courseId, recordLessonView, completeLessonIfDone]);
+  }, [videoId, selectedLesson?.id, student?._id, courseId, recordLessonView, completeLessonIfDone]);
 
   const handleFullscreenToggle = () => {
     if (typeof document === "undefined") return;

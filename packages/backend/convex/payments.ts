@@ -324,7 +324,7 @@ export const adminConfirmPayment = mutation({
       updatedAt: now,
     });
 
-    // Create enrollment for student
+    // Create enrollment for student (inactive - waiting for admin to activate)
     const existingEnrollment = await ctx.db
       .query("course_enrollments")
       .withIndex("by_course_user", (q) =>
@@ -338,15 +338,15 @@ export const adminConfirmPayment = mutation({
         userId: payment.studentId.toString(),
         enrolledAt: now,
         progressPercent: 0,
-        status: "active" as const,
+        status: "pending" as const,
         lastViewedLessonId: undefined,
         order: 0,
-        active: true,
+        active: false,
       });
-    } else {
-      // Reactivate if was inactive
+    } else if (!existingEnrollment.active) {
+      // Enrollment exists but is inactive - keep it inactive for now
+      // Admin will activate it by changing order status to "completed"
       await ctx.db.patch(existingEnrollment._id, {
-        active: true,
         enrolledAt: now,
       });
     }
