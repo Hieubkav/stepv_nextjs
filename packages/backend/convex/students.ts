@@ -577,3 +577,39 @@ export const getStudentFavoriteCourses = query({
     },
 });
 
+// Change password with current password verification
+export const changePassword = mutation({
+    args: {
+        studentId: v.id("students"),
+        currentPassword: v.string(),
+        newPassword: v.string(),
+    },
+    handler: async (ctx, { studentId, currentPassword, newPassword }) => {
+        const student = await ctx.db.get(studentId);
+        if (!student) {
+            return { ok: false, error: "Không tìm thấy tài khoản" } as const;
+        }
+
+        const studentDoc = student as StudentDoc;
+        if (studentDoc.password !== currentPassword.trim()) {
+            return { ok: false, error: "Mật khẩu hiện tại không chính xác" } as const;
+        }
+
+        const trimmedNewPassword = newPassword.trim();
+        if (!trimmedNewPassword) {
+            return { ok: false, error: "Mật khẩu mới không được để trống" } as const;
+        }
+
+        if (trimmedNewPassword === studentDoc.password) {
+            return { ok: false, error: "Mật khẩu mới phải khác mật khẩu hiện tại" } as const;
+        }
+
+        await ctx.db.patch(studentId, {
+            password: trimmedNewPassword,
+            updatedAt: Date.now(),
+        });
+
+        return { ok: true } as const;
+    },
+});
+
