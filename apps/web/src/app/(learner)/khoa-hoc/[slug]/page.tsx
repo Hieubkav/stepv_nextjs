@@ -35,6 +35,8 @@ type CourseLesson = {
   isPreview: boolean;
   active: boolean;
   order: number;
+  videoType?: "youtube" | "drive" | "none";
+  videoUrl?: string | null;
   youtubeUrl?: string | null;
   exerciseLink?: string | null;
 };
@@ -142,6 +144,8 @@ function normalizeLessonDoc(doc: any): CourseLesson {
     isPreview: Boolean(doc?.isPreview),
     active: Boolean(doc?.active),
     order: Number.isFinite(doc?.order) ? Number(doc.order) : Number.MAX_SAFE_INTEGER,
+    videoType: doc?.videoType ?? "youtube",
+    videoUrl: typeof doc?.videoUrl === "string" ? doc.videoUrl : null,
     youtubeUrl: typeof doc?.youtubeUrl === "string" ? doc.youtubeUrl : null,
     exerciseLink: typeof doc?.exerciseLink === "string" ? doc.exerciseLink : null,
   };

@@ -183,7 +183,9 @@ export default defineSchema({
     chapterId: v.id("course_chapters"),
     title: v.string(),
     description: v.optional(v.string()),
-    youtubeUrl: v.string(),
+    videoType: v.optional(v.union(v.literal("youtube"), v.literal("drive"), v.literal("none"))),
+    videoUrl: v.optional(v.string()),
+    youtubeUrl: v.optional(v.string()), // Deprecated, kept for backwards compatibility
     durationSeconds: v.optional(v.number()),
     isPreview: v.optional(v.boolean()),
     exerciseLink: v.optional(v.string()),

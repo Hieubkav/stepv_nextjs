@@ -11,7 +11,9 @@ import { Play } from "lucide-react";
 export type LessonFormValues = {
   title: string;
   description: string;
-  youtubeUrl: string;
+  videoType: "youtube" | "drive" | "none";
+  videoUrl: string;
+  youtubeUrl: string; // Deprecated, kept for backwards compatibility
   durationSeconds: string;
   exerciseLink: string;
   isPreview: boolean;
@@ -38,7 +40,15 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
   }, [initialValues]);
 
   function update(field: keyof LessonFormValues, value: string | boolean) {
-    setValues((prev) => ({ ...prev, [field]: value }));
+    setValues((prev) => {
+      const updated = { ...prev, [field]: value };
+      // When changing video type to "none", clear video URL
+      if (field === "videoType" && value === "none") {
+        updated.videoUrl = "";
+        updated.youtubeUrl = "";
+      }
+      return updated;
+    });
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -75,37 +85,69 @@ export function LessonForm({ initialValues, submitting, submitLabel, onSubmit, o
           placeholder="Giới thiệu bài học này..."
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">YouTube URL</label>
-          <Input value={values.youtubeUrl} onChange={(event) => update("youtubeUrl", event.target.value)} />
-          {youtubeThumbUrl && (
-            <div className="flex items-center gap-3 rounded-md border p-2 bg-muted/30">
-              <img
-                src={youtubeThumbUrl}
-                alt="YouTube thumbnail"
-                className="h-12 w-20 rounded object-cover"
-              />
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Play className="h-3 w-3" />
-                Preview
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Loại video</label>
+        <select
+          value={values.videoType}
+          onChange={(event) => update("videoType", event.target.value as any)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          <option value="youtube">YouTube</option>
+          <option value="drive">Google Drive</option>
+          <option value="none">Không có video (chỉ nội dung/bài tập)</option>
+        </select>
+      </div>
+
+      {values.videoType !== "none" && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2 sm:col-span-2">
+            <label className="text-sm font-medium">
+              {values.videoType === "youtube" ? "YouTube URL" : "Google Drive URL"}
+            </label>
+            <Input
+              value={values.videoType === "youtube" ? values.youtubeUrl : values.videoUrl}
+              onChange={(event) => {
+                if (values.videoType === "youtube") {
+                  update("youtubeUrl", event.target.value);
+                } else {
+                  update("videoUrl", event.target.value);
+                }
+              }}
+              placeholder={
+                values.videoType === "youtube"
+                  ? "https://youtube.com/watch?v=..."
+                  : "https://drive.google.com/file/d/FILE_ID/view"
+              }
+            />
+            {values.videoType === "youtube" && youtubeThumbUrl && (
+              <div className="flex items-center gap-3 rounded-md border p-2 bg-muted/30">
+                <img
+                  src={youtubeThumbUrl}
+                  alt="YouTube thumbnail"
+                  className="h-12 w-20 rounded object-cover"
+                />
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Play className="h-3 w-3" />
+                  Preview
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Thời lượng (giây)</label>
+            <Input value={values.durationSeconds} onChange={(event) => update("durationSeconds", event.target.value)} />
+          </div>
         </div>
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Thời lượng (giây)</label>
-          <Input value={values.durationSeconds} onChange={(event) => update("durationSeconds", event.target.value)} />
-        </div>
-        <div className="space-y-2 sm:col-span-2">
-          <label className="text-sm font-medium">Link bài tập (Drive, v.v.)</label>
-          <Input
-            value={values.exerciseLink}
-            onChange={(event) => update("exerciseLink", event.target.value)}
-            placeholder="https://..."
-          />
-        </div>
-        </div>
+      )}
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Link bài tập (Drive, v.v.)</label>
+        <Input
+          value={values.exerciseLink}
+          onChange={(event) => update("exerciseLink", event.target.value)}
+          placeholder="https://..."
+        />
+      </div>
         <div className="grid gap-4 sm:grid-cols-2">
         <label className="flex items-center gap-3 rounded-md border border-input bg-background/50 px-4 py-3 cursor-pointer hover:bg-accent/50 transition">
           <Checkbox

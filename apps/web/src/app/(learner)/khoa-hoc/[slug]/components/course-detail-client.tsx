@@ -21,6 +21,8 @@ export type CourseLesson = {
   isPreview: boolean;
   active: boolean;
   order: number;
+  videoType?: "youtube" | "drive" | "none";
+  videoUrl?: string | null;
   youtubeUrl?: string | null;
   exerciseLink?: string | null;
 };
@@ -157,6 +159,8 @@ export function CourseDetailClient({
             id: selectedLesson.id,
             title: selectedLesson.title,
             durationLabel: selectedLesson.durationLabel,
+            videoType: selectedLesson.videoType,
+            videoUrl: selectedLesson.videoUrl,
             youtubeUrl: selectedLesson.youtubeUrl,
           } : null}
           courseId={course.id}

@@ -32,7 +32,9 @@ type LessonDoc = {
   chapterId: Id<"course_chapters">;
   title: string;
   description?: string;
-  youtubeUrl: string;
+  videoType?: "youtube" | "drive" | "none";
+  videoUrl?: string;
+  youtubeUrl?: string;
   durationSeconds?: number;
   isPreview?: boolean;
   exerciseLink?: string;
@@ -123,15 +125,25 @@ const buildChapterInitial = (chapter?: ChapterDoc): ChapterFormValues => ({
   active: chapter?.active ?? true,
 });
 
-const buildLessonInitial = (lesson?: LessonDoc): LessonFormValues => ({
-  title: lesson?.title ?? "",
-  description: lesson?.description ?? "",
-  youtubeUrl: lesson?.youtubeUrl ?? "",
-  durationSeconds: lesson?.durationSeconds ? String(lesson.durationSeconds) : "",
-  exerciseLink: lesson?.exerciseLink ?? "",
-  isPreview: lesson?.isPreview ?? false,
-  active: lesson?.active ?? true,
-});
+const buildLessonInitial = (lesson?: LessonDoc): LessonFormValues => {
+  // Determine video type - prefer videoType field, fallback to "youtube" for backwards compatibility
+  const videoType = (lesson?.videoType ?? "youtube") as "youtube" | "drive" | "none";
+  // Get video URL - prefer videoUrl, fallback to youtubeUrl for backwards compatibility
+  const videoUrl = lesson?.videoUrl ?? lesson?.youtubeUrl ?? "";
+  const youtubeUrl = lesson?.youtubeUrl ?? lesson?.videoUrl ?? "";
+  
+  return {
+    title: lesson?.title ?? "",
+    description: lesson?.description ?? "",
+    videoType,
+    videoUrl,
+    youtubeUrl,
+    durationSeconds: lesson?.durationSeconds ? String(lesson.durationSeconds) : "",
+    exerciseLink: lesson?.exerciseLink ?? "",
+    isPreview: lesson?.isPreview ?? false,
+    active: lesson?.active ?? true,
+  };
+};
 
 export default function CourseEditPage() {
   const params = useParams<{ courseId: string }>();
@@ -401,11 +413,24 @@ export default function CourseEditPage() {
   async function handleLessonSubmit(values: LessonFormValues) {
     if (!lessonContext) return;
     const title = values.title.trim();
-    const youtubeUrl = values.youtubeUrl.trim();
-    if (!title || !youtubeUrl) {
-      toast.error("Vui lòng nhập tiêu đề và YouTube URL");
+    if (!title) {
+      toast.error("Vui lòng nhập tiêu đề");
       return;
     }
+
+    // Validation based on video type
+    let videoUrl = "";
+    let youtubeUrl = "";
+    if (values.videoType !== "none") {
+      const url = values.videoType === "youtube" ? values.youtubeUrl.trim() : values.videoUrl.trim();
+      if (!url) {
+        toast.error(`Vui lòng nhập ${values.videoType === "youtube" ? "YouTube" : "Google Drive"} URL`);
+        return;
+      }
+      videoUrl = url;
+      youtubeUrl = values.videoType === "youtube" ? url : values.youtubeUrl;
+    }
+
     const durationNumber = Number.parseInt(values.durationSeconds, 10);
     const duration = Number.isFinite(durationNumber) ? durationNumber : undefined;
     const exerciseLink = values.exerciseLink.trim() || null;
@@ -418,7 +443,9 @@ export default function CourseEditPage() {
           chapterId: lessonContext.chapterId,
           title,
           description: values.description.trim() || null,
-          youtubeUrl,
+          videoType: values.videoType,
+          videoUrl: videoUrl || null,
+          youtubeUrl: youtubeUrl || null,
           durationSeconds: duration,
           exerciseLink,
           isPreview: values.isPreview,
@@ -435,7 +462,9 @@ export default function CourseEditPage() {
           chapterId: lessonContext.chapterId,
           title,
           description: values.description.trim() || undefined,
-          youtubeUrl,
+          videoType: values.videoType,
+          videoUrl: videoUrl || undefined,
+          youtubeUrl: youtubeUrl || undefined,
           durationSeconds: duration,
           exerciseLink: exerciseLink || undefined,
           isPreview: values.isPreview,

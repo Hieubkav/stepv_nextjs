@@ -40,7 +40,9 @@ type LessonDoc = {
   chapterId: ChapterId;
   title: string;
   description?: string;
-  youtubeUrl: string;
+  videoType?: "youtube" | "drive" | "none";
+  videoUrl?: string;
+  youtubeUrl?: string;
   durationSeconds?: number;
   isPreview?: boolean;
   exerciseLink?: string;
@@ -842,7 +844,9 @@ export const createLesson = mutation({
     chapterId: v.id("course_chapters"),
     title: v.string(),
     description: v.optional(v.string()),
-    youtubeUrl: v.string(),
+    videoType: v.optional(v.union(v.literal("youtube"), v.literal("drive"), v.literal("none"))),
+    videoUrl: v.optional(v.string()),
+    youtubeUrl: v.optional(v.string()), // Deprecated, for backwards compatibility
     durationSeconds: v.optional(v.number()),
     isPreview: v.optional(v.boolean()),
     exerciseLink: v.optional(v.string()),
@@ -853,12 +857,19 @@ export const createLesson = mutation({
     await ensureCourse(ctx, args.courseId);
     await ensureChapterInCourse(ctx, args.chapterId, args.courseId);
     const now = Date.now();
+
+    // Migration: if only youtubeUrl is provided (old format), convert it
+    let videoType = args.videoType ?? "youtube";
+    let videoUrl = args.videoUrl ?? args.youtubeUrl ?? "";
+    
     const id = await ctx.db.insert("course_lessons", {
       courseId: args.courseId,
       chapterId: args.chapterId,
       title: args.title,
       description: args.description,
-      youtubeUrl: args.youtubeUrl,
+      videoType,
+      videoUrl,
+      youtubeUrl: args.youtubeUrl, // Keep for backwards compatibility
       durationSeconds: args.durationSeconds,
       isPreview: args.isPreview ?? false,
       exerciseLink: args.exerciseLink,
@@ -877,14 +888,16 @@ export const updateLesson = mutation({
     chapterId: v.optional(v.id("course_chapters")),
     title: v.optional(v.string()),
     description: v.optional(v.union(v.string(), v.null())),
-    youtubeUrl: v.optional(v.string()),
+    videoType: v.optional(v.union(v.literal("youtube"), v.literal("drive"), v.literal("none"))),
+    videoUrl: v.optional(v.union(v.string(), v.null())),
+    youtubeUrl: v.optional(v.union(v.string(), v.null())), // Deprecated
     durationSeconds: v.optional(v.number()),
     isPreview: v.optional(v.boolean()),
     exerciseLink: v.optional(v.union(v.string(), v.null())),
     order: v.optional(v.number()),
     active: v.optional(v.boolean()),
   },
-  handler: async (ctx, { id, chapterId, description, exerciseLink, ...rest }) => {
+  handler: async (ctx, { id, chapterId, description, videoUrl, youtubeUrl, exerciseLink, ...rest }) => {
     const existing = await ctx.db.get(id);
     if (!existing) throw new Error("Lesson not found");
     const patch: Record<string, unknown> = { ...rest };
@@ -898,6 +911,12 @@ export const updateLesson = mutation({
 
     if (description !== undefined) {
       patch.description = description ?? undefined;
+    }
+    if (videoUrl !== undefined) {
+      patch.videoUrl = videoUrl ?? undefined;
+    }
+    if (youtubeUrl !== undefined) {
+      patch.youtubeUrl = youtubeUrl ?? undefined;
     }
     if (exerciseLink !== undefined) {
       patch.exerciseLink = exerciseLink ?? undefined;

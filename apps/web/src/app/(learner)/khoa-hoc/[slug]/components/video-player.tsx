@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useMemo, useState } from "react";
-import { CheckCircle2, Play } from "lucide-react";
+import { CheckCircle2, Play, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { extractYoutubeVideoId } from "@/lib/youtube";
@@ -18,8 +18,22 @@ type VideoInfo = {
   id: string;
   title: string;
   durationLabel: string | null;
+  videoType?: "youtube" | "drive" | "none";
+  videoUrl?: string | null;
   youtubeUrl?: string | null;
 };
+
+// Helper function to convert Google Drive URL to embeddable iframe URL
+function convertDriveUrlToEmbed(driveUrl: string): string {
+  // Convert /view to /preview for embedding
+  return driveUrl.replace("/view", "/preview");
+}
+
+// Helper function to extract Google Drive file ID
+function extractDriveFileId(url: string): string | null {
+  const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : null;
+}
 
 declare global {
   interface Window {
@@ -54,12 +68,33 @@ export function VideoPlayer({
   const recordLessonView = useMutation(api.progress.recordLessonView);
   const completeLessonIfDone = useMutation(api.progress.completeLessonIfDone);
 
+  // Determine video type and extract ID/URL
+  const videoType = useMemo(() => {
+    if (!selectedLesson) return "youtube"; // Default to youtube for intro video
+    return selectedLesson.videoType ?? "youtube";
+  }, [selectedLesson?.videoType]);
+
   const videoId = useMemo(() => {
-    if (selectedLesson?.youtubeUrl) {
-      return extractYoutubeVideoId(selectedLesson.youtubeUrl);
+    if (!selectedLesson) {
+      const id = introVideoUrl ? extractYoutubeVideoId(introVideoUrl) : null;
+      if (!id && introVideoUrl) {
+        console.warn("Failed to extract YouTube ID from intro URL:", introVideoUrl);
+      }
+      return id;
     }
-    return introVideoUrl ? extractYoutubeVideoId(introVideoUrl) : null;
-  }, [selectedLesson?.youtubeUrl, introVideoUrl]);
+
+    if (videoType === "youtube") {
+      const url = selectedLesson.youtubeUrl || selectedLesson.videoUrl;
+      return url ? extractYoutubeVideoId(url) : null;
+    }
+
+    if (videoType === "drive") {
+      const url = selectedLesson.videoUrl || selectedLesson.youtubeUrl;
+      return url ? extractDriveFileId(url) : null;
+    }
+
+    return null;
+  }, [selectedLesson?.youtubeUrl, selectedLesson?.videoUrl, videoType, introVideoUrl]);
 
   const displayTitle = selectedLesson?.title || "Video giới thiệu";
   const displayDuration = selectedLesson?.durationLabel || totalDurationText;
@@ -95,7 +130,7 @@ export function VideoPlayer({
       }
     };
 
-    if (!videoId) {
+    if (!videoId || videoType !== "youtube") {
       teardownPlayer();
       return;
     }
@@ -200,8 +235,69 @@ export function VideoPlayer({
     return () => {
       teardownPlayer();
     };
-  }, [videoId, selectedLesson?.id, student?._id, courseId, recordLessonView, completeLessonIfDone]);
+  }, [videoId, videoType, selectedLesson?.id, student?._id, courseId, recordLessonView, completeLessonIfDone]);
 
+  // Handle "No video" type - show content/exercise info only
+  if (videoType === "none") {
+    if (thumbnail?.url) {
+      return (
+        <Card className="overflow-hidden py-0">
+          <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={thumbnail.url} alt={thumbnail.title ?? "Ảnh khóa học"} className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white">
+              <AlertCircle className="mb-2 h-8 w-8" />
+              <p className="text-sm font-medium">Bài học này không có video</p>
+              <p className="text-xs text-white/80">Vui lòng xem nội dung và hoàn thành bài tập bên dưới</p>
+            </div>
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="overflow-hidden py-0">
+        <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center text-white/75">
+          <AlertCircle className="mb-4 h-10 w-10" />
+          <p className="text-sm font-medium">Bài học này không có video</p>
+          <p className="text-xs text-white/60 mt-1">Hãy tập trung vào nội dung bài học và bài tập</p>
+        </div>
+      </Card>
+    );
+  }
+
+  // Handle Google Drive video
+  if (videoType === "drive" && videoId) {
+    const driveUrl = selectedLesson?.videoUrl || selectedLesson?.youtubeUrl;
+    const embedUrl = driveUrl ? convertDriveUrlToEmbed(driveUrl) : "";
+
+    if (!embedUrl) {
+      return (
+        <Card className="overflow-hidden py-0">
+          <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center text-white/75">
+            <AlertCircle className="mb-4 h-10 w-10" />
+            <p className="text-sm">Google Drive URL không hợp lệ</p>
+          </div>
+        </Card>
+      );
+    }
+
+    return (
+      <Card className="overflow-hidden py-0">
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height="100%"
+          allow="autoplay"
+          allowFullScreen
+          className="aspect-video"
+          title={displayTitle}
+        />
+      </Card>
+    );
+  }
+
+  // Handle missing video
   if (!videoId) {
     if (thumbnail?.url) {
       return (
@@ -234,6 +330,7 @@ export function VideoPlayer({
     );
   }
 
+  // Handle YouTube video
   return (
     <Card className="overflow-hidden py-0">
       <div
