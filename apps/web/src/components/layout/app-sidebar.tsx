@@ -1,16 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useLayout } from "@/context/layout-provider";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from "@/components/ui/sidebar";
 import { sidebarData } from "./data/sidebar-data";
 import { NavGroup } from "./nav-group";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, LogOut } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    router.push("/login");
+  };
+
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
       <SidebarHeader>
@@ -34,7 +42,18 @@ export function AppSidebar() {
           <NavGroup key={props.title} {...props} />
         ))}
       </SidebarContent>
-      <SidebarFooter>{/* Footer optional */}</SidebarFooter>
+      <SidebarFooter>
+        <div className="px-2 py-2 flex gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button onClick={handleLogout} variant="ghost" size="icon" aria-label="Đăng xuất">
+                <LogOut className="size-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Đăng xuất</TooltipContent>
+          </Tooltip>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }
