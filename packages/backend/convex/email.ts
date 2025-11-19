@@ -1,51 +1,58 @@
-// Email actions using Resend
+// Email actions using SMTP
 'use node';
 
 import { internalAction } from './_generated/server';
 import { v } from 'convex/values';
+import nodemailer from 'nodemailer';
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const BASE_URL = process.env.BASE_URL || 'https://www.dohystudio.com';
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = process.env.SMTP_PORT;
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+const SMTP_FROM = process.env.SMTP_FROM;
+const SMTP_FROM_NAME = process.env.SMTP_FROM_NAME || 'Dohy';
 
-interface ResendEmailParams {
+interface EmailParams {
     to: string;
     subject: string;
     html: string;
-    from?: string;
 }
 
-const sendEmailViaResend = async (params: ResendEmailParams): Promise<boolean> => {
-    if (!RESEND_API_KEY) {
-        console.error('RESEND_API_KEY not set');
-        return false;
+const getTransporter = () => {
+    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
+        throw new Error('SMTP configuration not set. Please configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD');
     }
 
-    const { to, subject, html, from = 'onboarding@resend.dev' } = params;
+    return nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: parseInt(SMTP_PORT, 10),
+        secure: false,
+        auth: {
+            user: SMTP_USER,
+            pass: SMTP_PASSWORD,
+        },
+    });
+};
+
+const sendEmailViaSMTP = async (params: EmailParams): Promise<boolean> => {
+    const { to, subject, html } = params;
 
     try {
-        const response = await fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${RESEND_API_KEY}`,
-            },
-            body: JSON.stringify({
-                from,
-                to,
-                subject,
-                html,
-            }),
+        const transporter = getTransporter();
+        const fromAddress = SMTP_FROM ? `"${SMTP_FROM_NAME}" <${SMTP_FROM}>` : `"${SMTP_FROM_NAME}" <${SMTP_USER}>`;
+
+        const result = await transporter.sendMail({
+            from: fromAddress,
+            to,
+            subject,
+            html,
         });
 
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('Resend API error:', error);
-            return false;
-        }
-
+        console.log('Email sent successfully:', result.messageId);
         return true;
     } catch (error) {
-        console.error('Failed to send email:', error);
+        console.error('Failed to send email via SMTP:', error);
         return false;
     }
 };
@@ -186,7 +193,7 @@ export const sendPasswordResetEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: 'Đặt lại mật khẩu tài khoản Dohy',
             html,
@@ -328,7 +335,7 @@ export const sendWelcomeEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: 'Chào mừng bạn đến với Dohy!',
             html,
@@ -475,7 +482,7 @@ export const sendOTPEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: 'Mã OTP lấy lại mật khẩu - Dohy',
             html,
@@ -531,7 +538,7 @@ export const sendPaymentRequestToAdminEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: adminEmail,
             subject: `[Dohy] Học viên ${studentName} yêu cầu mua khóa - ${amount.toLocaleString('vi-VN')} VND`,
             html,
@@ -586,7 +593,7 @@ export const sendPaymentReceivedEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: 'Chứng minh thanh toán đã nhận - Dohy',
             html,
@@ -643,7 +650,7 @@ export const sendPaymentConfirmedEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: `Chào mừng bạn đến với ${courseName} - Dohy`,
             html,
@@ -704,7 +711,7 @@ export const sendPaymentRejectedEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: 'Thanh toán bị từ chối - Dohy',
             html,
@@ -897,7 +904,7 @@ export const sendOrderPlacedEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: `Đơn hàng #${orderId} - Khóa học ${courseName}`,
             html,
@@ -1071,7 +1078,7 @@ export const sendCourseOnboardingEmail = internalAction({
       </html>
     `;
 
-        return await sendEmailViaResend({
+        return await sendEmailViaSMTP({
             to: studentEmail,
             subject: `Chúc mừng! Bạn đã được ghi danh vào khóa học ${courseName}`,
             html,
