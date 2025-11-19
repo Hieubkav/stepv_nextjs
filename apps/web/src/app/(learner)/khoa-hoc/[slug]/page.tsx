@@ -1,3 +1,4 @@
+import type { Metadata, ResolvingMetadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ConvexHttpClient } from "convex/browser";
@@ -7,6 +8,9 @@ import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CourseDetailClient } from "./components/course-detail-client";
+import { generateCanonicalUrl, truncateDescription } from "@/lib/seo/metadata";
+import { createCourseSchema, createBreadcrumbSchema } from "@/lib/seo/structured-data";
+import { JsonLd } from "@/components/seo/JsonLd";
 
 type PageParams = Promise<{ slug: string }>;
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -423,6 +427,69 @@ function ErrorState({
 
 
 
+export async function generateMetadata(
+  { params }: { params: PageParams },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { slug } = await params;
+  const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+
+  if (!convexUrl) {
+    return {
+      title: "Khóa học | DOHY Media",
+      description: "Chi tiết khóa học từ DOHY Media",
+    };
+  }
+
+  try {
+    const client = new ConvexHttpClient(convexUrl);
+    const result = await client.query(api.courses.getCourseDetail, {
+      slug,
+      includeInactive: true,
+    });
+
+    const course = result?.course;
+    if (!course || !course.active) {
+      return {
+        title: "Khóa học | DOHY Media",
+        description: "Chi tiết khóa học từ DOHY Media",
+      };
+    }
+
+    const url = generateCanonicalUrl(`/khoa-hoc/${slug}`);
+    const title = `${course.title} | DOHY Media`;
+    const description = truncateDescription(
+      course.description || course.subtitle || "Khóa học từ DOHY Media",
+    );
+
+    return {
+      title,
+      description,
+      keywords: [course.title, "khóa học", "3D", "design"],
+      alternates: {
+        canonical: url,
+      },
+      openGraph: {
+        title,
+        description,
+        url,
+        type: "article",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
+    };
+  } catch (error) {
+    console.error("Error generating metadata for course:", slug, error);
+    return {
+      title: "Khóa học | DOHY Media",
+      description: "Chi tiết khóa học từ DOHY Media",
+    };
+  }
+}
+
 export default async function CourseDetailPage({
   params,
   searchParams,
@@ -491,8 +558,27 @@ export default async function CourseDetailPage({
     badges.push(`${totals.previewLessons} bài xem thử`);
   }
 
+  const breadcrumbSchema = createBreadcrumbSchema([
+    { name: "Trang chủ", url: generateCanonicalUrl("/") },
+    { name: "Khóa học", url: generateCanonicalUrl("/khoa-hoc") },
+    { name: course.title, url: generateCanonicalUrl(`/khoa-hoc/${course.slug}`) },
+  ]);
+
+  const courseSchema = createCourseSchema({
+    id: course.id,
+    slug: course.slug,
+    title: course.title,
+    description: course.description,
+    subtitle: course.subtitle,
+    price: course.priceAmount,
+    pricingType: course.pricingType,
+    lessonsCount: totals.activeLessons,
+    durationSeconds: totals.durationSeconds,
+  });
+
   return (
     <PageShell>
+      <JsonLd data={[breadcrumbSchema, courseSchema]} />
       <main className="mx-auto max-w-7xl px-4 py-8 pt-0">
         <Button variant="outline" size="sm" className="gap-2 mb-8" asChild>
           <Link href="/khoa-hoc">

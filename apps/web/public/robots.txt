@@ -1,0 +1,38 @@
+# DOHY Media - SEO Optimization
+# Created for better search engine crawling and indexing
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /(dashboard)/
+Disallow: /(admin)/
+Disallow: /(auth)/
+Disallow: /admin-login/
+Disallow: /*.json$
+Disallow: *?*sort=
+Disallow: *?*filter=
+
+# Specific search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Slow crawlers
+User-agent: AhrefsBot
+User-agent: SemrushBot
+Crawl-delay: 10
+
+# Block bad bots
+User-agent: MJ12bot
+Disallow: /
+
+# Sitemap
+Sitemap: https://dohymedia.com/sitemap.xml
+Sitemap: https://dohymedia.com/sitemap-courses.xml
+
+# Host
+Host: https://dohymedia.com

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Doc } from "@dohy/backend/convex/_generated/dataModel";
@@ -8,8 +9,17 @@ import CourseListView, {
   type CourseThumbnail,
 } from "@/features/learner/pages/course-list-view";
 import { normalizeSlug } from "@/lib/slug";
+import { createMetadata } from "@/lib/seo/metadata";
+import { generateCanonicalUrl } from "@/lib/seo/metadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = createMetadata({
+  title: "Khóa học trực tuyến | DOHY Media",
+  description: "Khám phá các khóa học trực tuyến về hình ảnh 3D, design, và marketing từ các chuyên gia tại DOHY Media.",
+  keywords: ["khóa học", "3D", "design", "hình ảnh", "video"],
+  url: generateCanonicalUrl("/khoa-hoc"),
+});
 
 async function loadCourseList(): Promise<CourseListViewProps> {
   const base: CourseListViewProps = {

@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { ConvexHttpClient } from "convex/browser";
 import { Geist, Geist_Mono } from "next/font/google";
 import { api } from "@dohy/backend/convex/_generated/api";
+import { baseMetadata } from "@/lib/seo/metadata";
+import { createOrganizationSchema, createWebsiteSchema } from "@/lib/seo/structured-data";
+import { JsonLd } from "@/components/seo/JsonLd";
 import "../index.css";
 import Providers from "@/components/providers";
 
@@ -14,11 +17,6 @@ const geistMono = Geist_Mono({
 	variable: "--font-geist-mono",
 	subsets: ["latin"],
 });
-
-const baseMetadata: Metadata = {
-	title: "dohy",
-	description: "dohy",
-};
 
 type SiteSettingValue = {
 	logoUrl?: string;
@@ -57,6 +55,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="vi" suppressHydrationWarning>
+			<head>
+				<JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
+			</head>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
 				<Providers>{children}</Providers>
 			</body>
