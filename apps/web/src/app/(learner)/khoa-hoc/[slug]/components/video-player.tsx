@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useMemo, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Play } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { extractYoutubeVideoId } from "@/lib/youtube";
 import { useMutation } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";

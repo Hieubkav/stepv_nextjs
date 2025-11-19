@@ -55,7 +55,6 @@ type AdminOrder = {
   notes?: string;
   createdAt: number;
   updatedAt: number;
-  paymentStatus?: PaymentStatus;
   paymentId?: Id<"payments">;
   paymentRecordedAt?: number;
   paymentScreenshotUrl?: string;
