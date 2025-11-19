@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
+import { toast } from "sonner";
 import { VideoPlayer } from "./video-player";
 import { CourseDetails } from "./course-details";
-import { CourseCurriculum } from "./course-curriculum";
+import { CourseCurriculum, type ChapterProgress } from "./course-curriculum";
 import { CourseHighlights } from "./course-highlights";
 import { CoursePrice } from "./course-price";
 
@@ -85,11 +86,21 @@ export function CourseDetailClient({
 }) {
   const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
   const { student } = useStudentAuth();
+  
   const enrollment = useQuery(
     api.enrollment.getEnrollmentProgress,
     student ? { courseId: course.id as Id<"courses">, userId: student._id } : "skip",
   ) as { exists: boolean; active: boolean } | undefined;
-  const hasFullAccess = Boolean(student && enrollment?.exists && enrollment.active);
+  
+  const progressData = useQuery(
+    api.progress.getEnrollmentProgress,
+    student && enrollment?.exists ? { courseId: course.id as Id<"courses">, studentId: student._id } : "skip",
+  ) as { exists: boolean; completionPercentage: number; chaptersProgress: ChapterProgress[] } | undefined;
+  
+  const hasFullAccess = Boolean(student && enrollment?.exists && enrollment?.active);
+  
+  const markLessonCompleteMutation = useMutation(api.progress.markLessonComplete);
+  const unmarkLessonCompleteMutation = useMutation(api.progress.unmarkLessonComplete);
 
   useEffect(() => {
     if (selectedLesson && !hasFullAccess && !selectedLesson.isPreview) {
@@ -105,6 +116,34 @@ export function CourseDetailClient({
 
   const handleClearSelection = () => {
     setSelectedLesson(null);
+  };
+
+  const handleToggleLessonComplete = async (
+    lessonId: Id<"course_lessons">,
+    isCompleted: boolean,
+  ) => {
+    if (!student) return;
+
+    try {
+      if (isCompleted) {
+        await markLessonCompleteMutation({
+          studentId: student._id,
+          lessonId,
+          courseId: course.id as Id<"courses">,
+        });
+        toast.success("Bài học đã được đánh dấu hoàn thành");
+      } else {
+        await unmarkLessonCompleteMutation({
+          studentId: student._id,
+          lessonId,
+          courseId: course.id as Id<"courses">,
+        });
+        toast.success("Đã bỏ đánh dấu bài học");
+      }
+    } catch (error) {
+      console.error("Error toggling lesson complete:", error);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    }
   };
 
   return (
@@ -169,6 +208,9 @@ export function CourseDetailClient({
           badges={badges}
           onLessonSelect={handleLessonSelect}
           hasFullAccess={hasFullAccess}
+          completionPercentage={progressData?.completionPercentage}
+          chaptersProgress={progressData?.chaptersProgress}
+          onToggleLessonComplete={handleToggleLessonComplete}
         />
       </div>
     </>

@@ -42,6 +42,7 @@ type EnrollmentDoc = {
   order: number;
   active: boolean;
   enrolledAt: number;
+  completionPercentage?: number;
 };
 
 const buildInitial = (student: StudentDetail): StudentFormValues => ({
@@ -329,37 +330,54 @@ export default function StudentEditPage() {
               {studentCourses.map(({ enrollment, course }) => (
                 <div
                   key={String(enrollment._id)}
-                  className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-md border p-3"
                 >
-                  <div className="space-y-1">
-                    <div className="font-medium">{course?.title ?? `Khóa học #${enrollment.courseId}`}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {course ? (course.active ? "Khóa học đang hiển" : "Khóa học đang ẩn") : "Không rõ trạng thái khóa học"}
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1 flex-1">
+                      <div className="font-medium">{course?.title ?? `Khóa học #${enrollment.courseId}`}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {course ? (course.active ? "Khóa học đang hiển" : "Khóa học đang ẩn") : "Không rõ trạng thái khóa học"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
+                          enrollment.active
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        }`}
+                      >
+                        {enrollment.active ? "Đang hiển" : "Đang ẩn"}
+                      </span>
+                      {course ? (
+                        <Button variant="outline" size="sm" asChild>
+                          <Link href={`/dashboard/courses/${course._id}/edit`}>Mở khóa học</Link>
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" disabled>
+                          Khóa học không còn
+                        </Button>
+                      )}
+                      <Button variant="destructive" size="sm" onClick={() => handleRemoveCourse(enrollment)}>
+                        Xóa
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${
-                        enrollment.active
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                      }`}
-                    >
-                      {enrollment.active ? "Đang hiển" : "Đang ẩn"}
-                    </span>
-                    {course ? (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/dashboard/courses/${course._id}/edit`}>Mở khóa học</Link>
-                      </Button>
-                    ) : (
-                      <Button variant="outline" size="sm" disabled>
-                        Khóa học không còn
-                      </Button>
-                    )}
-                    <Button variant="destructive" size="sm" onClick={() => handleRemoveCourse(enrollment)}>
-                      Xóa
-                    </Button>
-                  </div>
+
+                  {enrollment.completionPercentage !== undefined && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>Tiến độ học</span>
+                        <span className="text-emerald-600 font-semibold">{enrollment.completionPercentage}%</span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div
+                          className="bg-emerald-500 h-2 rounded-full"
+                          style={{ width: `${enrollment.completionPercentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

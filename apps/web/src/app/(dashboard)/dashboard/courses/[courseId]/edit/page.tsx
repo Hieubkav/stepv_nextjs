@@ -75,6 +75,7 @@ type EnrollmentDoc = {
   userId: string;
   enrolledAt: number;
   progressPercent?: number;
+  completionPercentage?: number;
   lastViewedLessonId?: Id<"course_lessons">;
   order: number;
   active: boolean;
@@ -829,18 +830,35 @@ export default function CourseEditPage() {
                     return (
                       <div
                         key={String(enrollment._id)}
-                        className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                        className="flex flex-col gap-2 rounded-md border p-3"
                       >
-                        <div className="space-y-1">
-                          <div className="font-medium">{studentLabel}</div>
-                          {contactInfo && (
-                            <div className="text-xs text-muted-foreground">{contactInfo}</div>
-                          )}
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-1 flex-1">
+                            <div className="font-medium">{studentLabel}</div>
+                            {contactInfo && (
+                              <div className="text-xs text-muted-foreground">{contactInfo}</div>
+                            )}
+                          </div>
+                          <Button variant="destructive" size="sm" onClick={() => removeEnrollmentEntry(enrollment)}>
+                            <Trash2 className="mr-2 size-4" />
+                            Xóa
+                          </Button>
                         </div>
-                        <Button variant="destructive" size="sm" onClick={() => removeEnrollmentEntry(enrollment)}>
-                          <Trash2 className="mr-2 size-4" />
-                          Xóa
-                        </Button>
+                        
+                        {enrollment.completionPercentage !== undefined && (
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <span>Tiến độ học</span>
+                              <span className="text-emerald-600 font-semibold">{enrollment.completionPercentage}%</span>
+                            </div>
+                            <div className="w-full bg-muted rounded-full h-2">
+                              <div
+                                className="bg-emerald-500 h-2 rounded-full"
+                                style={{ width: `${enrollment.completionPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

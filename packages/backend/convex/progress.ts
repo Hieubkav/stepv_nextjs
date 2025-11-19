@@ -103,6 +103,86 @@ export const completeLessonIfDone = mutation({
 });
 
 /**
+ * Mark lesson as complete - đánh dấu bài hoàn thành (user tick checkbox)
+ */
+export const markLessonComplete = mutation({
+  args: {
+    studentId: v.id("students"),
+    lessonId: v.id("course_lessons"),
+    courseId: v.id("courses"),
+  },
+  handler: async (ctx, { studentId, lessonId, courseId }) => {
+    // Tìm hoặc tạo lesson completion record
+    const existing = await ctx.db
+      .query("lesson_completions")
+      .withIndex("by_student_lesson", (q) =>
+        q.eq("studentId", studentId).eq("lessonId", lessonId)
+      )
+      .first();
+
+    const now = Date.now();
+
+    if (existing) {
+      // Update: set isCompleted = true
+      await ctx.db.patch(existing._id, {
+        isCompleted: true,
+        completedAt: now,
+        updatedAt: now,
+      });
+    } else {
+      // Create new with isCompleted = true
+      await ctx.db.insert("lesson_completions", {
+        studentId,
+        lessonId,
+        courseId,
+        watchTimeSeconds: 0,
+        lastWatchedAt: now,
+        isCompleted: true,
+        completedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    // Update enrollment progress
+    await updateEnrollmentProgress(ctx, courseId, studentId);
+  },
+});
+
+/**
+ * Unmark lesson as complete - bỏ tick checkbox
+ */
+export const unmarkLessonComplete = mutation({
+  args: {
+    studentId: v.id("students"),
+    lessonId: v.id("course_lessons"),
+    courseId: v.id("courses"),
+  },
+  handler: async (ctx, { studentId, lessonId, courseId }) => {
+    // Tìm lesson completion record
+    const existing = await ctx.db
+      .query("lesson_completions")
+      .withIndex("by_student_lesson", (q) =>
+        q.eq("studentId", studentId).eq("lessonId", lessonId)
+      )
+      .first();
+
+    if (existing) {
+      const now = Date.now();
+      // Update: set isCompleted = false
+      await ctx.db.patch(existing._id, {
+        isCompleted: false,
+        completedAt: undefined,
+        updatedAt: now,
+      });
+
+      // Update enrollment progress
+      await updateEnrollmentProgress(ctx, courseId, studentId);
+    }
+  },
+});
+
+/**
  * Update enrollment progress - tính lại tiến độ khóa học
  */
 async function updateEnrollmentProgress(
