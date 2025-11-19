@@ -45,22 +45,22 @@ Triển khai hệ thống theo dõi tiến độ học tập cho học viên (ti
 **File: `apps/web/src/app/(dashboard)/dashboard/courses/[courseId]/edit/page.tsx`**
 - Tab "Học viên": thêm `completionPercentage?` field vào type `EnrollmentDoc`
 - Khi hiển thị học viên trong danh sách, add thanh tiến độ:
-  ```tsx
-  {enrollment.completionPercentage !== undefined && (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-sm">
-        <span>Tiến độ học</span>
-        <span>{enrollment.completionPercentage}%</span>
-      </div>
-      <div className="w-full bg-muted rounded-full h-2">
-        <div
-          className="bg-emerald-500 h-2 rounded-full"
-          style={{ width: `${enrollment.completionPercentage}%` }}
-        />
-      </div>
-    </div>
-  )}
-  ```
+   ```tsx
+   {enrollment.completionPercentage !== undefined && (
+     <div className="space-y-2">
+       <div className="flex items-center justify-between text-sm">
+         <span>Tiến độ học</span>
+         <span>{enrollment.completionPercentage}%</span>
+       </div>
+       <div className="w-full bg-muted rounded-full h-2">
+         <div
+           className="bg-emerald-500 h-2 rounded-full"
+           style={{ width: `${enrollment.completionPercentage}%` }}
+         />
+       </div>
+     </div>
+   )}
+   ```
 - Query để lấy enrollment progress của từng học viên
 
 ---
