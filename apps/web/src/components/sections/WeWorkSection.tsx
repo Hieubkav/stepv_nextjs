@@ -93,8 +93,10 @@ const WeWorkSection = ({
       return { circleSize: 500, buttonSize: 110, radius: 250 };
     }
     const width = window.innerWidth;
-    if (width < 480) return { circleSize: 280, buttonSize: 60, radius: 140 };
-    if (width < 768) return { circleSize: 350, buttonSize: 75, radius: 175 };
+    if (width < 360) return { circleSize: 220, buttonSize: 40, radius: 110 };
+    if (width < 480) return { circleSize: 260, buttonSize: 44, radius: 130 };
+    if (width < 640) return { circleSize: 300, buttonSize: 50, radius: 150 };
+    if (width < 768) return { circleSize: 350, buttonSize: 60, radius: 175 };
     if (width < 1024) return { circleSize: 400, buttonSize: 90, radius: 200 };
     return { circleSize: 500, buttonSize: 110, radius: 250 };
   };
@@ -113,14 +115,14 @@ const WeWorkSection = ({
   const ActiveIcon = getLucideIcon(resolvedSteps[safeActiveStep]?.icon) ?? getLucideIcon('Info');
 
   return (
-    <section id="more" className="py-12 sm:py-16 md:py-20 bg-black text-white min-h-screen">
+    <section id="more" className="py-6 sm:py-8 md:py-12 lg:py-16 bg-black text-white">
       <div className="container mx-auto px-4 max-w-[1140px]">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-12 items-center">
           <div className="order-2 lg:order-1 text-center lg:text-left">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[61px] font-light mb-4 sm:mb-6 md:mb-8 uppercase tracking-wide leading-tight">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-[61px] font-light mb-2 sm:mb-3 md:mb-4 lg:mb-6 uppercase tracking-wide leading-tight">
               {title}
             </h2>
-            <p className="text-sm sm:text-base md:text-lg lg:text-[20px] font-light leading-relaxed mb-6 sm:mb-8 md:mb-12">
+            <p className="text-sm sm:text-base md:text-lg lg:text-[20px] font-light leading-relaxed mb-3 sm:mb-4 md:mb-6 lg:mb-8">
               {subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6 items-center lg:items-start justify-center lg:justify-start">
@@ -142,19 +144,19 @@ const WeWorkSection = ({
             </div>
           </div>
 
-          <div className="order-1 lg:order-2 flex justify-center">
+          <div className="order-1 lg:order-2 flex justify-center my-3">
             <div
               className="relative mx-auto"
               style={{ width: circleSize, height: circleSize, minWidth: circleSize, minHeight: circleSize }}
             >
               <div
-                className="absolute inset-0 rounded-full border-2 border-[#FFD700] bg-black flex flex-col justify-center items-center text-center p-4 sm:p-6 md:p-8 lg:p-12"
+                className="absolute inset-0 rounded-full border-2 border-[#FFD700] bg-black flex flex-col justify-center items-center text-center p-3 sm:p-4 md:p-5 lg:p-10"
                 style={{ width: circleSize, height: circleSize }}
               >
-                <div className="mb-3 sm:mb-4 md:mb-6 text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                <div className="mb-2 sm:mb-2 md:mb-3 lg:mb-4 text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
                   <ActiveIcon className="text-[#FFD700] text-2xl sm:text-3xl md:text-4xl lg:text-5xl" />
                 </div>
-                <h3 className="text-[#FFD700] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl uppercase font-medium mb-3 sm:mb-4 md:mb-6 leading-tight px-2">
+                <h3 className="text-[#FFD700] text-xs sm:text-sm md:text-lg lg:text-xl xl:text-2xl uppercase font-medium mb-2 sm:mb-2 md:mb-3 lg:mb-4 leading-tight px-2">
                   {resolvedSteps[safeActiveStep]?.title || 'Step'}
                 </h3>
                 <p className="text-white font-light text-xs sm:text-sm md:text-base leading-relaxed px-2">
