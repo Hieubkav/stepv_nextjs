@@ -197,16 +197,16 @@ const SiteHeaderSection = ({
   ) => {
     const baseClass =
       variant === 'desktop'
-        ? 'inline-flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50'
-        : 'block px-4 py-3 text-sm font-medium transition-colors rounded-lg focus:outline-none focus:ring-2 focus:ring-white';
+        ? 'inline-flex items-center px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors duration-300 rounded-md focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50'
+        : 'block px-4 py-3 text-sm font-medium transition-colors duration-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-white';
     const activeClass =
       variant === 'desktop'
         ? item.highlight || item.active
           ? 'text-white'
-          : 'text-white/90 hover:text-white'
+          : 'text-white/90 hover:text-[#FFD700]'
         : item.highlight || item.active
           ? 'text-black bg-white'
-          : 'text-white hover:bg-white/10';
+          : 'text-white hover:bg-[#FFD700]/20 hover:text-[#FFD700]';
     const className = `${baseClass} ${activeClass}`;
 
     if (item.isAnchor) {

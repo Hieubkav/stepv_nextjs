@@ -103,10 +103,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         e.preventDefault();
                         handleLinkClick(item.href);
                       }}
-                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors duration-300 ${
                         item.isActive
                           ? 'text-white  border-white'
-                          : 'text-white hover:text-gray-300'
+                          : 'text-white hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
@@ -114,10 +114,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   ) : (
                     <Link
                       href={item.href as any}
-                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors duration-300 ${
                         item.isActive
                           ? 'text-white  border-white'
-                          : 'text-white hover:text-gray-300'
+                          : 'text-white hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
@@ -209,10 +209,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         e.preventDefault();
                         handleLinkClick(item.href);
                       }}
-                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors duration-300 ${
                         item.isActive
                           ? 'text-white border-b-2 border-white'
-                          : 'text-white hover:text-gray-300'
+                          : 'text-white hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
@@ -220,10 +220,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                   ) : (
                     <Link
                       href={item.href as any}
-                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors ${
+                      className={`px-3 py-2 uppercase font-semibold text-sm whitespace-nowrap transition-colors duration-300 ${
                         item.isActive
                           ? 'text-white  border-white'
-                          : 'text-white hover:text-gray-300'
+                          : 'text-white hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
@@ -324,10 +324,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         e.preventDefault();
                         handleLinkClick(item.href);
                       }}
-                      className={`block px-4 py-3 uppercase font-semibold text-sm transition-colors rounded-lg ${
+                      className={`block px-4 py-3 uppercase font-semibold text-sm transition-colors duration-300 rounded-lg ${
                         item.isActive
                           ? 'text-black bg-white'
-                          : 'text-white hover:bg-white/10'
+                          : 'text-white hover:bg-[#FFD700]/20 hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
@@ -339,10 +339,10 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
                         setIsMobileMenuOpen(false);
                         document.body.style.overflow = '';
                       }}
-                      className={`block px-4 py-3 uppercase font-semibold text-sm transition-colors rounded-lg ${
+                      className={`block px-4 py-3 uppercase font-semibold text-sm transition-colors duration-300 rounded-lg ${
                         item.isActive
                           ? 'text-black bg-white'
-                          : 'text-white hover:bg-white/10'
+                          : 'text-white hover:bg-[#FFD700]/20 hover:text-[#FFD700]'
                       }`}
                     >
                       {item.label}
