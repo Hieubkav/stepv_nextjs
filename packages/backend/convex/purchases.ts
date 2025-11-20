@@ -1,4 +1,4 @@
-// Unified purchase management for all product types
+// Purchase management - lifetime access after buying
 import { mutation, query } from "./_generated/server";
 import type { QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
@@ -6,60 +6,17 @@ import type { Id } from "./_generated/dataModel";
 
 // Get customer purchases
 export const getCustomerPurchases = query({
-    args: {
-        customerId: v.id("customers"),
-        productType: v.optional(v.string()),
-        accessStatus: v.optional(v.string()),
-    },
-    handler: async (ctx, { customerId, productType, accessStatus }) => {
-        let purchases = await ctx.db
+    args: { customerId: v.id("customers") },
+    handler: async (ctx, { customerId }) => {
+        return await ctx.db
             .query("customer_purchases")
             .withIndex("by_customer", (q) => q.eq("customerId", customerId))
             .collect();
-
-        if (productType) {
-            purchases = purchases.filter((p) => p.productType === productType);
-        }
-
-        if (accessStatus) {
-            purchases = purchases.filter((p) => p.accessStatus === accessStatus);
-        }
-
-        return purchases;
     },
 });
 
-// Get customer purchase by product
-export const getCustomerPurchaseByProduct = query({
-    args: {
-        customerId: v.id("customers"),
-        productType: v.string(),
-        productId: v.string(),
-    },
-    handler: async (ctx, { customerId, productType, productId }) => {
-        const purchases = await ctx.db
-            .query("customer_purchases")
-            .withIndex("by_customer_product", (q) =>
-                q.eq("customerId", customerId).eq("productType", productType)
-            )
-            .collect();
-
-        // Filter by product ID since we can't do multi-field queries with optional fields
-        return purchases.find((p) => {
-            if (productType === "course") {
-                return p.courseId === productId;
-            } else if (productType === "resource") {
-                return p.resourceId === productId;
-            } else if (productType === "vfx") {
-                return p.vfxId === productId;
-            }
-            return false;
-        }) ?? null;
-    },
-});
-
-// Check if customer has access to product
-export const hasProductAccess = query({
+// Check if customer has purchased specific product
+export const hasPurchased = query({
     args: {
         customerId: v.id("customers"),
         productType: v.string(),
@@ -69,94 +26,48 @@ export const hasProductAccess = query({
         const purchase = await ctx.db
             .query("customer_purchases")
             .withIndex("by_customer_product", (q) =>
-                q.eq("customerId", customerId).eq("productType", productType)
+                q.eq("customerId", customerId)
+                    .eq("productType", productType)
+                    .eq("productId", productId)
             )
-            .collect()
-            .then((purchases) => {
-                if (productType === "course") {
-                    return purchases.find((p) => p.courseId === productId) ?? null;
-                } else if (productType === "resource") {
-                    return purchases.find((p) => p.resourceId === productId) ?? null;
-                } else if (productType === "vfx") {
-                    return purchases.find((p) => p.vfxId === productId) ?? null;
-                }
-                return null;
-            });
+            .first();
 
-        if (!purchase) return false;
-
-        // Check if access is still active
-        if (purchase.accessStatus === "revoked") return false;
-        if (purchase.accessStatus === "expired") {
-            if (purchase.accessEndDate && purchase.accessEndDate < Date.now()) {
-                return false;
-            }
-        }
-
-        return true;
+        return !!purchase;
     },
 });
 
-// Create purchase record after successful order
-export const createPurchase = mutation({
+// Get single purchase record
+export const getPurchase = query({
     args: {
         customerId: v.id("customers"),
-        orderId: v.id("orders"),
         productType: v.string(),
-        courseId: v.optional(v.id("courses")),
-        resourceId: v.optional(v.id("library_resources")),
-        vfxId: v.optional(v.id("vfx_products")),
-        accessStatus: v.union(v.literal("active"), v.literal("expired"), v.literal("revoked"), v.literal("lifetime")),
-        accessEndDate: v.optional(v.number()), // null = lifetime or no expiry
+        productId: v.string(),
     },
-    handler: async (ctx, args) => {
-        const now = Date.now();
-
-        const id = await ctx.db.insert("customer_purchases", {
-            customerId: args.customerId,
-            orderId: args.orderId,
-            productType: args.productType,
-            courseId: args.courseId,
-            resourceId: args.resourceId,
-            vfxId: args.vfxId,
-            accessStatus: args.accessStatus,
-            accessStartDate: now,
-            accessEndDate: args.accessEndDate,
-            createdAt: now,
-            updatedAt: now,
-        });
-
-        return await ctx.db.get(id);
+    handler: async (ctx, { customerId, productType, productId }) => {
+        return (
+            (await ctx.db
+                .query("customer_purchases")
+                .withIndex("by_customer_product", (q) =>
+                    q.eq("customerId", customerId)
+                        .eq("productType", productType)
+                        .eq("productId", productId)
+                )
+                .first()) ?? null
+        );
     },
 });
 
-// Update purchase access status
-export const updatePurchaseStatus = mutation({
-    args: {
-        id: v.id("customer_purchases"),
-        accessStatus: v.union(v.literal("active"), v.literal("expired"), v.literal("revoked"), v.literal("lifetime")),
-        accessEndDate: v.optional(v.number()),
-    },
-    handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, {
-            accessStatus: args.accessStatus,
-            accessEndDate: args.accessEndDate,
-            updatedAt: Date.now(),
-        });
-        return { ok: true } as const;
-    },
-});
-
-// Increment download count for resources/vfx
+// Increment download count (for resources & vfx)
 export const incrementDownloadCount = mutation({
-    args: { id: v.id("customer_purchases") },
-    handler: async (ctx, { id }) => {
-        const purchase = await ctx.db.get(id);
+    args: {
+        purchaseId: v.id("customer_purchases"),
+    },
+    handler: async (ctx, { purchaseId }) => {
+        const purchase = await ctx.db.get(purchaseId);
         if (!purchase) throw new Error("Purchase not found");
 
-        await ctx.db.patch(id, {
+        await ctx.db.patch(purchaseId, {
             downloadCount: (purchase.downloadCount ?? 0) + 1,
-            lastAccessedAt: Date.now(),
             updatedAt: Date.now(),
         });
 
@@ -164,33 +75,25 @@ export const incrementDownloadCount = mutation({
     },
 });
 
-// Update last accessed time
-export const updateLastAccessedAt = mutation({
-    args: { id: v.id("customer_purchases") },
-    handler: async (ctx, { id }) => {
-        await ctx.db.patch(id, {
-            lastAccessedAt: Date.now(),
-            updatedAt: Date.now(),
-        });
-        return { ok: true } as const;
-    },
-});
-
-// Update course progress (for courses)
+// Update course progress
 export const updateCourseProgress = mutation({
     args: {
-        id: v.id("customer_purchases"),
+        purchaseId: v.id("customer_purchases"),
         progressPercent: v.number(),
     },
-    handler: async (ctx, args) => {
-        if (args.progressPercent < 0 || args.progressPercent > 100) {
+    handler: async (ctx, { purchaseId, progressPercent }) => {
+        if (progressPercent < 0 || progressPercent > 100) {
             throw new Error("Progress must be between 0 and 100");
         }
 
-        await ctx.db.patch(args.id, {
-            progressPercent: args.progressPercent,
+        const purchase = await ctx.db.get(purchaseId);
+        if (!purchase) throw new Error("Purchase not found");
+
+        await ctx.db.patch(purchaseId, {
+            progressPercent,
             updatedAt: Date.now(),
         });
+
         return { ok: true } as const;
     },
 });
@@ -198,51 +101,51 @@ export const updateCourseProgress = mutation({
 // Mark course as completed
 export const completeCourse = mutation({
     args: {
-        id: v.id("customer_purchases"),
+        purchaseId: v.id("customer_purchases"),
         certificateId: v.optional(v.id("certificates")),
     },
-    handler: async (ctx, args) => {
-        await ctx.db.patch(args.id, {
+    handler: async (ctx, { purchaseId, certificateId }) => {
+        const purchase = await ctx.db.get(purchaseId);
+        if (!purchase) throw new Error("Purchase not found");
+
+        await ctx.db.patch(purchaseId, {
             progressPercent: 100,
             completedAt: Date.now(),
-            certificateId: args.certificateId,
-            accessStatus: "lifetime", // Completed courses have lifetime access
+            certificateId,
             updatedAt: Date.now(),
         });
+
         return { ok: true } as const;
     },
 });
 
-// Get purchases by order ID
-export const getPurchasesByOrder = query({
-    args: { orderId: v.id("orders") },
-    handler: async (ctx, { orderId }) => {
-        return await ctx.db
-            .query("customer_purchases")
-            .withIndex("by_order", (q) => q.eq("orderId", orderId))
-            .collect();
+// Get customer's library (all purchases with product details)
+export const getCustomerLibrary = query({
+    args: {
+        customerId: v.id("customers"),
+        productType: v.optional(v.string()),
     },
-});
-
-// Get customer purchases with product details (enriched)
-export const getCustomerPurchasesEnriched = query({
-    args: { customerId: v.id("customers") },
-    handler: async (ctx, { customerId }) => {
-        const purchases = await ctx.db
+    handler: async (ctx, { customerId, productType }) => {
+        let purchases = await ctx.db
             .query("customer_purchases")
             .withIndex("by_customer", (q) => q.eq("customerId", customerId))
             .collect();
 
+        if (productType) {
+            purchases = purchases.filter((p) => p.productType === productType);
+        }
+
+        // Enrich with product details
         const enriched = await Promise.all(
             purchases.map(async (purchase) => {
                 let product: any = null;
 
-                if (purchase.productType === "course" && purchase.courseId) {
-                    product = await ctx.db.get(purchase.courseId);
-                } else if (purchase.productType === "resource" && purchase.resourceId) {
-                    product = await ctx.db.get(purchase.resourceId);
-                } else if (purchase.productType === "vfx" && purchase.vfxId) {
-                    product = await ctx.db.get(purchase.vfxId);
+                if (purchase.productType === "course") {
+                    product = await ctx.db.get(purchase.productId as any);
+                } else if (purchase.productType === "resource") {
+                    product = await ctx.db.get(purchase.productId as any);
+                } else if (purchase.productType === "vfx") {
+                    product = await ctx.db.get(purchase.productId as any);
                 }
 
                 return {
@@ -256,67 +159,30 @@ export const getCustomerPurchasesEnriched = query({
     },
 });
 
-// Check if customer has purchased specific product
-export const hasPurchased = query({
+// Get recent purchases (for dashboard)
+export const getRecentPurchases = query({
     args: {
         customerId: v.id("customers"),
-        productType: v.string(),
-        productId: v.string(),
+        limit: v.optional(v.number()),
     },
-    handler: async (ctx, { customerId, productType, productId }) => {
-        const purchases = await ctx.db
-            .query("customer_purchases")
-            .withIndex("by_customer_product", (q) =>
-                q.eq("customerId", customerId).eq("productType", productType)
-            )
-            .collect();
-
-        const purchase = purchases.find((p) => {
-            if (productType === "course" && p.courseId) {
-                return String(p.courseId) === productId;
-            } else if (productType === "resource" && p.resourceId) {
-                return String(p.resourceId) === productId;
-            } else if (productType === "vfx" && p.vfxId) {
-                return String(p.vfxId) === productId;
-            }
-            return false;
-        });
-
-        return { hasPurchased: !!purchase, purchase: purchase ?? null };
-    },
-});
-
-// Get recent purchases for customer
-export const getRecentPurchases = query({
-    args: { customerId: v.id("customers"), limit: v.optional(v.number()) },
     handler: async (ctx, { customerId, limit = 10 }) => {
         const purchases = await ctx.db
             .query("customer_purchases")
             .withIndex("by_customer", (q) => q.eq("customerId", customerId))
             .collect();
 
-        // Sort by creation date descending
         purchases.sort((a, b) => b.createdAt - a.createdAt);
-
         return purchases.slice(0, limit);
     },
 });
 
-// Get active purchases for customer
-export const getActivePurchases = query({
-    args: { customerId: v.id("customers") },
-    handler: async (ctx, { customerId }) => {
-        const purchases = await ctx.db
+// Get purchases by order (check what was bought in an order)
+export const getPurchasesByOrder = query({
+    args: { orderId: v.id("orders") },
+    handler: async (ctx, { orderId }) => {
+        return await ctx.db
             .query("customer_purchases")
-            .withIndex("by_customer", (q) => q.eq("customerId", customerId))
+            .withIndex("by_order", (q) => q.eq("orderId", orderId))
             .collect();
-
-        const now = Date.now();
-        return purchases.filter((p) => {
-            if (p.accessStatus === "revoked") return false;
-            if (p.accessStatus === "lifetime") return true;
-            if (p.accessEndDate && p.accessEndDate < now) return false;
-            return p.accessStatus === "active";
-        });
     },
 });

@@ -11,11 +11,7 @@ type CustomerAccount = {
     email: string;
     fullName: string;
     phone?: string;
-    avatar?: Id<'media'>;
-    bio?: string;
-    customerType: 'individual' | 'business' | 'student';
     notes?: string;
-    tags?: string[];
     order: number;
     active: boolean;
     createdAt: number;
@@ -35,14 +31,12 @@ type CustomerAuthContextValue = {
     status: AuthStatus;
     error?: string;
     isAuthenticated: boolean;
-    customerType: CustomerAccount['customerType'] | null;
     login: (input: { email: string; password: string; rememberMe?: boolean }) => Promise<{ ok: boolean; error?: string }>;
     register: (input: {
         account: string;
         email: string;
         password: string;
         fullName: string;
-        customerType?: 'individual' | 'business' | 'student';
         phone?: string;
     }) => Promise<{ ok: boolean; error?: string; customerId?: string }>;
     logout: () => void;
@@ -250,14 +244,12 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             email,
             password,
             fullName,
-            customerType = 'individual',
             phone,
         }: {
             account: string;
             email: string;
             password: string;
             fullName: string;
-            customerType?: 'individual' | 'business' | 'student';
             phone?: string;
         }) => {
             const trimmedAccount = account.trim();
@@ -279,7 +271,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
                     email: trimmedEmail,
                     password: trimmedPassword,
                     fullName: trimmedFullName,
-                    customerType,
                     phone: phone?.trim(),
                     order: 0,
                     active: true,
@@ -380,7 +371,6 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
             status: state.hydrated ? state.status : 'loading',
             error: state.error,
             isAuthenticated: state.customer?.active ?? false,
-            customerType: state.customer?.customerType ?? null,
             login,
             register,
             logout,

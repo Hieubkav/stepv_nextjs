@@ -14,18 +14,12 @@ type CustomerDoc = {
     password: string;
     fullName: string;
     phone?: string;
-    avatar?: Id<"media">;
-    bio?: string;
-    customerType: "individual" | "business" | "student";
     resetToken?: string;
     resetTokenExpiry?: number;
     rememberToken?: string;
     rememberTokenExpiry?: number;
-    lastOtpSentAt?: number;
-    lastOtpBlockedUntil?: number;
-    notes?: string;
-    tags?: string[];
     order: number;
+    notes?: string;
     active: boolean;
     createdAt: number;
     updatedAt: number;
@@ -37,11 +31,7 @@ type PublicCustomer = {
     email: string;
     fullName: string;
     phone?: string;
-    avatar?: Id<"media">;
-    bio?: string;
-    customerType: "individual" | "business" | "student";
     notes?: string;
-    tags: string[];
     order: number;
     active: boolean;
     createdAt: number;
@@ -65,14 +55,7 @@ const toPublicCustomer = (customer: CustomerDoc): PublicCustomer => ({
     updatedAt: customer.updatedAt,
 });
 
-const normalizeTags = (tags?: string[]) => {
-    if (!tags) return undefined;
-    const cleaned = tags
-        .map((tag) => tag.trim())
-        .filter((tag) => tag.length > 0);
-    if (!cleaned.length) return [] as string[];
-    return Array.from(new Set(cleaned));
-};
+
 
 const requireUniqueAccount = async (
     ctx: AnyCtx,
@@ -196,11 +179,8 @@ export const createCustomer = mutation({
         email: v.string(),
         password: v.string(),
         fullName: v.string(),
-        customerType: v.union(v.literal("individual"), v.literal("business"), v.literal("student")),
         phone: v.optional(v.string()),
-        bio: v.optional(v.string()),
         notes: v.optional(v.string()),
-        tags: v.optional(v.array(v.string())),
         order: v.number(),
         active: v.boolean(),
     },
@@ -218,7 +198,6 @@ export const createCustomer = mutation({
         if (!fullName) throw new Error("Full name is required");
         
         const now = Date.now();
-        const tags = normalizeTags(args.tags);
         
         await requireUniqueAccount(ctx, account);
         await requireUniqueEmail(ctx, email);
@@ -228,11 +207,8 @@ export const createCustomer = mutation({
             email,
             password,
             fullName,
-            customerType: args.customerType,
             phone: args.phone?.trim() || undefined,
-            bio: args.bio?.trim() || undefined,
             notes: args.notes?.trim() || undefined,
-            tags,
             order: args.order,
             active: args.active,
             createdAt: now,
@@ -252,16 +228,12 @@ export const updateCustomer = mutation({
         password: v.optional(v.string()),
         fullName: v.optional(v.string()),
         phone: v.optional(v.union(v.string(), v.null())),
-        avatar: v.optional(v.union(v.id("media"), v.null())),
-        bio: v.optional(v.union(v.string(), v.null())),
-        customerType: v.optional(v.union(v.literal("individual"), v.literal("business"), v.literal("student"))),
         notes: v.optional(v.union(v.string(), v.null())),
-        tags: v.optional(v.array(v.string())),
         order: v.optional(v.number()),
         active: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const { id, account, email, password, tags, ...rest } = args;
+        const { id, account, email, password, ...rest } = args;
         const existing = await ctx.db.get(id);
         if (!existing) throw new Error("Customer not found");
 
@@ -299,16 +271,8 @@ export const updateCustomer = mutation({
             patch.phone = rest.phone ? rest.phone.trim() : undefined;
         }
 
-        if (rest.bio !== undefined) {
-            patch.bio = rest.bio ? rest.bio.trim() : undefined;
-        }
-
         if (rest.notes !== undefined) {
             patch.notes = rest.notes ? rest.notes.trim() : undefined;
-        }
-
-        if (tags !== undefined) {
-            patch.tags = normalizeTags(tags);
         }
 
         patch.updatedAt = Date.now();
