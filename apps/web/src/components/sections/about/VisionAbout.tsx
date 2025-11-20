@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 const VisionAbout: React.FC = () => {
   return (
-    <section className="py-20 md:py-32 px-6 bg-[#050505] border-t border-[#D4AF37]/10 overflow-hidden">
+    <section className="py-12 md:py-16 px-6 bg-[#050505] border-t border-[#D4AF37]/10 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -20,33 +20,31 @@ const VisionAbout: React.FC = () => {
             <span className="text-[#D4AF37] text-[10px] tracking-[0.3em] uppercase block mb-6 font-bold">
               Dohy Vision
             </span>
-            <h2 className="text-3xl md:text-5xl font-serif text-white leading-tight mb-8">
+            <h2 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-3xl md:text-5xl text-white leading-tight mb-8 font-bold">
               Chất Lượng Là <br />
               <span className="text-white/30 italic">Tiêu Chuẩn Duy Nhất</span>
             </h2>
             
             <div className="space-y-6 text-white/60 font-light text-sm md:text-base leading-relaxed border-l-2 border-white/5 pl-6">
               <p>
-                Tại Dohy Studio, chúng tôi không chỉ tạo ra sản phẩm, mà tạo ra những tác phẩm có giá trị thẩm mỹ. 
-                Mỗi khóa học, mỗi plugin, mỗi frame hình đều được tinh chỉnh bởi những đôi mắt khắt khe nhất.
+                Mỗi sản phẩm được tinh chỉnh bởi những tiêu chuẩn khắt khe nhất - từ khóa học, plugin đến từng khung hình.
               </p>
               <p>
-                Sự kết hợp giữa <span className="text-white">Art Direction</span> (Tư duy nghệ thuật) và <span className="text-white">Advanced Tech</span> (Công nghệ tiên tiến) 
-                là DNA của chúng tôi.
+                <span className="text-white">Art Direction</span> + <span className="text-white">Advanced Tech</span> = DNA của Dohy.
               </p>
             </div>
 
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-8">
               <div className="bg-[#0A0A0A] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-colors">
-                <h4 className="text-white font-serif text-lg mb-2">Sáng Tạo</h4>
+                <h4 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-white text-lg mb-2 font-bold">Sáng Tạo</h4>
                 <p className="text-xs text-white/40 leading-relaxed">
-                  Đổi mới tư duy thiết kế và phương pháp giảng dạy thực chiến.
+                  Tư duy thiết kế & phương pháp giảng dạy mới.
                 </p>
               </div>
               <div className="bg-[#0A0A0A] p-6 border border-white/5 hover:border-[#D4AF37]/20 transition-colors">
-                <h4 className="text-white font-serif text-lg mb-2">Hiệu Suất</h4>
+                <h4 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-white text-lg mb-2 font-bold">Hiệu Suất</h4>
                 <p className="text-xs text-white/40 leading-relaxed">
-                  Bộ công cụ tối ưu hóa giúp tăng tốc độ làm việc gấp 2 lần.
+                  Tăng tốc độ làm việc gấp 2 lần.
                 </p>
               </div>
             </div>

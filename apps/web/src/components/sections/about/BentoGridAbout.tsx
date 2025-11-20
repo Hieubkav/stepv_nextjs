@@ -1,19 +1,32 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Box, Layers, MonitorPlay } from 'lucide-react';
 
+interface Service {
+  id: string;
+  label: string;
+  title: string;
+  description: string;
+  features: string[];
+  image: string;
+  ctaText: string;
+  href: string;
+}
+
 const BentoGridAbout: React.FC = () => {
-  const services = [
+  const services: Service[] = [
     {
       id: 'academy',
       label: 'EDUCATION',
       title: 'Dohy Academy',
       description: 'Hệ thống đào tạo tư duy mỹ thuật và kỹ năng 3D/VFX bài bản. Lộ trình từ cơ bản đến chuyên sâu.',
       features: ['Tư duy hình ảnh', 'Kỹ năng 3D', 'Quy trình Studio'],
-      image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1964&auto=format&fit=crop',
-      ctaText: 'Xem Lộ Trình'
+      image: 'https://images.unsplash.com/photo-1521898284481-a5ec348cb555?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      ctaText: 'Xem Lộ Trình',
+      href: '/khoa-hoc'
     },
     {
       id: 'store',
@@ -22,7 +35,8 @@ const BentoGridAbout: React.FC = () => {
       description: 'Hệ sinh thái tài nguyên số tối ưu hóa quy trình: Plugin độc quyền, Model và Texture chất lượng cao.',
       features: ['Plugins', '3D Assets', 'Textures'],
       image: 'https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=1964&auto=format&fit=crop',
-      ctaText: 'Kho Tài Nguyên'
+      ctaText: 'Kho Tài Nguyên',
+      href: '/thu-vien'
     },
     {
       id: 'production',
@@ -30,22 +44,23 @@ const BentoGridAbout: React.FC = () => {
       title: 'Dohy VFX',
       description: 'Studio sản xuất CGI & VFX. Hiện thực hóa ý tưởng phức tạp cho các chiến dịch quảng cáo toàn cầu.',
       features: ['CGI/3D', 'Visual Effects', 'Animation'],
-      image: 'https://images.unsplash.com/photo-1558655146-d09347e0d766?q=80&w=1964&auto=format&fit=crop',
-      ctaText: 'Liên Hệ Booking'
+      image: 'https://images.unsplash.com/photo-1616788549597-93571a1058cc?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      ctaText: 'Xem kho VFX',
+      href: '/vfx'
     }
   ];
 
   const icons = [MonitorPlay, Box, Layers];
 
   return (
-    <section className="py-20 md:py-32 px-6 bg-[#0A0A0A]">
+    <section className="py-12 md:py-16 px-6 bg-[#0A0A0A]">
       <div className="max-w-7xl mx-auto">
         
-        <div className="mb-16 md:text-center max-w-3xl mx-auto">
+        <div className="mb-8 md:text-center max-w-3xl mx-auto">
           <span className="text-[#D4AF37] text-[10px] tracking-[0.3em] uppercase block mb-4 font-bold">
             Dohy Ecosystem
           </span>
-          <h2 className="text-3xl md:text-5xl font-serif text-white leading-tight mb-6">
+          <h2 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-3xl md:text-5xl text-white leading-tight mb-6 font-bold">
             Giải Pháp <span className="italic text-[#D4AF37]">Toàn Diện</span>
           </h2>
           <p className="text-white/50 text-sm md:text-base font-light leading-relaxed text-balance">
@@ -87,7 +102,7 @@ const BentoGridAbout: React.FC = () => {
                     {service.label}
                   </div>
                   
-                  <h3 className="text-2xl font-serif text-white mb-4 group-hover:text-[#D4AF37] transition-colors duration-300">
+                  <h3 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-2xl text-white mb-4 group-hover:text-[#D4AF37] transition-colors duration-300 font-bold">
                     {service.title}
                   </h3>
                   
@@ -104,9 +119,11 @@ const BentoGridAbout: React.FC = () => {
                       ))}
                     </ul>
                     
-                    <div className="text-white text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all duration-300 font-bold group-hover:text-[#D4AF37]">
-                      {service.ctaText} <ArrowRight size={14} />
-                    </div>
+                    <Link href={service.href as any}>
+                      <div className="text-white text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all duration-300 font-bold group-hover:text-[#D4AF37] cursor-pointer">
+                        {service.ctaText} <ArrowRight size={14} />
+                      </div>
+                    </Link>
                   </div>
                 </div>
               </motion.div>

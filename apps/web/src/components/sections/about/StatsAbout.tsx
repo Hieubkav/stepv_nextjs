@@ -22,7 +22,7 @@ const StatsAbout: React.FC = () => {
               transition={{ delay: index * 0.2 }}
               className="text-center px-4 pt-8 md:pt-0"
             >
-              <h3 className="text-4xl md:text-5xl font-serif text-white mb-2 tracking-tighter">
+              <h3 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-4xl md:text-5xl text-white mb-2 tracking-tighter font-bold">
                 {stat.value}
               </h3>
               <div className="w-8 h-[1px] bg-[#D4AF37]/50 mx-auto mb-3"></div>

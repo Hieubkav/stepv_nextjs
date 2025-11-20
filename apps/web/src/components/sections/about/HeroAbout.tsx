@@ -42,7 +42,7 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-[#050505] overflow-hidden py-16 md:py-24 border-b border-[#D4AF37]/10">
+    <section className="relative min-h-[90vh] flex items-center bg-[#050505] overflow-hidden py-12 md:py-16 border-b border-[#D4AF37]/10">
       {/* Ambient Background - Gold Glow */}
       <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
       
@@ -61,7 +61,7 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
             </span>
           </div>
 
-          <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-6 md:mb-8 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-6 md:mb-8 tracking-tight font-bold" style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif", fontWeight: 700 }}>
             Kiến Tạo <br className="hidden md:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#D4AF37]/80 to-[#D4AF37]/50 italic pr-2">
               Digital World
