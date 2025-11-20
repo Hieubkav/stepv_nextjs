@@ -337,19 +337,19 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
             {
               title: "STUDIO CỦA CHÚNG TÔI",
               links: [
-                { label: "Trang chủ", url: "/", highlight: true },
+                { label: "Trang chủ", url: "/" },
                 { label: "Giới thiệu", url: "/about" },
                 { label: "Dịch vụ", url: "/services" },
                 { label: "Tuyển dụng", url: "/careers" }
               ]
             },
             {
-              title: "DICH VU CUA CHUNG TOI",
+              title: "DỊCH VỤ CHÚNG TÔI",
               links: [
-                { label: "Marketing", url: "/services/marketing" },
-                { label: "Hình ảnh kiến trúc", url: "/services/architecture" },
-                { label: "Hình ảnh sản phẩm", url: "/services/product" },
-                { label: "Hoạt hình 3D", url: "/services/animation" }
+                { label: "Marketing", url: "/services/marketing", highlight: true },
+                { label: "Hình ảnh kiến trúc", url: "/services/architecture", highlight: true },
+                { label: "Hình ảnh sản phẩm", url: "/services/product", highlight: true },
+                { label: "Hoạt hình 3D", url: "/services/animation", highlight: true }
               ]
             },
             {
@@ -362,20 +362,18 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
           ],
           socialTitle: "THEO DÕI CHÚNG TÔI",
           socialLinks: [
-            { platform: "YouTube", url: "https://www.youtube.com/@stepv", icon: "Youtube" },
+            { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Music4" },
             { platform: "Facebook", url: "https://www.facebook.com/stepvstudio", icon: "Facebook" },
+            { platform: "YouTube", url: "https://www.youtube.com/@stepv", icon: "Youtube" },
             { platform: "Instagram", url: "https://www.instagram.com/stepvstudio", icon: "Instagram" },
-            { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Tiktok" },
-            { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" },
-            { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
             { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
-            { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
+            { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" }
           ],
-          locationTitle: "TRỤ SỞ TẠI",
-          locationLines: ["Stuttgart, Đức", "+49-176-21129718"],
+          locationTitle: "TRỤ SỐ TẠI",
+          locationLines: ["Hầm Nghi, Phương Sài Gòn, TP. Hồ Chi Minh.", "84"],
           contactTitle: "LIÊN HỆ",
-          contactEmail: "contact@stepv.studio",
-          copyright: "© Bản quyền 2025 - Step V Studio. Tất cả quyền được bảo lưu"
+          contactEmail: "contact@gmail.com",
+          copyright: "© 2025 DOHY Media. All rights reserved."
         },
   "wordSlider":     {
           words: ["Tu khoa 1", "Tu khoa 2"]
