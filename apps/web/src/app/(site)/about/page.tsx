@@ -42,10 +42,12 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-black">
       <HeroAbout siteName={settings?.siteName} logoUrl={settings?.logoUrl} />
-      <StoryAbout />
-      <ValuesAbout />
-      <AchievementsAbout />
-      <ContactCTAAbout settings={settings} />
+      <div className="space-y-20 md:space-y-32">
+        <StoryAbout />
+        <ValuesAbout />
+        <AchievementsAbout />
+        <ContactCTAAbout settings={settings} />
+      </div>
     </div>
   );
 }

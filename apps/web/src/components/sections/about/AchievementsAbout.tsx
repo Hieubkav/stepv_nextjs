@@ -121,7 +121,7 @@ export default function AchievementsAbout() {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-6"
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -130,7 +130,7 @@ export default function AchievementsAbout() {
             {stats.map((stat, index) => (
               <motion.div
                 key={index}
-                className="group relative p-6 md:p-8 text-center"
+                className="group relative p-4 md:p-8 text-center flex flex-col items-center justify-center"
                 variants={itemVariants}
               >
                 {/* Glow background on hover */}
@@ -139,15 +139,17 @@ export default function AchievementsAbout() {
                 />
 
                 {/* Card content */}
-                <div className="relative z-10">
+                <div className="relative z-10 w-full">
                   <motion.div
-                    className="text-3xl md:text-4xl lg:text-5xl font-bold text-yellow-400 mb-2"
+                    className="flex items-baseline justify-center gap-1 mb-2"
                     whileHover={{ scale: 1.1 }}
                   >
-                    <CounterNumber target={stat.number} />
-                    <span>{stat.suffix}</span>
+                    <span className="text-3xl md:text-4xl lg:text-5xl font-bold text-yellow-400">
+                      <CounterNumber target={stat.number} />
+                    </span>
+                    <span className="text-xl md:text-2xl font-bold text-yellow-400">{stat.suffix}</span>
                   </motion.div>
-                  <p className="text-gray-400 text-sm md:text-base">{stat.label}</p>
+                  <p className="text-xs md:text-sm lg:text-base text-gray-400 whitespace-normal break-words">{stat.label}</p>
                 </div>
 
                 {/* Border animation on hover */}
@@ -179,7 +181,7 @@ export default function AchievementsAbout() {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 gap-8"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -188,7 +190,7 @@ export default function AchievementsAbout() {
             {achievements.map((achievement, index) => (
               <motion.div
                 key={index}
-                className="group relative p-8 border border-yellow-500/10 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-transparent hover:border-yellow-500/30 transition-all duration-300"
+                className="group relative p-6 md:p-8 border border-yellow-500/10 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-transparent hover:border-yellow-500/30 transition-all duration-300"
                 variants={itemVariants}
                 whileHover={{
                   y: -8,
@@ -196,13 +198,13 @@ export default function AchievementsAbout() {
                 }}
               >
                 {/* Icon */}
-                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
+                <div className="text-4xl md:text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">
                   {achievement.icon}
                 </div>
 
                 {/* Content */}
-                <h4 className="text-xl font-bold text-white mb-2">{achievement.title}</h4>
-                <p className="text-gray-400 leading-relaxed">{achievement.description}</p>
+                <h4 className="text-lg md:text-xl font-bold text-white mb-2">{achievement.title}</h4>
+                <p className="text-sm md:text-base text-gray-400 leading-relaxed">{achievement.description}</p>
 
                 {/* Hover border glow */}
                 <motion.div

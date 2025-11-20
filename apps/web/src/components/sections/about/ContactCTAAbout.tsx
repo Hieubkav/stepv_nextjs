@@ -123,7 +123,7 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
               <motion.a
                 key={index}
                 href={info.href}
-                className="group relative p-8 border border-yellow-500/20 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-transparent hover:border-yellow-500/50 transition-all duration-300"
+                className="group relative h-32 md:h-auto p-6 md:p-8 border border-yellow-500/20 rounded-2xl bg-gradient-to-br from-yellow-500/5 to-transparent hover:border-yellow-500/50 transition-all duration-300"
                 variants={itemVariants}
                 whileHover={{
                   y: -8,
@@ -132,15 +132,15 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
               >
                 {/* Icon container */}
                 <motion.div
-                  className="inline-flex p-3 rounded-lg bg-yellow-500/20 mb-4 group-hover:bg-yellow-500/30 transition-colors"
+                  className="inline-flex p-3 rounded-lg bg-yellow-500/20 mb-3 md:mb-4 group-hover:bg-yellow-500/30 transition-colors"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                 >
-                  <Icon className="w-6 h-6 text-yellow-400" />
+                  <Icon className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
                 </motion.div>
 
                 {/* Content */}
-                <h3 className="text-lg font-semibold text-white mb-2">{info.label}</h3>
-                <p className="text-gray-400 group-hover:text-yellow-300 transition-colors">{info.value}</p>
+                <h3 className="text-base md:text-lg font-semibold text-white mb-1 md:mb-2">{info.label}</h3>
+                <p className="text-xs md:text-sm text-gray-400 group-hover:text-yellow-300 transition-colors line-clamp-2">{info.value}</p>
 
                 {/* Hover indicator */}
                 <motion.div
@@ -153,7 +153,7 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
 
         {/* CTA Buttons */}
         <motion.div
-          className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+          className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
@@ -161,7 +161,7 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
         >
           <motion.a
             href="#contact"
-            className="px-8 py-4 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors duration-300"
+            className="min-w-[180px] h-14 px-8 flex items-center justify-center bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -169,7 +169,7 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
           </motion.a>
           <motion.a
             href={settings?.zaloUrl || '#'}
-            className="px-8 py-4 border-2 border-yellow-500/50 text-yellow-400 font-semibold rounded-lg hover:border-yellow-500 hover:bg-yellow-500/5 transition-all duration-300"
+            className="min-w-[180px] h-14 px-8 flex items-center justify-center border-2 border-yellow-500/50 text-yellow-400 font-semibold rounded-lg hover:border-yellow-500 hover:bg-yellow-500/5 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -186,9 +186,9 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            <p className="text-gray-400 mb-6">Theo dõi chúng tôi trên mạng xã hội</p>
+            <p className="text-sm md:text-base text-gray-400 mb-6">Theo dõi chúng tôi trên mạng xã hội</p>
             <motion.div
-              className="flex justify-center gap-6"
+              className="flex justify-center gap-4"
               variants={containerVariants}
               initial="hidden"
               whileInView="visible"
@@ -202,14 +202,14 @@ export default function ContactCTAAbout({ settings }: ContactCTAAboutProps) {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`group p-3 border border-yellow-500/20 rounded-lg bg-yellow-500/5 hover:border-yellow-500 transition-all duration-300 ${social.color}`}
+                    className={`group min-w-[44px] min-h-[44px] p-3 flex items-center justify-center border border-yellow-500/20 rounded-lg bg-yellow-500/5 hover:border-yellow-500 transition-all duration-300 ${social.color}`}
                     variants={itemVariants}
                     whileHover={{
                       scale: 1.2,
                       boxShadow: '0 0 20px rgba(255, 215, 0, 0.3)',
                     }}
                   >
-                    <IconComponent className="w-5 h-5" />
+                    <IconComponent className="w-5 h-5 md:w-6 md:h-6" />
                   </motion.a>
                 );
               })}

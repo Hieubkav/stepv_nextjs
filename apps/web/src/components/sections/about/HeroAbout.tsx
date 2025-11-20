@@ -53,7 +53,6 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
           transition={{
             duration: 8,
             repeat: Infinity,
-            ease: 'easeInOut',
           }}
         />
         <motion.div
@@ -65,14 +64,13 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
           transition={{
             duration: 10,
             repeat: Infinity,
-            ease: 'easeInOut',
           }}
         />
       </div>
 
       {/* Content */}
       <motion.div
-        className="relative z-10 container max-w-4xl mx-auto px-4 md:px-6 lg:px-8 text-center"
+        className="relative z-10 container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -80,7 +78,7 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
         {/* Logo */}
         {logoUrl && (
           <motion.div
-            className="mb-8 flex justify-center"
+            className="mb-6 md:mb-8 flex justify-center"
             variants={itemVariants}
           >
             <motion.div
@@ -104,7 +102,7 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
 
         {/* Main title */}
         <motion.h1
-          className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 tracking-tight"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-4 tracking-tight"
           variants={itemVariants}
         >
           Về{' '}
@@ -115,7 +113,7 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
 
         {/* Subtitle */}
         <motion.p
-          className="text-lg md:text-2xl text-gray-400 mb-8 max-w-2xl mx-auto leading-relaxed"
+          className="text-base sm:text-lg md:text-xl text-gray-400/80 mb-6 max-w-2xl mx-auto leading-relaxed"
           variants={itemVariants}
         >
           Chuyên gia hình ảnh 3D và hoạt hình cho các thương hiệu cao cấp, nâng tầm sản phẩm của bạn thông qua nghệ thuật thị giác đẳng cấp.
@@ -130,17 +128,17 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
             boxShadow: '0 0 30px rgba(255, 215, 0, 0.3)',
           }}
         >
-          <p className="text-yellow-300 font-medium">Hơn 5 năm kinh nghiệm • 50+ thương hiệu • 150+ dự án</p>
+          <p className="text-sm sm:text-base text-yellow-300 font-medium">Hơn 5 năm kinh nghiệm • 50+ thương hiệu • 150+ dự án</p>
         </motion.div>
 
         {/* CTA Button */}
         <motion.div
-          className="mt-12 flex flex-col sm:flex-row gap-4 justify-center"
+          className="mt-10 md:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
           variants={itemVariants}
         >
           <motion.a
             href="#contact"
-            className="px-8 py-4 bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors duration-300 inline-block"
+            className="min-w-[180px] h-14 px-8 flex items-center justify-center bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -148,7 +146,7 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
           </motion.a>
           <motion.a
             href="#achievements"
-            className="px-8 py-4 border-2 border-yellow-500/50 text-yellow-400 font-semibold rounded-lg hover:border-yellow-500 hover:bg-yellow-500/5 transition-all duration-300 inline-block"
+            className="min-w-[180px] h-14 px-8 flex items-center justify-center border-2 border-yellow-500/50 text-yellow-400 font-semibold rounded-lg hover:border-yellow-500 hover:bg-yellow-500/5 transition-all duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -164,9 +162,9 @@ export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
         transition={{ duration: 2, repeat: Infinity }}
       >
         <div className="flex flex-col items-center gap-2">
-          <p className="text-xs text-yellow-500/60 uppercase tracking-widest">Scroll</p>
+          <p className="text-xs text-yellow-400 uppercase tracking-widest drop-shadow-lg">Scroll</p>
           <svg
-            className="w-5 h-5 text-yellow-500/60"
+            className="w-5 h-5 text-yellow-400 drop-shadow-lg"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

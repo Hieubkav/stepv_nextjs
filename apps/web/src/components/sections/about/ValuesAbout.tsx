@@ -97,61 +97,65 @@ export default function ValuesAbout() {
 
         {/* Values grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
+          className="max-w-5xl mx-auto px-4"
         >
-          {values.map((value, index) => {
-            const Icon = value.icon;
-            return (
-              <motion.div
-                key={index}
-                className="group relative"
-                variants={itemVariants}
-              >
-                {/* Glow effect on hover */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+          >
+            {values.map((value, index) => {
+              const Icon = value.icon;
+              return (
                 <motion.div
-                  className={`absolute -inset-0.5 bg-gradient-to-r ${value.color} rounded-2xl blur opacity-0 group-hover:opacity-20`}
-                  variants={glowVariants}
-                  initial="initial"
-                  whileHover="hover"
-                  transition={{ duration: 0.3 }}
-                />
-
-                {/* Card */}
-                <motion.div
-                  className="relative p-8 bg-gradient-to-br from-gray-900/50 to-gray-950 border border-yellow-500/10 rounded-2xl backdrop-blur-sm group-hover:border-yellow-500/30 transition-all duration-300 h-full"
-                  whileHover={{
-                    y: -8,
-                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
-                  }}
+                  key={index}
+                  className="group relative"
+                  variants={itemVariants}
                 >
-                  {/* Icon container */}
+                  {/* Glow effect on hover */}
                   <motion.div
-                    className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${value.color} mb-6`}
+                    className={`absolute -inset-0.5 bg-gradient-to-r ${value.color} rounded-2xl blur opacity-0 group-hover:opacity-20`}
+                    variants={glowVariants}
+                    initial="initial"
+                    whileHover="hover"
+                    transition={{ duration: 0.3 }}
+                  />
+
+                  {/* Card */}
+                  <motion.div
+                    className="relative p-6 md:p-8 bg-gradient-to-br from-gray-900/50 to-gray-950 border border-yellow-500/10 rounded-2xl backdrop-blur-sm group-hover:border-yellow-500/30 transition-all duration-300 h-full"
                     whileHover={{
-                      scale: 1.1,
-                      rotate: 5,
+                      y: -8,
+                      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
                     }}
                   >
-                    <Icon className="w-6 h-6 text-white" />
+                    {/* Icon container */}
+                    <motion.div
+                      className={`inline-flex items-center justify-center h-14 w-14 p-3 rounded-xl bg-gradient-to-br ${value.color} mb-6`}
+                      whileHover={{
+                        scale: 1.1,
+                        rotate: 5,
+                      }}
+                    >
+                      <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    </motion.div>
+
+                    {/* Content */}
+                    <h3 className="text-xl md:text-2xl font-bold text-white mb-3">{value.title}</h3>
+                    <p className="text-sm md:text-base text-gray-400 leading-relaxed">{value.description}</p>
+
+                    {/* Hover indicator */}
+                    <motion.div
+                      className="absolute top-4 right-4 w-2 h-2 bg-yellow-500 rounded-full opacity-0 group-hover:opacity-100"
+                      transition={{ duration: 0.2 }}
+                    />
                   </motion.div>
-
-                  {/* Content */}
-                  <h3 className="text-2xl font-bold text-white mb-3">{value.title}</h3>
-                  <p className="text-gray-400 leading-relaxed">{value.description}</p>
-
-                  {/* Hover indicator */}
-                  <motion.div
-                    className="absolute top-4 right-4 w-2 h-2 bg-yellow-500 rounded-full opacity-0 group-hover:opacity-100"
-                    transition={{ duration: 0.2 }}
-                  />
                 </motion.div>
-              </motion.div>
-            );
-          })}
+              );
+            })}
+          </motion.div>
         </motion.div>
 
         {/* Decorative line */}

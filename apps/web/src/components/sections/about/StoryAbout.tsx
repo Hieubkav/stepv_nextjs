@@ -87,7 +87,7 @@ export default function StoryAbout() {
 
         {/* Timeline */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 lg:gap-10"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -98,6 +98,7 @@ export default function StoryAbout() {
               key={milestone.year}
               className={`relative ${index % 2 !== 0 ? 'md:mt-12' : ''}`}
               variants={itemVariants}
+              style={{ marginBottom: '32px' }}
             >
               {/* Connector line */}
               {index < storyMilestones.length - 1 && (
@@ -106,7 +107,7 @@ export default function StoryAbout() {
 
               {/* Card */}
               <motion.div
-                className="group relative p-6 md:p-8 bg-gradient-to-br from-yellow-500/5 to-transparent border border-yellow-500/20 rounded-2xl backdrop-blur-sm hover:border-yellow-500/50 transition-all duration-300"
+                className="group relative p-5 md:p-8 min-h-[200px] bg-gradient-to-br from-yellow-500/5 to-transparent border border-yellow-500/20 rounded-2xl backdrop-blur-sm hover:border-yellow-500/50 transition-all duration-300"
                 whileHover={{
                   borderColor: '#FFD700',
                   boxShadow: '0 0 30px rgba(255, 215, 0, 0.2)',
@@ -114,7 +115,7 @@ export default function StoryAbout() {
               >
                 {/* Year badge */}
                 <div className="absolute -top-4 left-6 px-4 py-2 bg-black border border-yellow-500 rounded-full">
-                  <span className="text-yellow-400 font-bold">{milestone.year}</span>
+                  <span className="text-sm md:text-base text-yellow-400 font-bold">{milestone.year}</span>
                 </div>
 
                 {/* Icon */}
@@ -123,8 +124,8 @@ export default function StoryAbout() {
                 </div>
 
                 {/* Content */}
-                <h3 className="text-xl md:text-2xl font-bold text-white mb-3">{milestone.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{milestone.description}</p>
+                <h3 className="text-lg md:text-2xl font-bold text-white mb-3">{milestone.title}</h3>
+                <p className="text-sm md:text-base text-gray-400 leading-relaxed">{milestone.description}</p>
 
                 {/* Animated border on hover */}
                 <motion.div
@@ -138,13 +139,13 @@ export default function StoryAbout() {
 
         {/* Mission statement */}
         <motion.div
-          className="mt-16 md:mt-24 p-8 md:p-12 bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/30 rounded-2xl backdrop-blur-sm"
+          className="mt-20 md:mt-28 p-6 md:p-12 bg-gradient-to-r from-yellow-500/10 to-transparent border border-yellow-500/30 rounded-2xl backdrop-blur-sm"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
         >
-          <p className="text-center text-xl md:text-2xl text-white leading-relaxed">
+          <p className="text-center text-lg md:text-2xl text-white leading-relaxed">
             <span className="text-yellow-400 font-semibold">Sứ mệnh của chúng tôi:</span> Nâng tầm thương hiệu thông qua nghệ thuật thị giác, tạo ra những hình ảnh 3D độc đáo và hoạt hình ấn tượng giúp sản phẩm của bạn bắt mắt khách hàng.
           </p>
         </motion.div>
