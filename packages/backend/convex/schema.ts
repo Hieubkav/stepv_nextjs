@@ -123,6 +123,61 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
+  // VFX Products (hiệu ứng video 1-5s)
+  vfx_products: defineTable({
+    // Basic info
+    slug: v.string(),
+    title: v.string(),
+    subtitle: v.optional(v.string()),
+    description: v.optional(v.string()),
+    
+    // Category
+    category: v.union(
+      v.literal("explosion"),    // Vụ nổ
+      v.literal("fire"),         // Lửa
+      v.literal("smoke"),        // Khói
+      v.literal("water"),        // Nước
+      v.literal("magic"),        // Ma thuật
+      v.literal("particle"),     // Hạt
+      v.literal("transition"),   // Chuyển cảnh
+      v.literal("other")         // Khác
+    ),
+    
+    // Media
+    thumbnailId: v.optional(v.id("media")),
+    previewVideoId: v.id("media"),  // Video preview 1-5s trong storage
+    downloadFileId: v.id("media"),  // File download (.zip, .mov, .mp4, v.v.)
+    
+    // Pricing
+    pricingType: v.union(v.literal("free"), v.literal("paid")),
+    priceAmount: v.optional(v.number()),
+    comparePriceAmount: v.optional(v.number()),
+    
+    // Technical specs
+    duration: v.number(), // seconds (1-5)
+    resolution: v.string(), // "1920x1080", "4K", etc.
+    frameRate: v.number(), // 30, 60
+    format: v.string(), // "MOV", "MP4", "ProRes", etc.
+    hasAlpha: v.boolean(), // Có alpha channel không
+    fileSize: v.number(), // bytes
+    
+    // Stats
+    downloadCount: v.number(),
+    averageRating: v.optional(v.number()),
+    totalReviews: v.optional(v.number()),
+    
+    // Metadata
+    tags: v.optional(v.array(v.string())),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_category", ["category"])
+    .index("by_active_order", ["active", "order"])
+    .index("by_pricing_order", ["pricingType", "order"]),
+
   // Course categories (danh muc khoa hoc)
   course_categories: defineTable({
     name: v.string(),
@@ -198,7 +253,7 @@ export default defineSchema({
     .index("by_course_order", ["courseId", "order"]),
 
 
-  // Students (hoc vien)
+  // Students (hoc vien) - DEPRECATED: use customers instead
   students: defineTable({
     account: v.string(),
     password: v.string(),
@@ -225,6 +280,49 @@ export default defineSchema({
     .index("by_email", ["email"])
     .index("by_active_order", ["active", "order"]),
 
+  // Customers (khách hàng) - unified customer table for all product types
+  customers: defineTable({
+    // Authentication
+    account: v.string(),
+    email: v.string(),
+    password: v.string(),
+    
+    // Profile
+    fullName: v.string(),
+    phone: v.optional(v.string()),
+    avatar: v.optional(v.id("media")),
+    bio: v.optional(v.string()),
+    
+    // Customer classification
+    customerType: v.union(
+      v.literal("individual"),   // Cá nhân
+      v.literal("business"),     // Doanh nghiệp
+      v.literal("student")       // Học sinh/sinh viên (có ưu đãi)
+    ),
+    
+    // Auth tokens
+    resetToken: v.optional(v.string()),
+    resetTokenExpiry: v.optional(v.number()),
+    rememberToken: v.optional(v.string()),
+    rememberTokenExpiry: v.optional(v.number()),
+    
+    // OTP rate limiting
+    lastOtpSentAt: v.optional(v.number()),
+    lastOtpBlockedUntil: v.optional(v.number()),
+    
+    // Metadata
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_account", ["account"])
+    .index("by_email", ["email"])
+    .index("by_customer_type", ["customerType"])
+    .index("by_active_order", ["active", "order"]),
+
   // OTP tokens (dung cho password reset)
   otp_tokens: defineTable({
     studentId: v.optional(v.id("students")),
@@ -240,21 +338,59 @@ export default defineSchema({
     .index("by_student", ["studentId"])
     .index("by_expires", ["expiresAt"]),
 
-  // Orders (don hang khi hoc vien mua khoa)
+  // Orders (đơn hàng - unified cho tất cả product types)
   orders: defineTable({
-    studentId: v.id("students"),
-    courseId: v.id("courses"),
+    // Customer
+    customerId: v.optional(v.id("customers")), // Dùng customers nếu có, nếu ko dùng studentId
+    studentId: v.optional(v.id("students")), // DEPRECATED: use customerId instead
+    
+    // Product reference (polymorphic)
+    productType: v.union(
+      v.literal("course"),
+      v.literal("resource"),
+      v.literal("vfx"),
+      v.literal("bundle")
+    ),
+    
+    // Product IDs (generic, store actual IDs based on productType)
+    courseId: v.optional(v.id("courses")),
+    resourceId: v.optional(v.id("library_resources")),
+    vfxId: v.optional(v.id("vfx_products")),
+    
+    // Order details
+    orderNumber: v.optional(v.string()), // DOHY-2024-XXXXX
     amount: v.number(),
-    status: v.union(v.literal("pending"), v.literal("paid"), v.literal("completed"), v.literal("cancelled")),
-    paymentMethod: v.string(), // "vietqr", "stripe", etc.
+    discountAmount: v.optional(v.number()),
+    finalAmount: v.number(),
+    
+    // Status
+    status: v.union(
+      v.literal("pending"),
+      v.literal("processing"),
+      v.literal("paid"),
+      v.literal("completed"),
+      v.literal("cancelled"),
+      v.literal("refunded")
+    ),
+    
+    // Payment
+    paymentMethod: v.string(), // "vietqr", "stripe", "momo", etc.
+    paymentId: v.optional(v.id("payments")),
+    
+    // Metadata
     notes: v.optional(v.string()),
+    metadata: v.optional(v.any()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
-    .index("by_student", ["studentId"])
-    .index("by_course", ["courseId"])
+    .index("by_customer", ["customerId"])
+    .index("by_student", ["studentId"]) // DEPRECATED
+    .index("by_product_type", ["productType"])
+    .index("by_course", ["courseId"]) // DEPRECATED
+    .index("by_resource", ["resourceId"])
+    .index("by_vfx", ["vfxId"])
     .index("by_status", ["status"])
-    .index("by_student_status", ["studentId", "status"]),
+    .index("by_customer_status", ["customerId", "status"]),
 
   // Payments (chi tiet thanh toan, goi QR code va chung minh)
   payments: defineTable({
@@ -280,7 +416,7 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_pending", ["status", "createdAt"]),
 
-  // Course enrollments (quan he user - khoa hoc)
+  // Course enrollments (quan he user - khoa hoc) - DEPRECATED: use customer_purchases instead
   course_enrollments: defineTable({
     courseId: v.id("courses"),
     userId: v.string(),
@@ -298,6 +434,49 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_course", ["courseId"])
     .index("by_status", ["status"]),
+
+  // Customer Purchases (unified access control cho all product types)
+  customer_purchases: defineTable({
+    customerId: v.id("customers"),
+    orderId: v.id("orders"),
+    
+    // Product reference
+    productType: v.string(), // "course", "resource", "vfx"
+    courseId: v.optional(v.id("courses")),
+    resourceId: v.optional(v.id("library_resources")),
+    vfxId: v.optional(v.id("vfx_products")),
+    
+    // Access control
+    accessStatus: v.union(
+      v.literal("active"),
+      v.literal("expired"),
+      v.literal("revoked"),
+      v.literal("lifetime")
+    ),
+    
+    // Access period
+    accessStartDate: v.number(),
+    accessEndDate: v.optional(v.number()), // null = lifetime
+    
+    // Usage tracking
+    lastAccessedAt: v.optional(v.number()),
+    downloadCount: v.optional(v.number()), // Cho resources & vfx
+    
+    // Course specific
+    progressPercent: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    certificateId: v.optional(v.id("certificates")),
+    
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_customer", ["customerId"])
+    .index("by_order", ["orderId"])
+    .index("by_customer_product", ["customerId", "productType"])
+    .index("by_access_status", ["accessStatus"])
+    .index("by_course", ["courseId"])
+    .index("by_resource", ["resourceId"])
+    .index("by_vfx", ["vfxId"]),
 
   // Course favorites (danh sach yeu thich hoc vien)
   course_favorites: defineTable({

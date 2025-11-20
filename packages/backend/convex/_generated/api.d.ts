@@ -20,6 +20,7 @@ import type * as comments from "../comments.js";
 import type * as coupons from "../coupons.js";
 import type * as course_favorites from "../course_favorites.js";
 import type * as courses from "../courses.js";
+import type * as customers from "../customers.js";
 import type * as email from "../email.js";
 import type * as enrollment from "../enrollment.js";
 import type * as healthCheck from "../healthCheck.js";
@@ -34,6 +35,7 @@ import type * as pages from "../pages.js";
 import type * as paymentSettings from "../paymentSettings.js";
 import type * as payments from "../payments.js";
 import type * as progress from "../progress.js";
+import type * as purchases from "../purchases.js";
 import type * as quizzes from "../quizzes.js";
 import type * as reviews from "../reviews.js";
 import type * as search from "../search.js";
@@ -41,6 +43,7 @@ import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
 import type * as students from "../students.js";
 import type * as todos from "../todos.js";
+import type * as vfx from "../vfx.js";
 import type * as vietqr from "../vietqr.js";
 import type * as visitors from "../visitors.js";
 
@@ -60,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   coupons: typeof coupons;
   course_favorites: typeof course_favorites;
   courses: typeof courses;
+  customers: typeof customers;
   email: typeof email;
   enrollment: typeof enrollment;
   healthCheck: typeof healthCheck;
@@ -74,6 +78,7 @@ declare const fullApi: ApiFromModules<{
   paymentSettings: typeof paymentSettings;
   payments: typeof payments;
   progress: typeof progress;
+  purchases: typeof purchases;
   quizzes: typeof quizzes;
   reviews: typeof reviews;
   search: typeof search;
@@ -81,6 +86,7 @@ declare const fullApi: ApiFromModules<{
   settings: typeof settings;
   students: typeof students;
   todos: typeof todos;
+  vfx: typeof vfx;
   vietqr: typeof vietqr;
   visitors: typeof visitors;
 }>;
