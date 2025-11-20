@@ -280,8 +280,8 @@ const SiteFooterSection = ({
             </div>
           </div>
 
-          {/* Desktop Grid - 4 columns: Logo | Links1 | Links2 | Social/Contact */}
-          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          {/* Desktop Grid - 5 columns on lg: Logo | Links1 | Links2 | Links3 | Social/Location/Contact */}
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-6">
             {/* Logo & Description - Col 1 */}
             <div>
               {logo ? (
@@ -294,7 +294,7 @@ const SiteFooterSection = ({
               )}
             </div>
 
-            {/* Links Columns - Col 2-3 */}
+            {/* Links Columns - Col 2-4 */}
             {resolvedColumns.map((column, index) => (
               <div key={column.title ?? `column-${index}`}>
                 {column.title && (
@@ -324,35 +324,35 @@ const SiteFooterSection = ({
               </div>
             ))}
 
-            {/* Social & Contact - Col 4 */}
-            <div className="space-y-6">
-              {/* Social Links */}
-              <div>
-                {socialTitle && (
-                  <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-4">{socialTitle}</h3>
-                )}
-                <div className="flex flex-wrap gap-3">
-                  {resolvedSocials.map((social) => {
-                    if (!social?.url) return null;
-                    const Icon = getLucideIcon(social.icon ?? 'Share2') ?? getLucideIcon('Share2');
-                    const isExternal = /^https?:\/\//i.test(social.url);
-                    return (
-                      <a
-                        key={`${social.platform}-${social.url}`}
-                        href={social.url}
-                        target={isExternal ? '_blank' : undefined}
-                        rel={isExternal ? 'noopener noreferrer' : undefined}
-                        className="p-2 rounded-full border border-white/20 hover:border-[#FFD700] hover:text-[#FFD700] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-                        aria-label={social.platform ?? 'Social link'}
-                      >
-                        <Icon className="h-4 w-4" />
-                      </a>
-                    );
-                  })}
-                </div>
+            {/* Social, Location, Contact - Col 5 */}
+            {/* Social Links */}
+            <div>
+              {socialTitle && (
+                <h3 className="text-sm font-medium text-white uppercase tracking-wider mb-4">{socialTitle}</h3>
+              )}
+              <div className="flex flex-wrap gap-3">
+                {resolvedSocials.map((social) => {
+                  if (!social?.url) return null;
+                  const Icon = getLucideIcon(social.icon ?? 'Share2') ?? getLucideIcon('Share2');
+                  const isExternal = /^https?:\/\//i.test(social.url);
+                  return (
+                    <a
+                      key={`${social.platform}-${social.url}`}
+                      href={social.url}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                      className="p-2 rounded-full border border-white/20 hover:border-[#FFD700] hover:text-[#FFD700] transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label={social.platform ?? 'Social link'}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
+                  );
+                })}
               </div>
+            </div>
 
-              {/* Location */}
+            {/* Location */}
+            <div>
               {(locationTitle || (locationLines && locationLines.length > 0)) && (
                 <div className="space-y-2 text-sm text-gray-300">
                   {locationTitle && (
@@ -363,8 +363,10 @@ const SiteFooterSection = ({
                   ))}
                 </div>
               )}
+            </div>
 
-              {/* Contact */}
+            {/* Contact */}
+            <div>
               {(contactTitle || contactEmail) && (
                 <div className="space-y-2 text-sm text-gray-300">
                   {contactTitle && (
