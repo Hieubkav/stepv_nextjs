@@ -2,10 +2,8 @@
 
 import Link from 'next/link';
 import type { Id } from '@dohy/backend/convex/_generated/dataModel';
-import { CourseFavoriteButton } from './course-favorite-button';
 import { normalizeSlug } from '@/lib/slug';
 
-type StudentId = Id<'students'>;
 type CourseId = Id<'courses'>;
 
 interface CourseCardProps {
@@ -25,11 +23,10 @@ interface CourseCardProps {
         createdAt: number;
         updatedAt: number;
     };
-    studentId: StudentId | null;
     className?: string;
 }
 
-export function CourseCard({ course, studentId, className = '' }: CourseCardProps) {
+export function CourseCard({ course, className = '' }: CourseCardProps) {
     const detailSlug = normalizeSlug(course.slug || course.title);
     const detailHref = detailSlug ? `/khoa-hoc/${detailSlug}` : "/khoa-hoc";
     return (
@@ -47,15 +44,6 @@ export function CourseCard({ course, studentId, className = '' }: CourseCardProp
                         <p className="font-semibold text-sm">{course.title}</p>
                     </div>
                 )}
-                
-                {/* Favorite Button */}
-                <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm rounded-full p-2">
-                    <CourseFavoriteButton
-                        studentId={studentId}
-                        courseId={course._id}
-                        size="md"
-                    />
-                </div>
             </div>
 
             {/* Course Content */}

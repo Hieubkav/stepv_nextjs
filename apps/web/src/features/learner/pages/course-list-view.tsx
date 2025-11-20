@@ -3,12 +3,10 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Heart } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { normalizeSlug } from "@/lib/slug";
-import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
-import { CourseFavoriteButton } from "@/features/learner/components/course-favorite-button";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export type CourseListItem = {
@@ -108,11 +106,9 @@ function CourseCardSkeleton() {
 function CourseCard({
     course,
     thumbnail,
-    studentId,
 }: {
     course: CourseListItem;
     thumbnail?: CourseThumbnail;
-    studentId: string | null;
 }) {
     const normalizedSlug = normalizeSlug(course.slug || course.title);
     const detailHref = (normalizedSlug ? `/khoa-hoc/${normalizedSlug}` : "/khoa-hoc") as Route;
@@ -139,15 +135,6 @@ function CourseCard({
                         Đang ẩn
                     </span>
                 )}
-
-                {/* Heart Button */}
-                <div className="absolute right-3 top-3">
-                    <CourseFavoriteButton
-                        studentId={studentId ? (studentId as any) : null}
-                        courseId={course.id as any}
-                        size="md"
-                    />
-                </div>
             </div>
 
             <div className="flex flex-1 flex-col gap-3 p-4">
@@ -187,7 +174,6 @@ function CourseCard({
 }
 
 export default function CourseListView({ courses, thumbnails, error }: CourseListViewProps) {
-    const { student } = useStudentAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
     const [sortBy, setSortBy] = useState<SortOption>("default");
@@ -353,7 +339,6 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     thumbnail={
                                         course.thumbnailMediaId ? thumbnails[course.thumbnailMediaId] : undefined
                                     }
-                                    studentId={student?._id ? String(student._id) : null}
                                 />
                             ))}
                         </section>

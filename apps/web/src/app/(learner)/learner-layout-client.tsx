@@ -34,7 +34,6 @@ const NAV_LINKS = [{ label: "Tất cả khóa học", href: "/khoa-hoc" }];
 const STUDENT_MENU_LINKS = [
   { label: "Thông tin học viên", href: "/khoa-hoc/thong-tin" },
   { label: "Lịch sử mua", href: "/khoa-hoc/don-dat" },
-  { label: "Khóa học yêu thích", href: "/khoa-hoc/yeu-thich" },
 ];
 
 export default function LearnerLayoutClient({ children }: LearnerLayoutClientProps) {
