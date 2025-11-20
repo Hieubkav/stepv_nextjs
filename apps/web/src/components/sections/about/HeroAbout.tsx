@@ -13,18 +13,18 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
   const services = [
     {
       icon: <BookOpen size={32} />,
-      title: 'Academy',
-      desc: 'Đào tạo 3D & VFX từ cơ bản đến chuyên sâu'
+      title: 'Khóa Học',
+      desc: 'Đầy đủ các khóa học về thiết kế và 3D'
     },
     {
       icon: <Package size={32} />,
-      title: 'Store',
-      desc: 'Plugins, Assets & Resources chất lượng cao'
+      title: 'Tài Nguyên',
+      desc: 'Kho plugin và asset premium'
     },
     {
       icon: <Film size={32} />,
-      title: 'Production',
-      desc: 'Studio sản xuất CGI & VFX chuyên nghiệp'
+      title: 'VFX',
+      desc: 'Kho VFX phong phú'
     }
   ];
 
@@ -42,7 +42,7 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
   };
 
   return (
-    <section className="relative min-h-[90vh] flex items-center bg-[#050505] overflow-hidden py-12 md:py-16 border-b border-[#D4AF37]/10">
+    <section className="relative  flex items-center bg-[#050505] overflow-hidden py-20 md:py-16 border-b border-[#D4AF37]/10">
       {/* Ambient Background - Gold Glow */}
       <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
       
@@ -62,7 +62,7 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-6 md:mb-8 tracking-tight font-bold" style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif", fontWeight: 700 }}>
-            Kiến Tạo <br className="hidden md:block" />
+            Kiến Tạo <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#D4AF37]/80 to-[#D4AF37]/50 italic pr-2">
               Digital World
             </span>
@@ -71,22 +71,6 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
           <p className="text-white/70 text-sm md:text-lg font-light max-w-xl leading-relaxed mb-8 md:mb-12 text-balance">
             Hệ sinh thái sáng tạo toàn diện dành cho Creators chuyên nghiệp: Đào tạo 3D, Kho tài nguyên & Sản xuất VFX.
           </p>
-
-          {/* Status Line */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 text-white/50 text-[10px] md:text-xs uppercase tracking-widest font-medium">
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
-              Academy
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
-              Plugins & Assets
-            </span>
-            <span className="flex items-center gap-2">
-              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
-              Production
-            </span>
-          </div>
         </motion.div>
 
         {/* Service Showcase Cards */}
@@ -94,7 +78,7 @@ const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
           initial="hidden"
           animate="visible"
           variants={containerVariants}
-          className="lg:col-span-5 space-y-4 pt-8 md:pt-0"
+          className="lg:col-span-5 space-y-2 pt-0 md:pt-0"
         >
           {services.map((service, index) => (
             <motion.div

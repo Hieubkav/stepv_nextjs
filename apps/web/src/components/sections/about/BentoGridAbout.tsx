@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Box, Layers, MonitorPlay } from 'lucide-react';
@@ -17,6 +17,7 @@ interface Service {
 }
 
 const BentoGridAbout: React.FC = () => {
+  const [activeCard, setActiveCard] = useState<string | null>(null);
   const services: Service[] = [
     {
       id: 'academy',
@@ -71,24 +72,34 @@ const BentoGridAbout: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-8">
           {services.map((service, index) => {
             const Icon = icons[index] || Box;
+            const isActive = activeCard === service.id;
             return (
               <motion.div 
                 key={service.id}
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.3 }}
-                className="group relative flex flex-col bg-[#0F0F0F] border border-white/5 hover:border-[#D4AF37]/40 h-full transition-colors duration-300"
+                onClick={() => setActiveCard(isActive ? null : service.id)}
+                className={`group relative flex flex-col bg-[#0F0F0F] border h-full transition-colors duration-300 cursor-pointer ${
+                  isActive ? 'border-[#D4AF37]/40' : 'border-white/5 hover:border-[#D4AF37]/40'
+                }`}
               >
                 {/* Image Area */}
                 <div className="aspect-[16/9] lg:aspect-[4/3] overflow-hidden relative">
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-all duration-500 z-10"></div>
+                  <div className={`absolute inset-0 transition-all duration-500 z-10 ${
+                    isActive ? 'bg-transparent' : 'bg-black/40 group-hover:bg-transparent'
+                  }`}></div>
                   <img 
                     src={service.image} 
                     alt={service.title} 
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-90 group-hover:opacity-100 grayscale group-hover:grayscale-0" 
+                    className={`w-full h-full object-cover transition-transform duration-1000 ${
+                      isActive ? 'scale-110 opacity-100 grayscale-0' : 'opacity-90 group-hover:scale-110 group-hover:opacity-100 grayscale group-hover:grayscale-0'
+                    }`}
                   />
                   
                   {/* Icon Badge */}
-                  <div className="absolute top-0 left-0 z-20 p-4 bg-[#0F0F0F] border-r border-b border-white/10 group-hover:border-[#D4AF37]/40 transition-colors">
+                  <div className={`absolute top-0 left-0 z-20 p-4 bg-[#0F0F0F] border-r border-b transition-colors ${
+                    isActive ? 'border-[#D4AF37]/40' : 'border-white/10 group-hover:border-[#D4AF37]/40'
+                  }`}>
                     <Icon size={20} strokeWidth={1.5} className="text-[#D4AF37]" />
                   </div>
                 </div>
@@ -96,17 +107,23 @@ const BentoGridAbout: React.FC = () => {
                 {/* Content Area */}
                 <div className="p-8 flex flex-col flex-grow relative">
                   {/* Vertical Gold Line on Hover */}
-                  <div className="absolute left-0 top-8 bottom-8 w-[2px] bg-[#D4AF37] transform scale-y-0 group-hover:scale-y-100 transition-transform duration-500 origin-top"></div>
+                  <div className={`absolute left-0 top-8 bottom-8 w-[2px] bg-[#D4AF37] transform transition-transform duration-500 origin-top ${
+                    isActive ? 'scale-y-100' : 'scale-y-0 group-hover:scale-y-100'
+                  }`}></div>
 
                   <div className="text-[10px] text-[#D4AF37]/70 uppercase tracking-[0.2em] mb-3 font-bold">
                     {service.label}
                   </div>
                   
-                  <h3 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-2xl text-white mb-4 group-hover:text-[#D4AF37] transition-colors duration-300 font-bold">
+                  <h3 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className={`text-2xl mb-4 transition-colors duration-300 font-bold ${
+                    isActive ? 'text-[#D4AF37]' : 'text-white group-hover:text-[#D4AF37]'
+                  }`}>
                     {service.title}
                   </h3>
                   
-                  <p className="text-white/50 text-sm leading-relaxed mb-8 flex-grow border-b border-white/5 pb-6 group-hover:border-white/10 transition-colors">
+                  <p className={`text-sm leading-relaxed mb-8 flex-grow border-b pb-6 transition-colors ${
+                    isActive ? 'text-white/50 border-white/10' : 'text-white/50 border-white/5 group-hover:border-white/10'
+                  }`}>
                     {service.description}
                   </p>
 
@@ -120,7 +137,9 @@ const BentoGridAbout: React.FC = () => {
                     </ul>
                     
                     <Link href={service.href as any}>
-                      <div className="text-white text-[10px] md:text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all duration-300 font-bold group-hover:text-[#D4AF37] cursor-pointer">
+                      <div className={`text-[10px] md:text-xs uppercase tracking-widest flex items-center transition-all duration-300 font-bold cursor-pointer ${
+                        isActive ? 'text-[#D4AF37] gap-3' : 'text-white gap-2 group-hover:gap-3 group-hover:text-[#D4AF37]'
+                      }`}>
                         {service.ctaText} <ArrowRight size={14} />
                       </div>
                     </Link>
