@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"convex": "^1.27.3",
+		"framer-motion": "^12.23.24",
 		"tinyglobby": "^0.2.15"
 	},
 	"devDependencies": {
