@@ -7,27 +7,27 @@ import { StudioLoader } from '@/components/ui/studio-loader';
 
 const HeroAbout = dynamic(() => import('@/components/sections/about/HeroAbout'), {
   ssr: false,
-  loading: () => <div className="h-screen bg-black" />,
+  loading: () => <div className="h-screen bg-[#050505]" />,
 });
 
-const StoryAbout = dynamic(() => import('@/components/sections/about/StoryAbout'), {
+const StatsAbout = dynamic(() => import('@/components/sections/about/StatsAbout'), {
   ssr: false,
-  loading: () => <div className="h-96 bg-black" />,
+  loading: () => <div className="h-32 bg-[#080808]" />,
 });
 
-const ValuesAbout = dynamic(() => import('@/components/sections/about/ValuesAbout'), {
+const BentoGridAbout = dynamic(() => import('@/components/sections/about/BentoGridAbout'), {
   ssr: false,
-  loading: () => <div className="h-96 bg-black" />,
+  loading: () => <div className="h-96 bg-[#0A0A0A]" />,
 });
 
-const AchievementsAbout = dynamic(() => import('@/components/sections/about/AchievementsAbout'), {
+const VisionAbout = dynamic(() => import('@/components/sections/about/VisionAbout'), {
   ssr: false,
-  loading: () => <div className="h-96 bg-black" />,
+  loading: () => <div className="h-96 bg-[#050505]" />,
 });
 
-const ContactCTAAbout = dynamic(() => import('@/components/sections/about/ContactCTAAbout'), {
+const CTAAbout = dynamic(() => import('@/components/sections/about/CTAAbout'), {
   ssr: false,
-  loading: () => <div className="h-96 bg-black" />,
+  loading: () => <div className="h-96 bg-[#020202]" />,
 });
 
 export default function AboutPage() {
@@ -40,14 +40,24 @@ export default function AboutPage() {
   const settings = siteSettings?.value as any;
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#050505]">
       <HeroAbout siteName={settings?.siteName} logoUrl={settings?.logoUrl} />
-      <div className="space-y-20 md:space-y-32">
-        <StoryAbout />
-        <ValuesAbout />
-        <AchievementsAbout />
-        <ContactCTAAbout settings={settings} />
-      </div>
+      <StatsAbout />
+      <BentoGridAbout />
+      <VisionAbout />
+      <CTAAbout
+        contactEmail={settings?.contactEmail}
+        address={settings?.address}
+        zaloUrl={settings?.zaloUrl}
+        facebookUrl={settings?.facebookUrl}
+        instagramUrl={settings?.instagramUrl}
+        youtubeUrl={settings?.youtubeUrl}
+        tiktokUrl={settings?.tiktokUrl}
+        bankAccountNumber={settings?.bankAccountNumber}
+        bankAccountName={settings?.bankAccountName}
+        bankCode={settings?.bankCode}
+        siteName={settings?.siteName}
+      />
     </div>
   );
 }

@@ -1,183 +1,85 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 
 interface HeroAboutProps {
   siteName?: string;
   logoUrl?: string;
 }
 
-export default function HeroAbout({ siteName, logoUrl }: HeroAboutProps) {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.3,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8 },
-    },
-  };
-
-  const floatingVariants = {
-    initial: { y: 0 },
-    animate: {
-      y: [-10, 10, -10],
-      transition: {
-        duration: 6,
-        repeat: Infinity,
-      },
-    },
-  };
-
+const HeroAbout: React.FC<HeroAboutProps> = ({ siteName, logoUrl }) => {
   return (
-    <section className="relative h-screen min-h-screen w-full flex items-center justify-center overflow-hidden bg-black">
-      {/* Background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div
-          className="absolute top-10 right-10 w-72 h-72 bg-yellow-500/5 rounded-full blur-3xl"
-          animate={{
-            x: [0, 30, 0],
-            y: [0, 30, 0],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-          }}
-        />
-        <motion.div
-          className="absolute bottom-10 left-10 w-72 h-72 bg-yellow-500/5 rounded-full blur-3xl"
-          animate={{
-            x: [0, -30, 0],
-            y: [0, -30, 0],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-          }}
-        />
-      </div>
-
-      {/* Content */}
-      <motion.div
-        className="relative z-10 container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Logo */}
-        {logoUrl && (
-          <motion.div
-            className="mb-6 md:mb-8 flex justify-center"
-            variants={itemVariants}
-          >
-            <motion.div
-              className="relative"
-              variants={floatingVariants}
-              initial="initial"
-              animate="animate"
-            >
-              <div className="h-24 w-24 rounded-2xl border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-transparent p-2 flex items-center justify-center backdrop-blur-sm">
-                <Image
-                  src={logoUrl}
-                  alt={siteName || 'Logo'}
-                  width={96}
-                  height={96}
-                  className="object-contain"
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-
-        {/* Main title */}
-        <motion.h1
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-4 tracking-tight"
-          variants={itemVariants}
+    <section className="relative min-h-[90vh] flex items-center bg-[#050505] overflow-hidden py-16 md:py-24 border-b border-[#D4AF37]/10">
+      {/* Ambient Background - Gold Glow */}
+      <div className="absolute top-0 right-0 w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#D4AF37]/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/3"></div>
+      
+      <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        
+        {/* Text Content */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="lg:col-span-7 z-10 mt-8 lg:mt-0"
         >
-          Về{' '}
-          <span className="bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text text-transparent">
-            {siteName || 'DOHY Media'}
-          </span>
-        </motion.h1>
+          <div className="inline-flex items-center gap-3 border-l-2 border-[#D4AF37] pl-4 mb-6 md:mb-8">
+            <span className="text-[10px] md:text-xs font-sans text-[#D4AF37] tracking-[0.3em] uppercase font-bold">
+              {siteName || 'Dohy Studio'} Official
+            </span>
+          </div>
 
-        {/* Subtitle */}
-        <motion.p
-          className="text-base sm:text-lg md:text-xl text-gray-400/80 mb-6 max-w-2xl mx-auto leading-relaxed"
-          variants={itemVariants}
-        >
-          Chuyên gia hình ảnh 3D và hoạt hình cho các thương hiệu cao cấp, nâng tầm sản phẩm của bạn thông qua nghệ thuật thị giác đẳng cấp.
-        </motion.p>
+          <h1 className="font-serif text-4xl sm:text-5xl md:text-7xl text-white leading-[1.1] mb-6 md:mb-8 tracking-tight">
+            Kiến Tạo <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#D4AF37]/80 to-[#D4AF37]/50 italic pr-2">
+              Digital World
+            </span>
+          </h1>
 
-        {/* Highlight text */}
-        <motion.div
-          className="inline-block px-6 py-3 border border-yellow-500/50 rounded-full bg-yellow-500/5 backdrop-blur-sm hover:bg-yellow-500/10 transition-all duration-300"
-          variants={itemVariants}
-          whileHover={{
-            borderColor: '#FFD700',
-            boxShadow: '0 0 30px rgba(255, 215, 0, 0.3)',
-          }}
-        >
-          <p className="text-sm sm:text-base text-yellow-300 font-medium">Hơn 5 năm kinh nghiệm • 50+ thương hiệu • 150+ dự án</p>
+          <p className="text-white/70 text-sm md:text-lg font-light max-w-xl leading-relaxed mb-8 md:mb-12 text-balance">
+            Hệ sinh thái sáng tạo toàn diện dành cho Creators chuyên nghiệp: Đào tạo 3D, Kho tài nguyên & Sản xuất VFX.
+          </p>
+
+          {/* Status Line */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-8 text-white/50 text-[10px] md:text-xs uppercase tracking-widest font-medium">
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
+              Academy
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
+              Plugins & Assets
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shadow-[0_0_10px_#D4AF37]"></span> 
+              Production
+            </span>
+          </div>
         </motion.div>
 
-        {/* CTA Button */}
-        <motion.div
-          className="mt-10 md:mt-12 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center"
-          variants={itemVariants}
+        {/* Hero Image */}
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2 }}
+          className="lg:col-span-5 relative mt-8 lg:mt-0"
         >
-          <motion.a
-            href="#contact"
-            className="min-w-[180px] h-14 px-8 flex items-center justify-center bg-yellow-500 text-black font-semibold rounded-lg hover:bg-yellow-400 transition-colors duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Liên hệ ngay
-          </motion.a>
-          <motion.a
-            href="#achievements"
-            className="min-w-[180px] h-14 px-8 flex items-center justify-center border-2 border-yellow-500/50 text-yellow-400 font-semibold rounded-lg hover:border-yellow-500 hover:bg-yellow-500/5 transition-all duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Xem thành tựu
-          </motion.a>
-        </motion.div>
-      </motion.div>
-
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-xs text-yellow-400 uppercase tracking-widest drop-shadow-lg">Scroll</p>
-          <svg
-            className="w-5 h-5 text-yellow-400 drop-shadow-lg"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+          <div className="aspect-[4/5] lg:aspect-[3/4] w-full bg-[#111] border border-[#D4AF37]/20 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-10"></div>
+            <img 
+              src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2070&auto=format&fit=crop" 
+              alt="3D Abstract Art" 
+              className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000"
             />
-          </svg>
-        </div>
-      </motion.div>
+            {/* Decorative corners */}
+            <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#D4AF37] z-20"></div>
+            <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#D4AF37] z-20"></div>
+          </div>
+        </motion.div>
+
+      </div>
     </section>
   );
-}
+};
+
+export default HeroAbout;
