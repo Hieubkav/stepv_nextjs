@@ -1,7 +1,7 @@
 // Email actions using SMTP
 'use node';
 
-import { internalAction } from './_generated/server';
+import { internalAction, action } from './_generated/server';
 import { v } from 'convex/values';
 import nodemailer from 'nodemailer';
 
@@ -56,6 +56,160 @@ const sendEmailViaSMTP = async (params: EmailParams): Promise<boolean> => {
         return false;
     }
 };
+
+export const sendContactFormEmail = internalAction({
+    args: {
+        adminEmail: v.string(),
+        visitorName: v.string(),
+        visitorEmail: v.string(),
+        visitorPhone: v.optional(v.string()),
+        serviceCategory: v.optional(v.string()),
+        message: v.string(),
+    },
+    returns: v.boolean(),
+    handler: async (ctx, args) => {
+        const { adminEmail, visitorName, visitorEmail, visitorPhone, serviceCategory, message } = args;
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 18px;
+              font-weight: 600;
+              color: #333;
+              margin-top: 0;
+            }
+            .info-row {
+              margin: 15px 0;
+              padding: 12px;
+              background: #f8f9fa;
+              border-left: 4px solid #f59e0b;
+              border-radius: 4px;
+            }
+            .info-row strong {
+              color: #f59e0b;
+              display: inline-block;
+              min-width: 120px;
+            }
+            .info-row span {
+              color: #333;
+            }
+            .message-box {
+              margin: 20px 0;
+              padding: 20px;
+              background: #fff9e6;
+              border: 1px solid #f59e0b;
+              border-radius: 4px;
+            }
+            .message-box h3 {
+              margin-top: 0;
+              color: #f59e0b;
+            }
+            .message-content {
+              color: #333;
+              white-space: pre-wrap;
+              word-break: break-word;
+            }
+            .footer {
+              background: #f8f9fa;
+              border-top: 1px solid #e9ecef;
+              padding: 20px 30px;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📬 Yêu cầu liên hệ mới</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Bạn đã nhận được một yêu cầu liên hệ từ khách hàng</p>
+              
+              <div class="info-row">
+                <strong>Họ tên:</strong>
+                <span>${visitorName}</span>
+              </div>
+              
+              <div class="info-row">
+                <strong>Email:</strong>
+                <span><a href="mailto:${visitorEmail}" style="color: #f59e0b; text-decoration: none;">${visitorEmail}</a></span>
+              </div>
+              
+              ${visitorPhone ? `
+              <div class="info-row">
+                <strong>Số điện thoại:</strong>
+                <span><a href="tel:${visitorPhone}" style="color: #f59e0b; text-decoration: none;">${visitorPhone}</a></span>
+              </div>
+              ` : ''}
+              
+              ${serviceCategory ? `
+              <div class="info-row">
+                <strong>Danh mục dịch vụ:</strong>
+                <span>${serviceCategory}</span>
+              </div>
+              ` : ''}
+              
+              <div class="message-box">
+                <h3>💬 Tin nhắn:</h3>
+                <div class="message-content">${message}</div>
+              </div>
+              
+              <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Vui lòng phản hồi khách hàng này trong thời gian sớm nhất để giữ chất lượng dịch vụ.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Dohy. Tất cả quyền được bảo lưu.</p>
+              <p>Đây là email tự động từ hệ thống liên hệ.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaSMTP({
+            to: adminEmail,
+            subject: `[Liên hệ từ trang web] ${visitorName} - ${visitorEmail}`,
+            html,
+        });
+    },
+});
 
 export const sendPasswordResetEmail = internalAction({
     args: {
@@ -1083,5 +1237,191 @@ export const sendCourseOnboardingEmail = internalAction({
             subject: `Chúc mừng! Bạn đã được ghi danh vào khóa học ${courseName}`,
             html,
         });
+    },
+});
+
+export const handleContactFormSubmission = action({
+    args: {
+        visitorName: v.string(),
+        visitorEmail: v.string(),
+        visitorPhone: v.optional(v.string()),
+        serviceCategory: v.optional(v.string()),
+        message: v.string(),
+        adminEmail: v.string(),
+    },
+    returns: v.object({
+        success: v.boolean(),
+        message: v.string(),
+    }),
+    handler: async (ctx, args) => {
+        try {
+            const { visitorName, visitorEmail, visitorPhone, serviceCategory, message, adminEmail } = args;
+
+            if (!adminEmail) {
+                return {
+                    success: false,
+                    message: "Không thể lấy thông tin liên hệ admin",
+                };
+            }
+
+            // Build email HTML
+            const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .container {
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
+              border-radius: 8px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #f7c948 0%, #f59e0b 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            .content {
+              background: white;
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 18px;
+              font-weight: 600;
+              color: #333;
+              margin-top: 0;
+            }
+            .info-row {
+              margin: 15px 0;
+              padding: 12px;
+              background: #f8f9fa;
+              border-left: 4px solid #f59e0b;
+              border-radius: 4px;
+            }
+            .info-row strong {
+              color: #f59e0b;
+              display: inline-block;
+              min-width: 120px;
+            }
+            .info-row span {
+              color: #333;
+            }
+            .message-box {
+              margin: 20px 0;
+              padding: 20px;
+              background: #fff9e6;
+              border: 1px solid #f59e0b;
+              border-radius: 4px;
+            }
+            .message-box h3 {
+              margin-top: 0;
+              color: #f59e0b;
+            }
+            .message-content {
+              color: #333;
+              white-space: pre-wrap;
+              word-break: break-word;
+            }
+            .footer {
+              background: #f8f9fa;
+              border-top: 1px solid #e9ecef;
+              padding: 20px 30px;
+              font-size: 12px;
+              color: #999;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📬 Yêu cầu liên hệ mới</h1>
+            </div>
+            <div class="content">
+              <p class="greeting">Bạn đã nhận được một yêu cầu liên hệ từ khách hàng</p>
+              
+              <div class="info-row">
+                <strong>Họ tên:</strong>
+                <span>${visitorName}</span>
+              </div>
+              
+              <div class="info-row">
+                <strong>Email:</strong>
+                <span><a href="mailto:${visitorEmail}" style="color: #f59e0b; text-decoration: none;">${visitorEmail}</a></span>
+              </div>
+              
+              ${visitorPhone ? `
+              <div class="info-row">
+                <strong>Số điện thoại:</strong>
+                <span><a href="tel:${visitorPhone}" style="color: #f59e0b; text-decoration: none;">${visitorPhone}</a></span>
+              </div>
+              ` : ''}
+              
+              ${serviceCategory ? `
+              <div class="info-row">
+                <strong>Danh mục dịch vụ:</strong>
+                <span>${serviceCategory}</span>
+              </div>
+              ` : ''}
+              
+              <div class="message-box">
+                <h3>💬 Tin nhắn:</h3>
+                <div class="message-content">${message}</div>
+              </div>
+              
+              <p style="color: #666; font-size: 14px; margin-top: 30px;">
+                Vui lòng phản hồi khách hàng này trong thời gian sớm nhất để giữ chất lượng dịch vụ.
+              </p>
+            </div>
+            <div class="footer">
+              <p>© 2025 Dohy. Tất cả quyền được bảo lưu.</p>
+              <p>Đây là email tự động từ hệ thống liên hệ.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+            // Send email
+            const result = await sendEmailViaSMTP({
+                to: adminEmail,
+                subject: `[Liên hệ từ trang web] ${visitorName} - ${visitorEmail}`,
+                html,
+            });
+
+            if (result) {
+                return {
+                    success: true,
+                    message: "Email đã được gửi thành công",
+                };
+            } else {
+                return {
+                    success: false,
+                    message: "Không thể gửi email",
+                };
+            }
+        } catch (error) {
+            console.error("Error handling contact form submission:", error);
+            return {
+                success: false,
+                message: "Có lỗi xảy ra khi xử lý biểu mẫu",
+            };
+        }
     },
 });

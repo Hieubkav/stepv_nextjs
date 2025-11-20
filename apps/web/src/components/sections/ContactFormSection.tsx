@@ -2,6 +2,8 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
+import { useAction, useQuery } from "convex/react";
+import { api } from "@dohy/backend/convex/_generated/api";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -210,6 +212,9 @@ const ContactFormSection = ({
   const [privacyAgreed, setPrivacyAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  
+  const siteSettings = useQuery(api.settings.getByKey, { key: "site" });
+  const submitContactForm = useAction(api.email.handleContactFormSubmission);
 
   const displayedSocialLinks = useMemo(() => {
     if (socialLinks && socialLinks.length > 0) {
@@ -270,15 +275,43 @@ const ContactFormSection = ({
       return;
     }
 
+    if (!siteSettings?.value?.contactEmail) {
+      alert("Không thể lấy thông tin liên hệ admin. Vui lòng thử lại sau.");
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitStatus("idle");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setSubmitStatus("success");
-      setFormState(initialState);
-      setPrivacyAgreed(false);
-    } catch {
+      // Get service category label from selected value
+      let serviceCategoryLabel: string | undefined;
+      if (formState.serviceCategory) {
+        const serviceField = effectiveFields.find((f) => f.name === "serviceCategory");
+        const selectedOption = serviceField?.options?.find(
+          (opt) => opt.value === String(formState.serviceCategory),
+        );
+        serviceCategoryLabel = selectedOption?.label;
+      }
+
+      const result = await submitContactForm({
+        visitorName: String(formState.name || ""),
+        visitorEmail: String(formState.email || ""),
+        visitorPhone: formState.tel ? String(formState.tel) : undefined,
+        serviceCategory: serviceCategoryLabel,
+        message: String(formState.message || ""),
+        adminEmail: siteSettings.value.contactEmail,
+      });
+
+      if (result.success) {
+        setSubmitStatus("success");
+        setFormState(initialState);
+        setPrivacyAgreed(false);
+      } else {
+        setSubmitStatus("error");
+      }
+    } catch (error) {
+      console.error("Form submission error:", error);
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
