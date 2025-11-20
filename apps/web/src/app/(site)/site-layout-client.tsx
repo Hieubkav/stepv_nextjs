@@ -11,23 +11,16 @@ import {
   partitionSiteLayoutBlocks,
   type HomeBlock,
 } from '@/lib/site-layout';
+import { HeaderSkeleton, FooterSkeleton } from '@/components/ui/section-skeletons';
 
 const SiteHeaderSection = dynamic(() => import('@/components/sections/SiteHeaderSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-24 bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
-    </div>
-  ),
+  loading: () => <HeaderSkeleton />,
 });
 
 const SiteFooterSection = dynamic(() => import('@/components/sections/SiteFooterSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-96 bg-black flex items-center justify-center">
-      <div className="text-white">Dang tai...</div>
-    </div>
-  ),
+  loading: () => <FooterSkeleton />,
 });
 
 type SiteLayoutClientProps = {

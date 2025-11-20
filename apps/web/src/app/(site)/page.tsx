@@ -4,6 +4,22 @@ import { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useSiteLayoutData } from '@/context/site-layout-data';
 import type { BlockData, HomeBlock } from '@/lib/site-layout';
+import { StudioLoader } from '@/components/ui/studio-loader';
+import {
+  HeroSkeleton,
+  WordSliderSkeleton,
+  GallerySkeleton,
+  AdviceSkeleton,
+  StatsSkeleton,
+  ServicesSkeleton,
+  WhyChooseUsSkeleton,
+  Why3DSkeleton,
+  TurningSkeleton,
+  WeWorkSkeleton,
+  CareSkeleton,
+  StayControlSkeleton,
+  ContactSkeleton,
+} from '@/components/ui/section-skeletons';
 
 type HeroBrandLogo = { url: string; alt: string };
 type HeroCta = { label: string; url: string; style?: 'primary' | 'secondary' };
@@ -72,120 +88,67 @@ type ContactProps = {
 
 const HeroSection = dynamic(() => import('@/components/sections/HeroSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <HeroSkeleton />,
 });
 
 const WordSliderSection = dynamic(() => import('@/components/sections/WordSliderSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-32 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <WordSliderSkeleton />,
 });
 
 const GalleryPictureSection = dynamic(() => import('@/components/sections/GalleryPictureSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-96 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <GallerySkeleton />,
 });
 
 const YourAdviceSection = dynamic(() => import('@/components/sections/YourAdviceSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-96 bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <AdviceSkeleton />,
 });
 
 const StatsSection = dynamic(() => import('@/components/sections/StatsSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-64 bg-gray-900 flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <StatsSkeleton />,
 });
 
 const ServicesSection = dynamic(() => import('@/components/sections/ServicesSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <ServicesSkeleton />,
 });
 
 const WhyChooseUsSection = dynamic(() => import('@/components/sections/WhyChooseUsSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <WhyChooseUsSkeleton />,
 });
 
 const Why3DVisualsSection = dynamic(() => import('@/components/sections/Why3DVisualsSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <Why3DSkeleton />,
 });
 
 const TurningSection = dynamic(() => import('@/components/sections/TurningSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <TurningSkeleton />,
 });
 
 const WeWorkSection = dynamic(() => import('@/components/sections/WeWorkSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <WeWorkSkeleton />,
 });
 
 const CareSection = dynamic(() => import('@/components/sections/CareSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-48 bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <CareSkeleton />,
 });
 
 const StayControlSection = dynamic(() => import('@/components/sections/StayControlSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <StayControlSkeleton />,
 });
-
 
 const ContactFormSection = dynamic(() => import('@/components/sections/ContactFormSection'), {
   ssr: false,
-  loading: () => (
-    <div className="h-screen bg-black flex items-center justify-center">
-      <div className="text-white">Đang tải...</div>
-    </div>
-  ),
+  loading: () => <ContactSkeleton />,
 });
 
 function cleanProps<T extends Record<string, unknown>>(input: T): Partial<T> {
@@ -731,11 +694,7 @@ export default function Home() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="text-sm uppercase tracking-wider">Đang tải nội dung trang chủ...</div>
-      </div>
-    );
+    return <StudioLoader variant="fullscreen" text="Đang tải nội dung" />;
   }
 
   const renderedBlocks = contentBlocks

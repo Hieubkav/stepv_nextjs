@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { normalizeSlug } from "@/lib/slug";
 import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 import { CourseFavoriteButton } from "@/features/learner/components/course-favorite-button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export type CourseListItem = {
     id: string;
@@ -83,6 +84,25 @@ function formatPrice({
 function normalizeText(value: unknown) {
     if (typeof value !== "string") return "";
     return value.normalize("NFC").toLowerCase();
+}
+
+function CourseCardSkeleton() {
+    return (
+        <div className="group flex h-full flex-col overflow-hidden rounded-lg border-2 border-slate-200 bg-white">
+            <Skeleton className="aspect-video w-full rounded-none" />
+            <div className="flex flex-1 flex-col gap-3 p-4">
+                <div className="space-y-2">
+                    <Skeleton className="h-5 w-2/3 rounded-md" />
+                    <Skeleton className="h-3 w-full rounded-md" />
+                    <Skeleton className="h-3 w-4/5 rounded-md" />
+                </div>
+                <div className="mt-auto flex items-center justify-between">
+                    <Skeleton className="h-3 w-20 rounded-md" />
+                    <Skeleton className="h-4 w-24 rounded-md" />
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function CourseCard({
