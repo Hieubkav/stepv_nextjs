@@ -100,7 +100,7 @@ function CourseCard({
     const subtitle = course.subtitle ?? course.description;
 
     return (
-        <article className="group flex h-full flex-col overflow-hidden rounded-lg border border-slate-200 bg-white transition-all duration-300 hover:border-slate-300">
+        <article className="group flex h-full flex-col overflow-hidden rounded-lg border-2 border-slate-200 bg-white transition-all duration-300 hover:border-amber-400 hover:shadow-lg hover:shadow-amber-200/30 hover:-translate-y-1">
             <div className="relative aspect-video overflow-hidden bg-slate-100">
                 {thumbnail?.url ? (
                     <img
@@ -132,7 +132,7 @@ function CourseCard({
 
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="space-y-2">
-                    <h3 className="line-clamp-2 text-base font-semibold leading-tight text-slate-900 transition-colors duration-300 group-hover:text-slate-700">
+                    <h3 className="line-clamp-2 text-base font-semibold leading-tight text-slate-900 transition-colors duration-300 group-hover:text-amber-600">
                         {course.title}
                     </h3>
                     {subtitle ? <p className="line-clamp-2 text-xs text-slate-500">{subtitle}</p> : null}
@@ -151,7 +151,7 @@ function CourseCard({
             <div className="space-y-2 border-t border-slate-100 px-4 py-3">
                 <Link
                     href={detailHref}
-                    className="block rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 px-3 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:opacity-90 active:opacity-95"
+                    className="block rounded-md bg-gradient-to-r from-amber-500 to-yellow-500 px-3 py-2.5 text-center text-sm font-semibold text-white transition-all duration-200 hover:shadow-lg hover:shadow-amber-400/40 hover:opacity-95 active:opacity-100"
                 >
                     Vào học ngay
                 </Link>
