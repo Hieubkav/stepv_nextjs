@@ -327,12 +327,12 @@ export default defineSchema({
 
   // Orders (đơn hàng - multi-item, one order can have many items via order_items table)
   orders: defineTable({
-    // Customer
-    customerId: v.id("customers"),
+    // Customer (optional for migration from old schema with studentId)
+    customerId: v.optional(v.id("customers")),
     
-    // Order details
-    orderNumber: v.string(), // DH-2411-001 format
-    totalAmount: v.number(),  // tổng tiền
+    // Order details (optional for migration from old schema)
+    orderNumber: v.optional(v.string()), // DH-2411-001 format
+    totalAmount: v.optional(v.number()),  // tổng tiền
     
     // Status flow: pending → paid → activated
     status: v.union(
