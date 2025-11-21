@@ -24,6 +24,7 @@ import {
   partitionSiteLayoutBlocks,
   type HomeBlock,
 } from "@/lib/site-layout";
+import CartIcon from "@/components/cart/CartIcon";
 
 type LearnerLayoutClientProps = {
   children: ReactNode;
@@ -148,6 +149,7 @@ function LearnerTopBar({ logo }: LearnerTopBarProps) {
          </nav>
 
         <div className="ml-auto flex items-center gap-3">
+          <CartIcon />
           {student ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
