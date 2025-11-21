@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useConvex, useMutation } from 'convex/react';
+import { useMutation } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
 import { useCart } from '@/context/cart-context';
-import { useCustomerAuth } from '@/features/auth';
+import { useStudentAuth } from '@/features/learner/auth';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import CartItem from '@/components/cart/CartItem';
@@ -17,9 +17,8 @@ type CheckoutStep = 'form' | 'success';
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const convex = useConvex();
     const { items, getTotal, clearCart } = useCart();
-    const { customer, isAuthenticated } = useCustomerAuth();
+    const { student, status } = useStudentAuth();
     const [step, setStep] = useState<CheckoutStep>('form');
     const [orderNumber, setOrderNumber] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
@@ -30,15 +29,23 @@ export default function CheckoutPage() {
     const total = getTotal();
     const itemCount = items.length;
 
+    // Redirect if not authenticated
+    useEffect(() => {
+        if (status === 'authenticated' || status === 'loading') return;
+        if (status === 'idle') {
+            router.push('/khoa-hoc/dang-nhap');
+        }
+    }, [status, router]);
+
     // Redirect if cart is empty
     useEffect(() => {
-        if (itemCount === 0) {
+        if (itemCount === 0 && status !== 'loading') {
             const timer = setTimeout(() => {
                 router.push('/khoa-hoc');
             }, 2000);
             return () => clearTimeout(timer);
         }
-    }, [itemCount, router]);
+    }, [itemCount, status, router]);
 
     const handleCheckout = async (data: {
         fullName: string;
@@ -49,19 +56,8 @@ export default function CheckoutPage() {
         setError(null);
 
         try {
-            // If not authenticated, create account first
-            let customerId = customer?._id;
-
-            if (!isAuthenticated) {
-                // For MVP, we'll just use the existing customer if logged in
-                // For guests, we'd need to implement guest checkout
-                setError('Vui lòng đăng nhập hoặc đăng ký để tiếp tục');
-                setIsLoading(false);
-                return;
-            }
-
-            if (!customerId) {
-                setError('Không tìm thấy thông tin khách hàng');
+            if (!student?._id) {
+                setError('Không tìm thấy thông tin học viên');
                 setIsLoading(false);
                 return;
             }
@@ -73,8 +69,9 @@ export default function CheckoutPage() {
                 price: item.price,
             }));
 
+            // Use studentId as customerId for MVP
             const order = await createOrderMutation({
-                customerId,
+                customerId: student._id as any,
                 items: orderItems,
             }) as any;
 
@@ -176,10 +173,10 @@ export default function CheckoutPage() {
                         </div>
 
                         {/* Authentication reminder */}
-                        {!isAuthenticated && (
+                        {status === 'idle' && (
                             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
                                 <p className="text-sm text-yellow-800">
-                                    <strong>Lưu ý:</strong> Bạn cần đăng nhập để tiếp tục thanh toán
+                                    <strong>Lưu ý:</strong> Bạn cần <a href="/khoa-hoc/dang-nhap" className="underline font-bold">đăng nhập</a> để tiếp tục thanh toán
                                 </p>
                             </div>
                         )}

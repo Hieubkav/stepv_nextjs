@@ -1,0 +1,204 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+import { useQuery, useMutation } from 'convex/react';
+import { api } from '@dohy/backend/convex/_generated/api';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { formatPrice, formatDate } from '@/lib/format';
+import {
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Eye,
+} from 'lucide-react';
+
+type OrderStatus = 'pending' | 'paid' | 'activated';
+type StatusFilter = 'all' | OrderStatus;
+
+const statusConfig = {
+  pending: {
+    label: 'Chờ thanh toán',
+    color: 'bg-yellow-100 text-yellow-800',
+    icon: Clock,
+  },
+  paid: {
+    label: 'Đã thanh toán',
+    color: 'bg-blue-100 text-blue-800',
+    icon: CheckCircle,
+  },
+  activated: {
+    label: 'Đã kích hoạt',
+    color: 'bg-green-100 text-green-800',
+    icon: CheckCircle,
+  },
+};
+
+export default function OrdersPage() {
+  const router = useRouter();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Fetch orders based on status
+  const pendingOrders = useQuery(api.orders.getPendingOrders) || [];
+  const paidOrders = useQuery(api.orders.getPaidOrders) || [];
+
+  const allOrders = useMemo(() => {
+    const orders = [...(pendingOrders || []), ...(paidOrders || [])];
+
+    // Filter by status
+    let filtered = orders;
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter((o) => o.status === statusFilter);
+    }
+
+    // Filter by search (order number or customer email)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (o) =>
+          o.orderNumber?.toLowerCase().includes(query) ||
+          o.notes?.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort by date descending
+    filtered.sort((a, b) => b.createdAt - a.createdAt);
+    return filtered;
+  }, [pendingOrders, paidOrders, statusFilter, searchQuery]);
+
+  const counts = useMemo(
+    () => ({
+      all: allOrders.length,
+      pending: pendingOrders?.filter((o) => o.status === 'pending').length || 0,
+      paid: paidOrders?.filter((o) => o.status === 'paid').length || 0,
+      activated: allOrders.filter((o) => o.status === 'activated').length || 0,
+    }),
+    [allOrders, pendingOrders, paidOrders]
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">Quản lý đơn hàng</h1>
+        <p className="text-muted-foreground mt-1">
+          Quản lý tất cả các đơn hàng từ khách hàng
+        </p>
+      </div>
+
+      {/* Status tabs */}
+      <div className="flex gap-2 border-b pb-3">
+        {(['all', 'pending', 'paid', 'activated'] as const).map((status) => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(status)}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              statusFilter === status
+                ? 'border-b-2 border-primary text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {status === 'all' ? 'Tất cả' : statusConfig[status as OrderStatus]?.label}
+            {' '}
+            <span className="inline-block ml-1 px-2 py-0.5 text-xs bg-muted rounded-full">
+              {status === 'all' ? counts.all : counts[status as OrderStatus]}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Search */}
+      <div className="flex gap-2">
+        <Input
+          placeholder="Tìm kiếm theo mã đơn hàng (DH-2411-001)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="max-w-md"
+        />
+      </div>
+
+      {/* Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Danh sách đơn hàng</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {allOrders.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground">
+              <p>Không có đơn hàng nào</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 font-semibold">Mã đơn</th>
+                    <th className="text-left py-3 px-4 font-semibold">Ngày</th>
+                    <th className="text-left py-3 px-4 font-semibold">Số items</th>
+                    <th className="text-left py-3 px-4 font-semibold">Tổng tiền</th>
+                    <th className="text-left py-3 px-4 font-semibold">Trạng thái</th>
+                    <th className="text-left py-3 px-4 font-semibold">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allOrders.map((order) => {
+                    const config = statusConfig[order.status as OrderStatus];
+                    const itemCount = (order as any).items?.length || 1;
+
+                    return (
+                      <tr
+                        key={order._id}
+                        className="border-b hover:bg-muted/50 transition-colors"
+                      >
+                        <td className="py-3 px-4">
+                          <code className="font-mono font-bold text-primary">
+                            {order.orderNumber}
+                          </code>
+                        </td>
+                        <td className="py-3 px-4">
+                          {formatDate(order.createdAt)}
+                        </td>
+                        <td className="py-3 px-4">
+                          {itemCount} {itemCount === 1 ? 'sản phẩm' : 'sản phẩm'}
+                        </td>
+                        <td className="py-3 px-4 font-semibold">
+                          {formatPrice(order.totalAmount)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Badge className={config.color}>
+                            {config.label}
+                          </Badge>
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => router.push(`/dashboard/orders/${order._id}`)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Xem
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

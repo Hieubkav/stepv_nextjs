@@ -45,18 +45,26 @@ export const getRevenueStats = query({
     // Calculate revenue
     const totalRevenue = payments.reduce((sum, payment) => {
       const order = allOrders.find((o) => o._id === payment.orderId);
-      return sum + (order?.amount || 0);
+      return sum + (order?.totalAmount || 0);
     }, 0);
 
     const totalTransactions = payments.length;
 
-    // Calculate by course
+    // Calculate by product
     const revenueByCategory: Record<string, number> = {};
     for (const payment of payments) {
       const order = allOrders.find((o) => o._id === payment.orderId);
       if (order) {
-        const courseId = order.courseId.toString();
-        revenueByCategory[courseId] = (revenueByCategory[courseId] || 0) + order.amount;
+        // Get order items to find products
+        const orderItems = await ctx.db
+          .query("order_items")
+          .withIndex("by_order", (q) => q.eq("orderId", order._id))
+          .collect();
+        
+        for (const item of orderItems) {
+          const key = `${item.productType}:${item.productId}`;
+          revenueByCategory[key] = (revenueByCategory[key] || 0) + item.price;
+        }
       }
     }
 

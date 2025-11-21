@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useCustomerAuth } from '@/features/auth';
-import type { CustomerAccount } from '@/features/auth/customer-auth-context';
+import { useStudentAuth } from '@/features/learner/auth';
 
 type CheckoutFormProps = {
     onSubmit: (data: {
@@ -15,11 +14,11 @@ type CheckoutFormProps = {
 };
 
 export default function CheckoutForm({ onSubmit, isLoading = false }: CheckoutFormProps) {
-    const { customer } = useCustomerAuth();
+    const { student } = useStudentAuth();
     const [formData, setFormData] = useState({
-        fullName: customer?.fullName || '',
-        email: customer?.email || '',
-        phone: customer?.phone || '',
+        fullName: student?.fullName || '',
+        email: student?.email || '',
+        phone: student?.phone || '',
     });
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -84,7 +83,7 @@ export default function CheckoutForm({ onSubmit, isLoading = false }: CheckoutFo
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleChange}
-                    disabled={customer?.fullName ? true : false}
+                    disabled={student?.fullName ? true : false}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-muted"
                     placeholder="Nhập tên đầy đủ"
                 />
@@ -103,7 +102,7 @@ export default function CheckoutForm({ onSubmit, isLoading = false }: CheckoutFo
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    disabled={customer?.email ? true : false}
+                    disabled={student?.email ? true : false}
                     className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary disabled:bg-muted"
                     placeholder="Nhập email"
                 />
@@ -139,9 +138,9 @@ export default function CheckoutForm({ onSubmit, isLoading = false }: CheckoutFo
                 {isLoading ? 'Đang xử lý...' : 'Tạo đơn hàng'}
             </Button>
 
-            {!customer && (
+            {student && (
                 <p className="text-xs text-muted-foreground text-center">
-                    Bạn chưa đăng nhập. Thông tin sẽ được dùng để tạo tài khoản.
+                    Các thông tin từ tài khoản của bạn sẽ được dùng để xác nhận đơn hàng.
                 </p>
             )}
         </form>

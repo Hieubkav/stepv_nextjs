@@ -7,6 +7,24 @@ import { internal } from "./_generated/api";
 
 type AnyCtx = MutationCtx | QueryCtx;
 
+// Helper: Get courseId from order_items
+async function getCourseIdFromOrder(ctx: AnyCtx, orderId: Id<"orders">) {
+  try {
+    const item = await ctx.db
+      .query("order_items")
+      .withIndex("by_order", (q) => q.eq("orderId", orderId))
+      .first();
+    return item?.productType === "course" ? (item.productId as Id<"courses">) : null;
+  } catch {
+    return null;
+  }
+}
+
+// Helper: Generate order number
+function generateOrderNumber(): string {
+  return `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
 /**
  * Mutation: Create an order when student wants to buy a course
  * Status: pending (waiting for payment)
@@ -36,11 +54,19 @@ export const createOrder = mutation({
       )
       .first();
 
-    const existingOrder = await ctx.db
+    // Check existing orders via filter (no by_student index)
+    const existingOrders = await ctx.db
       .query("orders")
-      .withIndex("by_student", (q) => q.eq("studentId", studentId))
-      .filter((q) => q.eq(q.field("courseId"), courseId))
-      .first();
+      .filter((q) => q.eq(q.field("customerId"), studentId as any))
+      .collect();
+
+    // Check if order for this course exists
+    const existingOrder = await Promise.all(
+      existingOrders.map(async (order) => {
+        const cId = await getCourseIdFromOrder(ctx, order._id);
+        return cId === courseId ? order : null;
+      })
+    ).then((results) => results.find((o) => o !== null));
 
     if (existingEnrollment && existingEnrollment.active && existingOrder) {
       return {
@@ -51,7 +77,8 @@ export const createOrder = mutation({
       };
     }
 
-    if (existingOrder && existingOrder.status !== "cancelled") {
+    // Check status - only valid statuses are "pending", "paid", "activated"
+    if (existingOrder && !existingOrder.notes?.includes("CANCELLED")) {
       return {
         orderId: existingOrder._id,
         message: "Order already exists",
@@ -60,17 +87,26 @@ export const createOrder = mutation({
       };
     }
 
-    const amount = course.priceAmount || 0;
+    const amount = (course as any).priceAmount || 0;
 
+    const orderNumber = generateOrderNumber();
     const orderId = await ctx.db.insert("orders", {
-      studentId,
-      courseId,
-      amount,
+      customerId: studentId as any,
+      orderNumber,
+      totalAmount: amount,
       status: "pending",
-      paymentMethod: "manual",
-      notes: undefined,
+      notes: `courseId:${courseId.toString()}|method:manual`,
       createdAt: now,
       updatedAt: now,
+    });
+
+    // Create order item
+    await ctx.db.insert("order_items", {
+      orderId,
+      productType: "course",
+      productId: courseId.toString(),
+      price: amount,
+      createdAt: now,
     });
 
     // Schedule order placed email
@@ -99,15 +135,14 @@ export const getOrder = query({
     orderId: v.id("orders"),
   },
   handler: async (ctx, { orderId }) => {
-    const order = await ctx.db.get(orderId);
+    const order = await ctx.db.get(orderId) as any;
     if (!order) {
       return {
         _id: "" as any,
-        studentId: "" as any,
+        customerId: "" as any,
         courseId: "" as any,
-        amount: 0,
+        totalAmount: 0,
         status: "",
-        paymentMethod: "",
         createdAt: 0,
         updatedAt: 0,
         courseName: "",
@@ -115,32 +150,32 @@ export const getOrder = query({
       };
     }
 
-    const course = await ctx.db.get(order.courseId);
+    const courseId = await getCourseIdFromOrder(ctx, orderId);
+    const course = courseId ? (await ctx.db.get(courseId)) as any : null;
+    
     if (!course) {
       return {
-        _id: "" as any,
-        studentId: "" as any,
-        courseId: "" as any,
-        amount: 0,
-        status: "",
-        paymentMethod: "",
-        createdAt: 0,
-        updatedAt: 0,
-        courseName: "",
-        exists: false,
+        _id: order._id,
+        customerId: order.customerId,
+        courseId: courseId || ("" as any),
+        totalAmount: order.totalAmount,
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        courseName: "Unknown Course",
+        exists: true,
       };
     }
 
     return {
       _id: order._id,
-      studentId: order.studentId,
-      courseId: order.courseId,
-      amount: order.amount,
+      customerId: order.customerId,
+      courseId: courseId || ("" as any),
+      totalAmount: order.totalAmount,
       status: order.status,
-      paymentMethod: order.paymentMethod,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
-      courseName: course.title,
+      courseName: course.title || "Unknown",
       exists: true,
     };
   },
@@ -157,7 +192,7 @@ export const listStudentOrders = query({
   handler: async (ctx, { studentId, status }) => {
     let orders = await ctx.db
       .query("orders")
-      .withIndex("by_student", (q) => q.eq("studentId", studentId))
+      .filter((q) => q.eq(q.field("customerId"), studentId as any))
       .collect();
 
     if (status) {
@@ -168,8 +203,9 @@ export const listStudentOrders = query({
 
     // Fetch course names and thumbnails
     const result = await Promise.all(
-      orders.map(async (order) => {
-        const course = await ctx.db.get(order.courseId);
+      orders.map(async (order: any) => {
+        const courseId = await getCourseIdFromOrder(ctx, order._id);
+        const course = courseId ? (await ctx.db.get(courseId)) as any : null;
         const payment = await ctx.db
           .query("payments")
           .withIndex("by_order", (q) => q.eq("orderId", order._id))
@@ -179,7 +215,7 @@ export const listStudentOrders = query({
         let thumbnailUrl = undefined;
         if (course?.thumbnailMediaId) {
           try {
-            const media = await ctx.db.get(course.thumbnailMediaId);
+            const media = await ctx.db.get(course.thumbnailMediaId) as any;
             if (media?.storageId) {
               thumbnailUrl = await ctx.storage.getUrl(media.storageId);
             }
@@ -190,17 +226,17 @@ export const listStudentOrders = query({
         
         return {
           _id: order._id,
-          courseId: order.courseId,
-          amount: order.amount,
+          courseId: courseId || ("" as any),
+          totalAmount: order.totalAmount,
           status: order.status,
           createdAt: order.createdAt,
           updatedAt: order.updatedAt,
           courseName: course?.title || "Unknown Course",
           courseSlug: course?.slug,
           thumbnailUrl,
-          paymentStatus: payment?.status,
+          paymentStatus: (payment as any)?.status,
           paymentId: payment?._id,
-          paymentScreenshotUrl: payment?.screenshotUrl,
+          paymentScreenshotUrl: (payment as any)?.screenshotUrl,
           paymentSubmittedAt: payment?.createdAt,
         };
       })
@@ -282,15 +318,16 @@ export const recordPayment = mutation({
     });
 
     // Get course info for email
-    const course = await ctx.db.get(order.courseId);
+    const courseId = await getCourseIdFromOrder(ctx, orderId);
+    const course = courseId ? await ctx.db.get(courseId) : null;
 
     // Schedule notification email to admin
     if (course) {
       await ctx.scheduler.runAfter(0, internal.email.sendPaymentRequestToAdminEmail, {
         studentName: student.fullName || "Học viên",
         studentEmail: student.email,
-        courseId: order.courseId.toString(),
-        amount: order.amount,
+        courseId: courseId!.toString(),
+        amount: (order as any).totalAmount,
         paymentId: paymentId.toString(),
       });
     }
@@ -299,7 +336,7 @@ export const recordPayment = mutation({
     await ctx.scheduler.runAfter(0, internal.email.sendPaymentReceivedEmail, {
       studentEmail: student.email,
       studentName: student.fullName || "Học viên",
-      amount: order.amount,
+      amount: (order as any).totalAmount,
     });
 
     return {
@@ -360,18 +397,28 @@ export const adminConfirmPayment = mutation({
       updatedAt: now,
     });
 
+    // Get courseId from order_items
+    const courseId = await getCourseIdFromOrder(ctx, payment.orderId);
+    if (!courseId) {
+      throw new Error("Course not found in order");
+    }
+
+    // Get student for enrollment
+    const student = await ctx.db.get((payment as any).studentId || (order as any).customerId);
+    const studentId = (payment as any).studentId || (order as any).customerId;
+
     // Create enrollment for student (inactive - waiting for admin to activate)
     const existingEnrollment = await ctx.db
       .query("course_enrollments")
       .withIndex("by_course_user", (q) =>
-        q.eq("courseId", order.courseId).eq("userId", payment.studentId.toString())
+        q.eq("courseId", courseId).eq("userId", studentId.toString())
       )
       .first();
 
     if (!existingEnrollment) {
       await ctx.db.insert("course_enrollments", {
-        courseId: order.courseId,
-        userId: payment.studentId.toString(),
+        courseId,
+        userId: studentId.toString(),
         enrolledAt: now,
         progressPercent: 0,
         status: "pending" as const,
@@ -387,17 +434,16 @@ export const adminConfirmPayment = mutation({
       });
     }
 
-    // Get student and course for email
-    const student = await ctx.db.get(payment.studentId);
-    const course = await ctx.db.get(order.courseId);
+    // Get course for email
+    const course = courseId ? (await ctx.db.get(courseId)) as any : null;
 
     // Schedule confirmation email to student
     if (student && course) {
       await ctx.scheduler.runAfter(0, internal.email.sendCourseOnboardingEmail, {
-        studentEmail: student.email,
-        studentName: student.fullName || "Học viên",
-        courseName: course.title,
-        courseSlug: course.slug,
+        studentEmail: (student as any).email,
+        studentName: (student as any).fullName || "Học viên",
+        courseName: course?.title || "Unknown",
+        courseSlug: course?.slug || "",
       });
     }
 
@@ -447,11 +493,12 @@ export const adminRejectPayment = mutation({
     });
 
     // Get student and schedule rejection email
-    const student = await ctx.db.get(payment.studentId);
+    const studentId = (payment as any).studentId;
+    const student = studentId ? await ctx.db.get(studentId) : null;
     if (student) {
       await ctx.scheduler.runAfter(0, internal.email.sendPaymentRejectedEmail, {
-        studentEmail: student.email,
-        studentName: student.fullName || "Học viên",
+        studentEmail: (student as any).email,
+        studentName: (student as any).fullName || "Học viên",
         reason: reason,
       });
     }
@@ -476,18 +523,19 @@ export const listPendingPayments = query({
       .collect();
 
     const result = await Promise.all(
-      payments.map(async (payment) => {
-        const order = await ctx.db.get(payment.orderId);
-        const course = order ? await ctx.db.get(order.courseId) : null;
+      payments.map(async (payment: any) => {
+        const order = await ctx.db.get(payment.orderId) as any;
+        const courseId = order ? await getCourseIdFromOrder(ctx, order._id) : null;
+        const course = courseId ? (await ctx.db.get(courseId)) as any : null;
 
         return {
           _id: payment._id,
           orderId: payment.orderId,
-          studentName: payment.email || "Unknown",
-          studentEmail: payment.email,
+          studentName: (payment as any).email || "Unknown",
+          studentEmail: (payment as any).email,
           courseName: course?.title || "Unknown Course",
-          amount: order?.amount || 0,
-          screenshotUrl: payment.screenshotUrl,
+          amount: (order as any)?.totalAmount || 0,
+          screenshotUrl: (payment as any).screenshotUrl,
           createdAt: payment.createdAt,
         };
       })
@@ -505,19 +553,21 @@ export const getPayment = query({
     paymentId: v.id("payments"),
   },
   handler: async (ctx, { paymentId }) => {
-    const payment = await ctx.db.get(paymentId);
+    const payment = await ctx.db.get(paymentId) as any;
     if (!payment) return undefined;
 
-    const order = await ctx.db.get(payment.orderId);
-    const student = await ctx.db.get(payment.studentId);
-    const course = order ? await ctx.db.get(order.courseId) : null;
+    const order = await ctx.db.get(payment.orderId) as any;
+    const studentId = payment.studentId;
+    const student = studentId ? await ctx.db.get(studentId) : null;
+    const courseId = order ? await getCourseIdFromOrder(ctx, order._id) : null;
+    const course = courseId ? (await ctx.db.get(courseId)) as any : null;
 
     return {
       ...payment,
       courseName: course?.title || "Unknown",
-      studentName: student?.fullName || "Unknown",
-      studentEmail: student?.email || payment.email,
-      orderAmount: order?.amount || 0,
+      studentName: (student as any)?.fullName || "Unknown",
+      studentEmail: (student as any)?.email || (payment as any).email,
+      orderAmount: order?.totalAmount || 0,
     };
   },
 });

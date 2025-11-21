@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
-import { useCustomerAuth } from '@/features/auth';
+import { useStudentAuth } from '@/features/learner/auth';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CourseCard from '@/components/library/CourseCard';
 import ResourceCard from '@/components/library/ResourceCard';
@@ -12,7 +12,7 @@ import VfxCard from '@/components/library/VfxCard';
 
 export default function MyLibraryPage() {
     const router = useRouter();
-    const { customer, status } = useCustomerAuth();
+    const { student, status } = useStudentAuth();
 
     // Redirect if not authenticated
     useEffect(() => {
@@ -24,8 +24,8 @@ export default function MyLibraryPage() {
 
     // Load purchases
     const purchases = useQuery(
-        customer ? api.purchases.getCustomerLibrary : null,
-        customer ? { customerId: customer._id } : 'skip'
+        api.purchases.getCustomerLibrary,
+        student ? { customerId: student._id as any } : 'skip'
     ) as any[] | null | undefined;
 
     if (status === 'loading' || !purchases) {

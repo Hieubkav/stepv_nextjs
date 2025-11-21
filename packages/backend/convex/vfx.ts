@@ -128,8 +128,8 @@ export const createVfxProduct = mutation({
             previewVideoId: args.previewVideoId,
             downloadFileId: args.downloadFileId,
             pricingType: args.pricingType,
-            priceAmount: args.priceAmount,
-            comparePriceAmount: args.comparePriceAmount,
+            price: args.priceAmount || 0,
+            originalPrice: args.comparePriceAmount,
             duration: args.duration,
             resolution: args.resolution,
             frameRate: args.frameRate,
@@ -258,19 +258,29 @@ export const deleteVfxProduct = mutation({
         // Delete any purchases for this VFX
         const purchases = await ctx.db
             .query("customer_purchases")
-            .withIndex("by_vfx", (q) => q.eq("vfxId", id))
+            .filter((q) => 
+                q.and(
+                    q.eq(q.field("productType"), "vfx"),
+                    q.eq(q.field("productId"), id.toString())
+                )
+            )
             .collect();
         for (const purchase of purchases) {
             await ctx.db.delete(purchase._id);
         }
 
-        // Delete any orders for this VFX
-        const orders = await ctx.db
-            .query("orders")
-            .withIndex("by_vfx", (q) => q.eq("vfxId", id))
+        // Delete any order_items for this VFX
+        const orderItems = await ctx.db
+            .query("order_items")
+            .filter((q) => 
+                q.and(
+                    q.eq(q.field("productType"), "vfx"),
+                    q.eq(q.field("productId"), id.toString())
+                )
+            )
             .collect();
-        for (const order of orders) {
-            await ctx.db.delete(order._id);
+        for (const item of orderItems) {
+            await ctx.db.delete(item._id);
         }
 
         await ctx.db.delete(id);

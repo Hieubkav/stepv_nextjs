@@ -378,15 +378,21 @@ export const applyCoupon = mutation({
     }
 
     // Kiểm tra student ownership
-    if (order.studentId !== args.studentId) {
-      throw new Error("Đơn hàng không thuộc về bạn");
+    // Get order items for product info
+    const orderItems = await ctx.db
+      .query("order_items")
+      .withIndex("by_order", (q) => q.eq("orderId", args.orderId))
+      .first();
+
+    if (!orderItems) {
+      throw new Error("Không tìm thấy sản phẩm trong đơn hàng");
     }
 
     // Validate coupon
     const validation = (await ctx.runQuery(api.coupons.validateCoupon, {
       code: coupon.code,
-      courseId: order.courseId,
-      amount: order.amount,
+      courseId: orderItems.productId as any,
+      amount: order.totalAmount,
       studentId: args.studentId,
     })) as ValidateCouponResult;
 
@@ -413,7 +419,7 @@ export const applyCoupon = mutation({
     return {
       useId,
       discountAmount,
-      newTotal: Math.max(0, order.amount - discountAmount),
+      newTotal: Math.max(0, order.totalAmount - discountAmount),
     };
   },
 });

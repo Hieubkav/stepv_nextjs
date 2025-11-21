@@ -44,11 +44,7 @@ const toPublicCustomer = (customer: CustomerDoc): PublicCustomer => ({
     email: customer.email,
     fullName: customer.fullName,
     phone: customer.phone ?? undefined,
-    avatar: customer.avatar ?? undefined,
-    bio: customer.bio ?? undefined,
-    customerType: customer.customerType,
     notes: customer.notes ?? undefined,
-    tags: customer.tags ?? [],
     order: customer.order,
     active: customer.active,
     createdAt: customer.createdAt,
@@ -103,10 +99,6 @@ export const listCustomers = query({
             customers = customers.filter((item) => item.active);
         }
         
-        if (customerType) {
-            customers = customers.filter((item) => item.customerType === customerType);
-        }
-        
         if (search && search.trim().length > 0) {
             const keyword = search.trim().toLowerCase();
             customers = customers.filter((item) => {
@@ -115,7 +107,6 @@ export const listCustomers = query({
                     item.fullName,
                     item.email,
                     item.phone ?? "",
-                    item.tags?.join(" ") ?? "",
                 ];
                 return values.some((value) => value.toLowerCase().includes(keyword));
             });

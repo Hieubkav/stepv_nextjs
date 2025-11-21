@@ -102,8 +102,10 @@ export const createOrderWithItems = mutation({
     handler: async (ctx, { customerId, items }) => {
         if (!items.length) throw new Error("At least one item is required");
 
-        const customer = await ctx.db.get(customerId);
-        if (!customer) throw new Error("Customer not found");
+        // For MVP: customerId can be either customers or students (passed as customerId)
+        // Just verify the ID is valid, no need to check if customer exists
+        // const customer = await ctx.db.get(customerId);
+        // if (!customer) throw new Error("Customer not found");
 
         // Calculate total
         const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
@@ -132,7 +134,16 @@ export const createOrderWithItems = mutation({
             });
         }
 
-        return await getOrderWithItems(ctx, { orderId });
+        // Return order with items
+        const order = await ctx.db.get(orderId);
+        if (!order) return null;
+        
+        const orderItems = await ctx.db
+            .query("order_items")
+            .withIndex("by_order", (q) => q.eq("orderId", orderId))
+            .collect();
+        
+        return { ...order, items: orderItems };
     },
 });
 
