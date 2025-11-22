@@ -393,7 +393,11 @@ function buildFeatureLines(data: CourseDetailPageData) {
 }
 
 function PageShell({ children }: { children: ReactNode }) {
-  return <div className="min-h-screen bg-muted/20 text-foreground">{children}</div>;
+  return (
+    <div className="dark min-h-screen bg-gradient-to-b from-slate-950 via-slate-950/95 to-black text-foreground">
+      {children}
+    </div>
+  );
 }
 
 function ErrorState({
@@ -579,7 +583,7 @@ export default async function CourseDetailPage({
   return (
     <PageShell>
       <JsonLd data={[breadcrumbSchema, courseSchema]} />
-      <main className="mx-auto max-w-7xl px-4 py-8 pt-0">
+      <main className="mx-auto max-w-7xl px-4 pb-6 pt-20 lg:pt-24 lg:pb-10">
         <Button variant="outline" size="sm" className="gap-2 mb-8" asChild>
           <Link href="/khoa-hoc">
             <ArrowLeft className="h-4 w-4" />
