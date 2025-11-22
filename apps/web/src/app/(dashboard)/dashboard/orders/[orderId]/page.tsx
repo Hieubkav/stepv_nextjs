@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,21 +53,27 @@ interface OrderDetail {
   }>;
 }
 
-export default function OrderDetailPage({ params }: { params: { orderId: string } }) {
+export default function OrderDetailPage() {
   const router = useRouter();
-  const [refreshKey, setRefreshKey] = useState(0);
+  const params = useParams();
+  const orderParam = Array.isArray(params?.orderId) ? params.orderId[0] : params?.orderId;
 
   // Fetch order with items
-  const orderData = useQuery(api.orders.getOrderWithItems, {
-    orderId: params.orderId as any,
-  }) as OrderDetail | null | undefined;
+  const orderData = useQuery(
+    api.orders.getOrderWithItems,
+    orderParam
+      ? {
+          orderId: orderParam as any,
+        }
+      : 'skip'
+  ) as OrderDetail | null | undefined;
 
   const status = orderData?.status as OrderStatus;
   const config = statusConfig[status] || statusConfig.pending;
   const StatusIcon = config.icon;
 
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
+    router.refresh();
   };
 
   // Loading state
