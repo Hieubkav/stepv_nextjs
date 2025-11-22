@@ -1,15 +1,19 @@
 'use client';
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/context/cart-context";
+import { toast } from "sonner";
 
 export function CoursePrice({
   priceText,
   comparePriceText,
   priceNote,
   pricingType,
+  priceAmount,
+  courseTitle,
   courseSlug,
   courseId,
   hasFullAccess,
@@ -18,14 +22,31 @@ export function CoursePrice({
   comparePriceText: string | null;
   priceNote: string | null;
   pricingType: "free" | "paid";
+  priceAmount: number;
+  courseTitle: string;
   courseSlug?: string;
   courseId: string;
   hasFullAccess: boolean;
 }) {
-  const checkoutHref =
-    courseSlug && typeof courseSlug === "string"
-      ? { pathname: "/khoa-hoc/checkout", query: { slug: courseSlug } }
-      : null;
+  const router = useRouter();
+  const { addItem, hasDuplicate } = useCart();
+
+  const handleAddToCart = () => {
+    if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
+      toast.error("Học phí chưa được cấu hình.");
+      return;
+    }
+
+    if (!hasDuplicate("course", courseId)) {
+      addItem({
+        id: courseId,
+        productType: "course",
+        title: courseTitle,
+        price: priceAmount,
+      });
+    }
+    router.push("/checkout");
+  };
 
   return (
     <Card id="support" className="sticky top-4">
@@ -49,15 +70,17 @@ export function CoursePrice({
           <Button asChild size="lg" className="w-full font-semibold">
             <Link href={courseSlug ? `/khoa-hoc/${courseSlug}#curriculum` : "#curriculum"}>Vào học ngay</Link>
           </Button>
-        ) : pricingType === "paid" && checkoutHref ? (
-          <Button asChild size="lg" className="w-full font-semibold">
-            <Link href={checkoutHref}>Mua khóa học</Link>
+        ) : pricingType === "paid" ? (
+          <Button size="lg" className="w-full font-semibold" onClick={handleAddToCart}>
+            Thêm vào giỏ &amp; thanh toán
           </Button>
-        ) : pricingType === "free" ? (
-          <Button variant="outline" size="lg" className="w-full" disabled>
-            Miễn phí - Đăng ký ở phần "Chương trình học"
+        ) : (
+          <Button variant="outline" size="lg" className="w-full" asChild>
+            <Link href={courseSlug ? `/khoa-hoc/${courseSlug}#curriculum` : "#curriculum"}>
+              Miễn phí - Học ngay
+            </Link>
           </Button>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   );

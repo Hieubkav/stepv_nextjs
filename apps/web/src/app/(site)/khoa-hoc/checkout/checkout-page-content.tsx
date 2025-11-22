@@ -1,18 +1,19 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useQuery } from 'convex/react';
+import type { Route } from 'next';
+import { useMutation, useQuery } from 'convex/react';
 import type { Id } from '@dohy/backend/convex/_generated/dataModel';
 import { api } from '@dohy/backend/convex/_generated/api';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle, Banknote, FileText } from 'lucide-react';
-import CheckoutForm, { type PaymentConfig, buildTransferNote } from '@/features/learner/pages/checkout-form';
-import { useStudentAuth } from '@/features/learner/auth/student-auth-context';
+import { CheckCircle, Banknote, FileText, Loader2 } from 'lucide-react';
+import { useCustomerAuth } from '@/features/auth';
 import { buildVietQRImageUrl } from '@/lib/vietqr';
 import { getBankName } from '@/lib/bank-codes';
+import { toast } from 'sonner';
 
 export type CheckoutPageContentProps = {
   courseId: Id<'courses'>;
@@ -20,6 +21,14 @@ export type CheckoutPageContentProps = {
   coursePrice: number;
   comparePriceAmount: number | null;
   courseThumbnailUrl: string | null;
+  courseSlug?: string;
+};
+
+type PaymentConfig = {
+  bankAccountNumber: string;
+  bankAccountName: string;
+  bankCode: string;
+  bankBranch?: string | null;
 };
 
 const currencyFormatter = new Intl.NumberFormat('vi-VN', {
@@ -34,11 +43,23 @@ export function CheckoutPageContent({
   coursePrice,
   comparePriceAmount,
   courseThumbnailUrl,
+  courseSlug,
 }: CheckoutPageContentProps) {
   const router = useRouter();
-  const { student } = useStudentAuth();
+  const { customer, status } = useCustomerAuth();
+  const [isPlacing, setIsPlacing] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string | null>(null);
+
   const paymentSettings = useQuery(api.paymentSettings.getPaymentSettings);
   const siteSettings = useQuery(api.settings.getByKey, { key: 'site' });
+  const existingPurchase = useQuery(
+    api.purchases.getPurchase,
+    customer
+      ? { customerId: customer._id as any, productType: 'course', productId: String(courseId) }
+      : 'skip',
+  ) as { _id: Id<'customer_purchases'> } | null | undefined;
+
+  const createOrder = useMutation(api.orders.createOrderWithItems);
 
   const summaryPaymentConfig = useMemo<PaymentConfig | null>(() => {
     if (
@@ -89,7 +110,7 @@ export function CheckoutPageContent({
     siteSettings?.value?.bankBranch,
   ]);
 
-  const summaryTransferNote = useMemo(() => buildTransferNote(courseName), [courseName]);
+  const transferNote = useMemo(() => buildTransferNote(courseName), [courseName]);
   const summaryQrUrl = useMemo(() => {
     if (!summaryPaymentConfig) return null;
     return (
@@ -99,7 +120,7 @@ export function CheckoutPageContent({
         accountName: summaryPaymentConfig.bankAccountName,
         template: 'qr_only',
         amount: coursePrice,
-        addInfo: summaryTransferNote,
+        addInfo: transferNote,
       }) ?? null
     );
   }, [
@@ -107,18 +128,69 @@ export function CheckoutPageContent({
     summaryPaymentConfig?.bankAccountName,
     summaryPaymentConfig?.bankCode,
     coursePrice,
-    summaryTransferNote,
+    transferNote,
   ]);
 
-  if (!student) {
+  const loginHref = `/login?next=${encodeURIComponent(`/khoa-hoc/checkout?slug=${courseSlug ?? ''}`)}` as Route;
+
+  const handlePlaceOrder = async () => {
+    if (!customer?._id) {
+      router.push(loginHref);
+      return;
+    }
+
+    if (existingPurchase) {
+      router.push((courseSlug ? `/khoa-hoc/${courseSlug}` : '/my-library') as Route);
+      return;
+    }
+
+    try {
+      setIsPlacing(true);
+      const order = (await createOrder({
+        customerId: customer._id as any,
+        items: [
+          {
+            productType: 'course',
+            productId: String(courseId),
+            price: coursePrice,
+          },
+        ],
+      })) as { orderNumber?: string };
+
+      if (!order?.orderNumber) {
+        throw new Error('Không tạo được đơn hàng');
+      }
+
+      setOrderNumber(order.orderNumber);
+      toast.success('Đã ghi nhận đơn, chờ xác nhận thanh toán');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể tạo đơn hàng';
+      toast.error(message);
+    } finally {
+      setIsPlacing(false);
+    }
+  };
+
+  if (status === 'loading') {
+    return (
+      <Card>
+        <CardContent className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Đang kiểm tra phiên đăng nhập...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!customer) {
     return (
       <Card>
         <CardHeader>
           <p className="font-semibold text-amber-600">Vui lòng đăng nhập</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">Bạn cần đăng nhập để thanh toán khóa học.</p>
-          <Button className="w-full" onClick={() => router.push('/khoa-hoc/dang-nhap')}>
+          <p className="text-sm text-muted-foreground">Bạn cần đăng nhập bằng tài khoản khách hàng để thanh toán.</p>
+          <Button className="w-full" onClick={() => router.push(loginHref)}>
             Đăng nhập
           </Button>
         </CardContent>
@@ -126,11 +198,32 @@ export function CheckoutPageContent({
     );
   }
 
+  if (existingPurchase) {
+    return (
+      <Card className="border-emerald-200 bg-emerald-50/70">
+        <CardHeader>
+          <p className="font-semibold text-emerald-700">Bạn đã sở hữu khóa học này</p>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm text-emerald-800">
+          <p>Hệ thống phát hiện bạn đã mua khóa học. Hãy vào thư viện để học ngay.</p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button asChild className="flex-1">
+              <a href="/my-library">Mở thư viện</a>
+            </Button>
+            {courseSlug ? (
+              <Button asChild variant="outline" className="flex-1">
+                <a href={`/khoa-hoc/${courseSlug}`}>Xem chi tiết</a>
+              </Button>
+            ) : null}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {/* SUMMARY SECTION */}
       <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4">
-        {/* COURSE INFO */}
         <Card className="shadow-none border rounded-2xl col-span-1 lg:col-span-1">
           <CardHeader className="font-semibold text-base md:text-lg py-3 md:py-4">
             Thông tin khóa học
@@ -169,7 +262,6 @@ export function CheckoutPageContent({
           </CardContent>
         </Card>
 
-        {/* PAYMENT + STEPS COMBINED */}
         <Card className="shadow-none border rounded-2xl col-span-1 lg:col-span-2">
           <CardHeader className="py-3 md:py-4">
             <p className="font-semibold text-base md:text-lg">Thanh toán &amp; hướng dẫn nhanh</p>
@@ -178,7 +270,6 @@ export function CheckoutPageContent({
             </p>
           </CardHeader>
           <CardContent className="py-0 pb-3 md:pb-4 space-y-3 md:space-y-4 text-xs md:text-sm">
-            {/* QR + BANK INFO ROW */}
             <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               {summaryQrUrl ? (
                 <div className="flex-1 flex justify-center md:justify-start">
@@ -217,7 +308,7 @@ export function CheckoutPageContent({
                       {summaryPaymentConfig.bankAccountName}
                     </p>
                     <p>
-                      <span className="font-medium">Nội dung:</span> {summaryTransferNote}
+                      <span className="font-medium">Nội dung:</span> {transferNote}
                     </p>
                   </div>
 
@@ -240,14 +331,13 @@ export function CheckoutPageContent({
 
             <Separator className="my-1" />
 
-            {/* 3 STEPS INLINE */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 md:gap-2">
               <div className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="space-y-0.5 md:space-y-1">
                   <p className="font-medium text-xs md:text-sm">Bước 1: Chuyển khoản</p>
                   <p className="text-muted-foreground text-[11px] md:text-xs">
-                    Quét QR hoặc chuyển STK, nội dung: {summaryTransferNote}.
+                    Quét QR hoặc chuyển STK, nội dung: {transferNote}.
                   </p>
                 </div>
               </div>
@@ -257,7 +347,7 @@ export function CheckoutPageContent({
                 <div className="space-y-0.5 md:space-y-1">
                   <p className="font-medium text-xs md:text-sm">Bước 2: Xác nhận mua</p>
                   <p className="text-muted-foreground text-[11px] md:text-xs">
-                    Chuyển khoản xong, bấm nút "Xác nhận mua".
+                    Bấm nút "Xác nhận đặt khóa" sau khi chuyển khoản.
                   </p>
                 </div>
               </div>
@@ -267,7 +357,7 @@ export function CheckoutPageContent({
                 <div className="space-y-0.5 md:space-y-1">
                   <p className="font-medium text-xs md:text-sm">Bước 3: Chờ duyệt</p>
                   <p className="text-muted-foreground text-[11px] md:text-xs">
-                    Đơn được duyệt trong vài phút.
+                    Đơn sẽ được duyệt và kích hoạt ngay khi admin xác nhận.
                   </p>
                 </div>
               </div>
@@ -276,14 +366,55 @@ export function CheckoutPageContent({
         </Card>
       </div>
 
-      {/* CHECKOUT FORM */}
-      <CheckoutForm
-        courseId={courseId}
-        studentId={student._id}
-        courseName={courseName}
-        coursePrice={coursePrice}
-        courseThumbnailUrl={courseThumbnailUrl || undefined}
-      />
+      <Card className="shadow-none border rounded-2xl">
+        <CardContent className="space-y-3 py-4">
+          <Button
+            size="lg"
+            className="w-full font-semibold"
+            onClick={handlePlaceOrder}
+            disabled={isPlacing}
+          >
+            {isPlacing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Đang xử lý...
+              </>
+            ) : (
+              'Xác nhận đặt khóa'
+            )}
+          </Button>
+
+          {orderNumber ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 space-y-2">
+              <div className="flex items-center gap-2 font-semibold">
+                <CheckCircle className="h-4 w-4" />
+                Đã ghi nhận đơn, chờ xác nhận
+              </div>
+              <p className="font-mono text-xs bg-white/60 rounded px-2 py-1 w-fit">
+                Mã đơn: {orderNumber}
+              </p>
+              <Button
+                onClick={() => router.push('/khoa-hoc/don-dat')}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                Xem đơn đã đặt
+              </Button>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
   );
+}
+
+function buildTransferNote(courseName: string) {
+  const normalized = courseName
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .slice(0, 10)
+    .toUpperCase();
+  return `DOHY-${normalized || 'COURSE'}`;
 }

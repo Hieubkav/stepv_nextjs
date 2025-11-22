@@ -141,6 +141,7 @@ export default async function CheckoutPage({
             coursePrice={priceAmount}
             comparePriceAmount={course.comparePriceAmount}
             courseThumbnailUrl={thumbnailUrl}
+            courseSlug={course.slug}
           />
         </main>
       </div>

@@ -5,9 +5,6 @@ import { CheckCircle2, Play, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { extractYoutubeVideoId } from "@/lib/youtube";
-import { useMutation } from "convex/react";
-import { api } from "@dohy/backend/convex/_generated/api";
-import { useStudentAuth } from "@/features/learner/auth/student-auth-context";
 
 type ThumbnailInfo = {
   url?: string;
@@ -47,26 +44,20 @@ export function VideoPlayer({
   totalDurationText,
   introVideoUrl,
   selectedLesson,
-  courseId,
 }: {
   thumbnail: ThumbnailInfo | null;
   totalDurationText: string | null;
   introVideoUrl?: string | null;
   selectedLesson?: VideoInfo | null;
-  courseId?: string;
 }) {
   const playerRef = useRef<any>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const playerHostRef = useRef<HTMLDivElement | null>(null);
-  const { student } = useStudentAuth();
 
   const [watchedSeconds, setWatchedSeconds] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [totalDuration, setTotalDuration] = useState(0);
   const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const recordLessonView = useMutation(api.progress.recordLessonView);
-  const completeLessonIfDone = useMutation(api.progress.completeLessonIfDone);
 
   // Determine video type and extract ID/URL
   const videoType = useMemo(() => {
@@ -199,23 +190,9 @@ export function VideoPlayer({
           },
           onStateChange: (event: any) => {
             if (event.data === window.YT.PlayerState.PLAYING) {
-              // Recording view with watch time when playing
-              if (selectedLesson && student && courseId) {
-                recordLessonView({
-                  studentId: student._id,
-                  lessonId: selectedLesson.id as any,
-                  courseId: courseId as any,
-                  watchTimeSeconds: Math.floor(event.target.getCurrentTime()),
-                }).catch(err => console.log("Recording view:", err));
-              }
+              // no-op: playback tracking only on client for now
             } else if (event.data === window.YT.PlayerState.ENDED) {
-              // Auto-complete lesson when video ends
-              if (selectedLesson && student && courseId) {
-                completeLessonIfDone({
-                  studentId: student._id,
-                  lessonId: selectedLesson.id as any,
-                }).catch(err => console.log("Completing lesson:", err));
-              }
+              setIsCompleted(true);
             }
           },
         },
@@ -235,7 +212,7 @@ export function VideoPlayer({
     return () => {
       teardownPlayer();
     };
-  }, [videoId, videoType, selectedLesson?.id, student?._id, courseId, recordLessonView, completeLessonIfDone]);
+  }, [videoId, videoType, selectedLesson?.id]);
 
   // Handle "No video" type - show content/exercise info only
   if (videoType === "none") {
