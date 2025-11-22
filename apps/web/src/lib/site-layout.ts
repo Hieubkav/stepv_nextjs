@@ -8,13 +8,22 @@ export type HomeBlock = {
 
 export type SiteHeaderMenuItem = { label?: string; url?: string; highlight?: boolean };
 export type SiteHeaderSocial = { platform?: string; url?: string; icon?: string };
-export type SiteHeaderCta = { label?: string; url?: string };
+export type SiteHeaderAuth = {
+  enabled?: boolean;
+  loginUrl?: string;
+  registerUrl?: string;
+  profileUrl?: string;
+  ordersUrl?: string;
+  badgeLabel?: string;
+  dropdownTitle?: string;
+  showCart?: boolean;
+};
 export type SiteHeaderProps = {
   logo?: string;
   backgroundImage?: string;
   menuItems?: SiteHeaderMenuItem[];
   socials?: SiteHeaderSocial[];
-  cta?: SiteHeaderCta;
+  auth?: SiteHeaderAuth;
 };
 
 export type SiteFooterLink = { label?: string; url?: string; highlight?: boolean };
@@ -196,27 +205,20 @@ export function mapSiteHeaderProps(data?: BlockData | null): Partial<SiteHeaderP
         .filter((social): social is SiteHeaderSocial => social !== null && !!social.url)
     : undefined;
 
-  const ctaValue = record.cta ?? record.callToAction ?? record.button ?? record.primaryCta;
-  const cta = (() => {
-    if (!ctaValue) return undefined;
-    if (typeof ctaValue === 'string') {
-      return { label: ctaValue, url: '#contact' } as SiteHeaderCta;
-    }
-    if (typeof ctaValue !== 'object') return undefined;
-    const ctaRecord = ctaValue as Record<string, unknown>;
-    const label =
-      toString(ctaRecord.label) ??
-      toString(ctaRecord.text) ??
-      toString(ctaRecord.title);
-    if (!label) return undefined;
-    const url =
-      toAssetUrl(ctaRecord.url ?? ctaRecord.href ?? ctaRecord.link) ??
-      toString(ctaRecord.url) ??
-      toString(ctaRecord.href) ??
-      toString(ctaRecord.link);
-    const result: SiteHeaderCta = { label };
-    if (url) result.url = url;
-    return result;
+  const authValue =
+    record.auth ??
+    record.ccta ??
+    record.account ??
+    record.customer ??
+    record.accountMenu ??
+    record.cta; // hỗ trợ dữ liệu cũ
+
+  const auth = (() => {
+    const enabledRaw =
+      toBoolean((authValue as Record<string, unknown> | undefined)?.enabled) ??
+      toBoolean(record.showAuth ?? record.authEnabled ?? record.ctaEnabled);
+    if (enabledRaw === false) return { enabled: false } as SiteHeaderAuth;
+    return { enabled: true } as SiteHeaderAuth;
   })();
 
   return cleanProps<SiteHeaderProps>({
@@ -232,7 +234,7 @@ export function mapSiteHeaderProps(data?: BlockData | null): Partial<SiteHeaderP
       toAssetUrl(record.coverImage),
     menuItems,
     socials,
-    cta,
+    auth,
   });
 }
 

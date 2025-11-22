@@ -9,7 +9,7 @@ export function ProfileDropdown() {
 
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" })
-    router.push("/login")
+    router.push("/admin-login" as any)
   }
 
   return (

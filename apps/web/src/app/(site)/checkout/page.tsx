@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useMutation } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
 import { useCart } from '@/context/cart-context';
-import { useStudentAuth } from '@/features/learner/auth';
+import { useCustomerAuth } from '@/features/auth';
 import { formatPrice } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import CartItem from '@/components/cart/CartItem';
@@ -18,7 +18,7 @@ type CheckoutStep = 'form' | 'success';
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, getTotal, clearCart } = useCart();
-    const { student, status } = useStudentAuth();
+    const { customer, status } = useCustomerAuth();
     const [step, setStep] = useState<CheckoutStep>('form');
     const [orderNumber, setOrderNumber] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
@@ -33,7 +33,7 @@ export default function CheckoutPage() {
     useEffect(() => {
         if (status === 'authenticated' || status === 'loading') return;
         if (status === 'idle') {
-            router.push('/khoa-hoc/dang-nhap');
+            router.push('/login');
         }
     }, [status, router]);
 
@@ -41,7 +41,7 @@ export default function CheckoutPage() {
     useEffect(() => {
         if (itemCount === 0 && status !== 'loading') {
             const timer = setTimeout(() => {
-                router.push('/khoa-hoc');
+                router.push('/');
             }, 2000);
             return () => clearTimeout(timer);
         }
@@ -56,8 +56,8 @@ export default function CheckoutPage() {
         setError(null);
 
         try {
-            if (!student?._id) {
-                setError('Không tìm thấy thông tin học viên');
+            if (!customer?._id) {
+                setError('Không tìm thấy thông tin khách hàng');
                 setIsLoading(false);
                 return;
             }
@@ -69,9 +69,8 @@ export default function CheckoutPage() {
                 price: item.price,
             }));
 
-            // Use studentId as customerId for MVP
             const order = await createOrderMutation({
-                customerId: student._id as any,
+                customerId: customer._id as any,
                 items: orderItems,
             }) as any;
 
@@ -176,7 +175,7 @@ export default function CheckoutPage() {
                         {status === 'idle' && (
                             <div className="p-4 bg-yellow-50 border border-yellow-200 rounded">
                                 <p className="text-sm text-yellow-800">
-                                    <strong>Lưu ý:</strong> Bạn cần <a href="/khoa-hoc/dang-nhap" className="underline font-bold">đăng nhập</a> để tiếp tục thanh toán
+                                    <strong>Lưu ý:</strong> Bạn cần <a href="/login" className="underline font-bold">đăng nhập</a> để tiếp tục thanh toán
                                 </p>
                             </div>
                         )}

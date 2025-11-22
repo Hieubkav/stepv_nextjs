@@ -44,7 +44,7 @@ const cleanPath = (path: string) => path.split('?')[0];
 function isActive(href: string, item: NavItem, mainNav = false) {
   const current = cleanPath(href);
 
-  if ('url' in item) {
+  if ('url' in item && item.url) {
     const target = cleanPath(item.url);
     if (current === target) return true;
     // Cho phép highlight các trang con, trừ trang tổng quan (/dashboard) để tránh highlight toàn bộ
@@ -52,12 +52,10 @@ function isActive(href: string, item: NavItem, mainNav = false) {
     return false;
   }
 
-  return (
-    !!item.items.find((i) => {
-      const child = cleanPath(i.url);
-      return current === child || current.startsWith(`${child}/`);
-    })
-  );
+  return !!item.items?.find((i) => {
+    const child = cleanPath(i.url);
+    return current === child || current.startsWith(`${child}/`);
+  });
 }
 
 function SidebarMenuLink({ item, pathname }: { item: NavLink; pathname: string }) {

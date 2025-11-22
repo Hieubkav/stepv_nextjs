@@ -3,12 +3,34 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Loader2, Menu, X } from 'lucide-react';
 import XIcon from '@/components/ui/XIcon';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import CartIcon from '@/components/cart/CartIcon';
+import { useCustomerAuth } from '@/features/auth';
 import { getLucideIcon } from '@/lib/lucide-icons';
-import type { SiteHeaderCta, SiteHeaderMenuItem, SiteHeaderProps, SiteHeaderSocial } from '@/lib/site-layout';
+import type { SiteHeaderAuth, SiteHeaderMenuItem, SiteHeaderProps, SiteHeaderSocial } from '@/lib/site-layout';
 
 type SiteHeaderSectionProps = SiteHeaderProps;
+
+type ResolvedAuth = {
+  enabled: boolean;
+  loginUrl: string;
+  registerUrl: string;
+  profileUrl?: string;
+  ordersUrl?: string;
+  badgeLabel: string;
+  dropdownTitle: string;
+  showCart: boolean;
+};
 
 const DEFAULT_MENU: SiteHeaderMenuItem[] = [
   { label: 'Trang chủ', url: '/', highlight: true },
@@ -28,8 +50,17 @@ const DEFAULT_SOCIALS: SiteHeaderSocial[] = [
   { platform: 'X', url: 'https://x.com/dohystudio', icon: 'X' },
 ];
 
-const DEFAULT_CTA: SiteHeaderCta = { label: 'Liên hệ', url: '#contact' };
 const FALLBACK_LOGO = '/images/logo.png';
+const DEFAULT_AUTH: ResolvedAuth = {
+  enabled: true,
+  loginUrl: '/login',
+  registerUrl: '/register',
+  profileUrl: '/my-library',
+  ordersUrl: '/my-library',
+  badgeLabel: 'Khách hàng',
+  dropdownTitle: 'Không gian khách hàng',
+  showCart: true,
+};
 
 type NormalizedMenuItem = {
   label: string;
@@ -95,12 +126,13 @@ const SiteHeaderSection = ({
   backgroundImage,
   menuItems,
   socials,
-  cta,
+  auth,
 }: SiteHeaderSectionProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { customer, status: authStatus, logout } = useCustomerAuth();
 
   const resolvedLogo = typeof logo === 'string' && logo.trim().length > 0 ? logo.trim() : FALLBACK_LOGO;
   const normalizedPathname = normalizePath(pathname ?? '/');
@@ -151,13 +183,10 @@ const SiteHeaderSection = ({
     }, []);
   }, [socials]);
 
-  const resolvedCta = useMemo<SiteHeaderCta>(() => {
-    if (cta?.label) {
-      const href = cta.url && cta.url.trim().length > 0 ? cta.url.trim() : '#contact';
-      return { label: cta.label, url: href };
-    }
-    return DEFAULT_CTA;
-  }, [cta]);
+  const resolvedAuth = useMemo<ResolvedAuth>(() => ({
+    ...DEFAULT_AUTH,
+    enabled: auth?.enabled ?? DEFAULT_AUTH.enabled,
+  }), [auth]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -245,96 +274,45 @@ const SiteHeaderSection = ({
     );
   };
 
-  const renderDesktopCta = () => {
-    if (!resolvedCta.label) return null;
-    const className = 'hidden lg:inline-flex items-center justify-center min-w-[120px] min-h-[44px] px-6 py-2.5 text-base font-semibold text-black bg-white rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black/50 touch-manipulation';
-    const href = resolvedCta.url ?? '#contact';
-
-    if (href.startsWith('#')) {
+  const renderDesktopActions = () => {
+    if (!resolvedAuth.enabled) return null;
+    if (resolvedAuth.enabled) {
       return (
-        <a
-          href={href}
-          onClick={(event) => {
-            event.preventDefault();
-            handleAnchorNavigation(href);
-          }}
-          className={className}
-        >
-          {resolvedCta.label}
-        </a>
+        <div className="hidden lg:flex items-center gap-3">
+          {resolvedAuth.showCart ? <CartIcon tone="light" /> : null}
+          <CustomerMenuButton
+            auth={resolvedAuth}
+            customer={customer}
+            status={authStatus}
+            onLogout={logout}
+            onNavigate={(href) => router.push(href as any)}
+          />
+        </div>
       );
     }
-
-    if (isExternalLink(href)) {
-      return (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
-          {resolvedCta.label}
-        </a>
-      );
-    }
-
-    return (
-      <a
-        href={href}
-        className={className}
-        onClick={(event) => {
-          event.preventDefault();
-          window.location.assign(href);
-        }}
-      >
-        {resolvedCta.label}
-      </a>
-    );
+    return null;
   };
 
-  const renderMobileCta = () => {
-    if (!resolvedCta.label) return null;
-    const className = 'block w-full text-center min-h-[44px] px-6 py-3 text-base font-semibold text-black bg-white rounded-full transition-all hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-white touch-manipulation';
-    const href = resolvedCta.url ?? '#contact';
-
-    if (href.startsWith('#')) {
+  const renderMobileActions = () => {
+    if (!resolvedAuth.enabled) return null;
+    if (resolvedAuth.enabled) {
       return (
-        <a
-          href={href}
-          onClick={(event) => {
-            event.preventDefault();
-            handleAnchorNavigation(href);
+        <CustomerMobilePanel
+          auth={resolvedAuth}
+          customer={customer}
+          status={authStatus}
+          onLogout={() => {
+            logout();
             closeMobileMenu();
           }}
-          className={className}
-        >
-          {resolvedCta.label}
-        </a>
+          onNavigate={(href) => {
+            closeMobileMenu();
+            router.push(href as any);
+          }}
+        />
       );
     }
-
-    if (isExternalLink(href)) {
-      return (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={className}
-          onClick={closeMobileMenu}
-        >
-          {resolvedCta.label}
-        </a>
-      );
-    }
-
-    return (
-      <a
-        href={href}
-        className={className}
-        onClick={(event) => {
-          event.preventDefault();
-          closeMobileMenu();
-          window.location.assign(href);
-        }}
-      >
-        {resolvedCta.label}
-      </a>
-    );
+    return null;
   };
 
   const renderLogo = (size: 'large' | 'medium' | 'mobile') => {
@@ -408,7 +386,7 @@ const SiteHeaderSection = ({
           ))}
         </div>
 
-        {renderDesktopCta()}
+        {renderDesktopActions()}
 
         <button
           type="button"
@@ -462,7 +440,7 @@ const SiteHeaderSection = ({
             </ul>
 
             <div className="mt-8">
-              {renderMobileCta()}
+              {renderMobileActions()}
             </div>
 
             {resolvedSocials.length > 0 && (
@@ -507,6 +485,186 @@ const SiteHeaderSection = ({
     </>
   );
 };
+
+type CustomerInfo = { fullName?: string; account?: string; email?: string } | null;
+const displayCustomerName = (customer: CustomerInfo) =>
+  customer?.fullName || customer?.email || customer?.account || 'Khách hàng';
+
+type CustomerMenuButtonProps = {
+  auth: ResolvedAuth;
+  customer: CustomerInfo;
+  status: 'idle' | 'loading' | 'authenticated';
+  onLogout: () => void;
+  onNavigate: (href: string) => void;
+};
+
+function CustomerMenuButton({ auth, customer, status, onLogout, onNavigate }: CustomerMenuButtonProps) {
+  if (status === 'loading') return <CustomerLoadingButton />;
+  if (!customer) return <CustomerGuestButtons auth={auth} onNavigate={onNavigate} />;
+  return <CustomerDropdown auth={auth} customer={customer} onLogout={onLogout} />;
+}
+
+function CustomerLoadingButton() {
+  return (
+    <Button type="button" variant="ghost" size="sm" className="h-11 px-3 text-white gap-2 hover:bg-white/10" disabled>
+      <Loader2 className="h-4 w-4 animate-spin" />
+      <span>Đang tải</span>
+    </Button>
+  );
+}
+
+function CustomerGuestButtons({ auth, onNavigate }: { auth: ResolvedAuth; onNavigate: (href: string) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-10 px-4 font-semibold border-white/40 text-white bg-white/5 hover:bg-white/10"
+        onClick={() => onNavigate(auth.loginUrl)}
+      >
+        Đăng nhập
+      </Button>
+      <Button
+        size="sm"
+        className="h-10 px-4 font-semibold bg-white text-black hover:bg-gray-100"
+        onClick={() => onNavigate(auth.registerUrl)}
+      >
+        Đăng ký
+      </Button>
+    </div>
+  );
+}
+
+type CustomerDropdownProps = { auth: ResolvedAuth; customer: CustomerInfo; onLogout: () => void };
+
+function CustomerDropdown({ auth, customer, onLogout }: CustomerDropdownProps) {
+  const displayName = displayCustomerName(customer);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button type="button" variant="ghost" size="sm" className="h-11 px-3 text-white hover:bg-white/10 gap-2">
+          <div className="flex flex-col items-start leading-tight">
+            <span className="text-[10px] uppercase font-semibold tracking-[0.35em] text-white/70">{auth.badgeLabel}</span>
+            <span className="text-[13px] font-semibold max-w-[140px] truncate">{displayName}</span>
+          </div>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="space-y-1">
+          <p className="text-[11px] uppercase font-medium tracking-[0.3em] text-muted-foreground">{auth.dropdownTitle}</p>
+          <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {auth.profileUrl && (
+          <DropdownMenuItem asChild>
+            <a href={auth.profileUrl} className="flex w-full items-center justify-between cursor-pointer">
+              <span>Thông tin khách hàng</span>
+            </a>
+          </DropdownMenuItem>
+        )}
+        {auth.ordersUrl && (
+          <DropdownMenuItem asChild>
+            <a href={auth.ordersUrl} className="flex w-full items-center justify-between cursor-pointer">
+              <span>Lịch sử mua</span>
+            </a>
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onSelect={(event) => {
+            event.preventDefault();
+            onLogout();
+          }}
+          className="cursor-pointer"
+        >
+          Đăng xuất
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+type CustomerMobilePanelProps = {
+  auth: ResolvedAuth;
+  customer: CustomerInfo;
+  status: 'idle' | 'loading' | 'authenticated';
+  onLogout: () => void;
+  onNavigate: (href: string) => void;
+};
+
+function CustomerMobilePanel({ auth, customer, status, onLogout, onNavigate }: CustomerMobilePanelProps) {
+  if (status === 'loading') return <p className="text-white/80">Đang tải tài khoản...</p>;
+  if (!customer) return <CustomerMobileGuest auth={auth} onNavigate={onNavigate} />;
+  return <CustomerMobileLogged auth={auth} customer={customer} onLogout={onLogout} onNavigate={onNavigate} />;
+}
+
+function CustomerMobileGuest({ auth, onNavigate }: { auth: ResolvedAuth; onNavigate: (href: string) => void }) {
+  return (
+    <div className="space-y-3">
+      <Button className="w-full h-11 font-semibold bg-white text-black hover:bg-gray-100" onClick={() => onNavigate(auth.loginUrl)}>
+        Đăng nhập
+      </Button>
+      <Button
+        variant="outline"
+        className="w-full h-11 font-semibold border-white/40 text-white bg-white/5 hover:bg-white/10"
+        onClick={() => onNavigate(auth.registerUrl)}
+      >
+        Đăng ký
+      </Button>
+    </div>
+  );
+}
+
+type CustomerMobileLoggedProps = {
+  auth: ResolvedAuth;
+  customer: CustomerInfo;
+  onLogout: () => void;
+  onNavigate: (href: string) => void;
+};
+
+function CustomerMobileLogged({ auth, customer, onLogout, onNavigate }: CustomerMobileLoggedProps) {
+  const displayName = displayCustomerName(customer);
+  return (
+    <div className="rounded-lg border border-white/10 bg-white/5 p-4 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col">
+          <span className="text-[11px] uppercase font-semibold tracking-[0.3em] text-white/70">{auth.badgeLabel}</span>
+          <span className="text-base font-semibold text-white">{displayName}</span>
+        </div>
+        <span className="text-xs text-white/70">Đang đăng nhập</span>
+      </div>
+      <div className="grid gap-2">
+        {auth.profileUrl && (
+          <a
+            href={auth.profileUrl}
+            className="flex items-center justify-between rounded-md bg-white/10 px-4 py-3 text-white hover:bg-white/20"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate(auth.profileUrl!);
+            }}
+          >
+            <span>Thông tin khách hàng</span>
+          </a>
+        )}
+        {auth.ordersUrl && (
+          <a
+            href={auth.ordersUrl}
+            className="flex items-center justify-between rounded-md bg-white/10 px-4 py-3 text-white hover:bg-white/20"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate(auth.ordersUrl!);
+            }}
+          >
+            <span>Lịch sử mua</span>
+          </a>
+        )}
+      </div>
+      <Button variant="ghost" className="w-full h-11 font-semibold text-red-100 border border-white/20 hover:bg-red-500/10" onClick={onLogout}>
+        Đăng xuất
+      </Button>
+    </div>
+  );
+}
 
 export default SiteHeaderSection;
 

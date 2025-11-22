@@ -597,8 +597,8 @@ export const BLOCK_PRESETS: BlockPreset[] = [
             type: "object",
             properties: {
               label: { type: "string", title: "Nhãn" },
-              url: { type: "string", title: "Đường dẫn", format: "uri" },
-              highlight: { type: "boolean", title: "Noi bat" }
+              url: { type: "string", title: "Đường dẫn" },
+              highlight: { type: "boolean", title: "Nổi bật" }
             }
           }
         },
@@ -608,18 +608,17 @@ export const BLOCK_PRESETS: BlockPreset[] = [
           items: {
             type: "object",
             properties: {
-              platform: { type: "string", title: "Nen tang" },
-              url: { type: "string", title: "Đường dẫn", format: "uri" },
+              platform: { type: "string", title: "Nền tảng" },
+              url: { type: "string", title: "Đường dẫn" },
               icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF }
             }
           }
         },
-        cta: {
+        auth: {
           type: "object",
-          title: "CTA",
+          title: "Tài khoản khách hàng",
           properties: {
-            label: { type: "string", title: "Nhãn nút" },
-            url: { type: "string", title: "Đường dẫn", format: "uri" }
+            enabled: { type: "boolean", title: "Hiển thị khu vực khách hàng", default: true }
           }
         }
       }
@@ -636,7 +635,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       menuItems: {
         "ui:options": { addButtonLabel: "Thêm menu" },
         items: {
-          url: { "ui:placeholder": "https://..." }
+          url: { "ui:placeholder": "https://... hoặc /du-an" }
         }
       },
       socials: {
@@ -644,6 +643,10 @@ export const BLOCK_PRESETS: BlockPreset[] = [
         items: {
           icon: { "ui:widget": "iconPicker" }
         }
+      },
+      auth: {
+        "ui:order": ["enabled"],
+        enabled: { "ui:widget": "checkbox" }
       }
     } satisfies UiSchema,
         template: BLOCK_DEFAULT_DATA["siteHeader"],},

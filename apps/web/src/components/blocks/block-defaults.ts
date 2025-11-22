@@ -324,11 +324,13 @@ export const BLOCK_DEFAULT_DATA: Record<string, BlockTemplateData> = {
             { platform: "Instagram", url: "https://www.instagram.com/stepvstudio", icon: "Instagram" },
             { platform: "TikTok", url: "https://www.tiktok.com/@stepvstudio", icon: "Tiktok" },
             { platform: "Pinterest", url: "https://www.pinterest.com/stepvstudio", icon: "Pinterest" },
-            { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
-            { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
-            { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
+          { platform: "Telegram", url: "https://t.me/stepvstudio", icon: "Telegram" },
+          { platform: "X", url: "https://x.com/stepvstudio", icon: "X" },
+          { platform: "Zalo", url: "https://zalo.me/stepvstudio", icon: "Zalo" }
           ],
-          cta: { label: "LIÊN HỆ", url: "#contact" }
+          auth: {
+            enabled: true
+          }
         },
   "careSection":     {},
   "siteFooter":     {
