@@ -55,7 +55,7 @@ const DEFAULT_AUTH: ResolvedAuth = {
   enabled: true,
   loginUrl: '/login',
   registerUrl: '/register',
-  profileUrl: '/my-library',
+  profileUrl: '/profile',
   ordersUrl: '/my-library',
   badgeLabel: 'Khách hàng',
   dropdownTitle: 'Không gian khách hàng',
