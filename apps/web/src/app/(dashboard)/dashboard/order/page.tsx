@@ -37,7 +37,7 @@ import {
   Search,
 } from "lucide-react";
 
-type OrderStatus = "pending" | "paid" | "completed" | "cancelled";
+type OrderStatus = "pending" | "paid" | "activated" | "cancelled";
 type StatusFilter = "all" | OrderStatus;
 
 type AdminOrder = {
@@ -49,7 +49,8 @@ type AdminOrder = {
   courseId: Id<"courses">;
   courseTitle: string;
   courseSlug?: string;
-  amount: number;
+  totalAmount?: number;
+  amount?: number;
   status: OrderStatus;
   paymentMethod: string;
   notes?: string;
@@ -74,16 +75,18 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Chờ thanh toán",
   paid: "Đã thanh toán",
-  completed: "Đã kích hoạt",
+  activated: "Đã kích hoạt",
   cancelled: "Đã hủy",
 };
 
 const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
   paid: "border-sky-200 bg-sky-50 text-sky-800",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  activated: "border-emerald-200 bg-emerald-50 text-emerald-800",
   cancelled: "border-slate-200 bg-slate-50 text-slate-700",
 };
+
+const SUCCESS_STATUS_FOR_STATS: OrderStatus[] = ["paid", "activated"];
 
 const ORDERS_FETCH_LIMIT = 200;
 
@@ -106,13 +109,12 @@ export default function OrdersResourcePage() {
     const data = orders ?? [];
     const total = data.length;
     const pending = data.filter((order) => order.status === "pending").length;
-    const confirmed = data.filter((order) => order.status === "paid").length;
-    const activated = data.filter((order) => order.status === "completed").length;
+    const successful = data.filter((order) => SUCCESS_STATUS_FOR_STATS.includes(order.status)).length;
     const revenue = data
-      .filter((order) => order.status === "paid" || order.status === "completed")
-      .reduce((sum, order) => sum + order.amount, 0);
+      .filter((order) => SUCCESS_STATUS_FOR_STATS.includes(order.status))
+      .reduce((sum, order) => sum + getOrderAmount(order), 0);
 
-    return { total, pending, confirmed, activated, revenue };
+    return { total, pending, successful, revenue };
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
@@ -189,21 +191,21 @@ export default function OrdersResourcePage() {
           icon={ReceiptText}
         />
         <StatCard
-          title="Đang chờ thanh toán"
+          title="Đang chờ"
           value={stats.pending.toLocaleString("vi-VN")}
-          description="Vừa tạo, chưa thanh toán"
+          description="Bao gồm tất cả đơn chưa xác nhận thanh toán"
           icon={Clock3}
         />
         <StatCard
-          title="Đơn đã xác nhận"
-          value={(stats.confirmed + stats.activated).toLocaleString("vi-VN")}
-          description={`${stats.confirmed.toLocaleString("vi-VN")} chờ kích hoạt, ${stats.activated.toLocaleString("vi-VN")} đã active`}
+          title="Đơn thành công"
+          value={stats.successful.toLocaleString("vi-VN")}
+          description="Đã thanh toán hoặc đã kích hoạt"
           icon={BadgeCheck}
         />
         <StatCard
           title="Doanh thu tạm tính"
           value={currencyFormatter.format(stats.revenue)}
-          description="Tính cho đơn đã thanh toán/kích hoạt"
+          description="Tính cho đơn đã thanh toán/kích hoạt/hoàn tất"
           icon={Coins}
         />
       </div>
@@ -230,7 +232,7 @@ export default function OrdersResourcePage() {
                   <SelectItem value="all">Tất cả trạng thái</SelectItem>
                   <SelectItem value="pending">Chờ thanh toán</SelectItem>
                   <SelectItem value="paid">Đã thanh toán</SelectItem>
-                  <SelectItem value="completed">Đã kích hoạt</SelectItem>
+                  <SelectItem value="activated">Đã kích hoạt</SelectItem>
                   <SelectItem value="cancelled">Đã hủy</SelectItem>
                 </SelectContent>
               </Select>
@@ -284,7 +286,7 @@ export default function OrdersResourcePage() {
                     </div>
 
                     <div className="font-semibold">
-                      {currencyFormatter.format(order.amount)}
+                      {currencyFormatter.format(getOrderAmount(order))}
                       <p className="text-xs font-normal text-muted-foreground">{order.paymentMethod}</p>
                     </div>
 
@@ -333,7 +335,7 @@ export default function OrdersResourcePage() {
             <div className="my-4 space-y-2 rounded-lg bg-muted p-3 text-sm">
               <p><span className="font-medium">Học viên:</span> {deleteConfirm.studentName}</p>
               <p><span className="font-medium">Khóa học:</span> {deleteConfirm.courseTitle}</p>
-              <p><span className="font-medium">Giá:</span> {currencyFormatter.format(deleteConfirm.amount)}</p>
+              <p><span className="font-medium">Giá:</span> {currencyFormatter.format(getOrderAmount(deleteConfirm))}</p>
             </div>
           )}
           <div className="flex gap-2 justify-end">
@@ -379,6 +381,10 @@ function StatCard({
       </CardContent>
     </Card>
   );
+}
+
+function getOrderAmount(order: Pick<AdminOrder, "totalAmount" | "amount">) {
+  return order.totalAmount ?? order.amount ?? 0;
 }
 
 function shortId(id: string) {

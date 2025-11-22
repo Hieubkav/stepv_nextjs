@@ -36,6 +36,34 @@ export const saveImage = mutation({
   },
 });
 
+// Persist a video record after uploading to storage
+export const saveVideo = mutation({
+  args: {
+    title: v.optional(v.string()),
+    storageId: v.id("_storage"),
+    format: v.optional(v.string()),
+    sizeBytes: v.optional(v.number()),
+    duration: v.optional(v.number()),
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const doc = await ctx.db.insert("media", {
+      kind: "video",
+      title: args.title,
+      storageId: args.storageId,
+      format: args.format,
+      sizeBytes: args.sizeBytes,
+      duration: args.duration,
+      width: args.width,
+      height: args.height,
+      createdAt: now,
+    } as any);
+    return doc;
+  },
+});
+
 // Create a video record (external link only)
 export const createVideo = mutation({
   args: {
@@ -67,7 +95,7 @@ export const list = query({
       results
         .filter((m) => !m.deletedAt)
         .map(async (m) => {
-          if (m.kind === "image" && m.storageId) {
+          if (m.storageId) {
             try {
               const url = await ctx.storage.getUrl(m.storageId);
               return { ...m, url };
@@ -89,7 +117,7 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     const doc = await ctx.db.get(id);
     if (!doc) return false;
-    if (doc.kind === "image" && doc.storageId) {
+    if ((doc.kind === "image" || doc.kind === "video") && doc.storageId) {
       try {
         await ctx.storage.delete(doc.storageId);
       } catch (_) {

@@ -27,7 +27,7 @@
 - Polymorphic support:
   - `productType` - course/resource/vfx/bundle
   - `courseId`, `resourceId`, `vfxId` - optional product IDs
-- Status: pending, processing, paid, completed, cancelled, refunded
+- Status: pending, paid, activated, cancelled
 - Pricing: `amount`, `discountAmount`, `finalAmount`
 - Indexes: `by_customer`, `by_product_type`, `by_course`, `by_resource`, `by_vfx`, `by_status`, `by_customer_status`
 

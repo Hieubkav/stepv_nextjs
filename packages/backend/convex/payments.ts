@@ -428,7 +428,7 @@ export const adminConfirmPayment = mutation({
       });
     } else if (!existingEnrollment.active) {
       // Enrollment exists but is inactive - keep it inactive for now
-      // Admin will activate it by changing order status to "completed"
+      // Admin will activate it by changing order status to "activated"
       await ctx.db.patch(existingEnrollment._id, {
         enrolledAt: now,
       });

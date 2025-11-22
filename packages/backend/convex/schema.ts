@@ -333,12 +333,14 @@ export default defineSchema({
     // Order details (optional for migration from old schema)
     orderNumber: v.optional(v.string()), // DH-2411-001 format
     totalAmount: v.optional(v.number()),  // tổng tiền
+    amount: v.optional(v.number()),       // legacy alias (giữ để migrate dữ liệu cũ)
     
-    // Status flow: pending → paid → activated
+    // Status flow: pending → paid → activated (+ cancelled)
     status: v.union(
-      v.literal("pending"),    // chờ thanh toán
-      v.literal("paid"),       // đã thanh toán
-      v.literal("activated")   // đã activate (tạo purchases)
+      v.literal("pending"),    // chờ thanh toán / xác nhận chứng từ
+      v.literal("paid"),       // đã ghi nhận thanh toán
+      v.literal("activated"),  // đã tạo purchases / mở quyền truy cập
+      v.literal("cancelled"),  // admin hủy hoặc hoàn tiền
     ),
     
     // Admin notes

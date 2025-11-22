@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { ImagePlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,20 +21,46 @@ type MediaRecord = {
   url?: string;
   title?: string;
   createdAt?: number;
+  storageId?: string;
+  sizeBytes?: number;
+  externalUrl?: string;
+  format?: string;
 };
+
+type MediaTriggerProps = {
+  onOpen: () => void;
+};
+
+export function MediaTrigger({ onOpen }: MediaTriggerProps) {
+  return (
+    <Button type="button" variant="secondary" size="sm" className="h-9 gap-2" onClick={onOpen}>
+      <ImagePlus className="size-4" aria-hidden />
+      <span className="hidden sm:inline">Thêm media</span>
+      <span className="sm:hidden">Media</span>
+    </Button>
+  );
+}
 
 export function MediaModal({ open, onOpenChange }: Props) {
   const [tab, setTab] = useState<"image" | "video">("image");
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageTitle, setImageTitle] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [videoTitle, setVideoTitle] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const createVideo = useMutation(api.media.createVideo);
+  const [videoMode, setVideoMode] = useState<"upload" | "link">("upload");
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [videoTitle, setVideoTitle] = useState("");
+  const [isVideoDragging, setIsVideoDragging] = useState(false);
+  const videoFileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
+
+  const createVideoLink = useMutation(api.media.createVideo);
   const removeMedia = useMutation(api.media.remove);
   const mediaList = useQuery(api.media.list, {});
 
@@ -44,7 +71,10 @@ export function MediaModal({ open, onOpenChange }: Props) {
   }, [mediaList]);
 
   const canSubmitImage = useMemo(() => Boolean(imageFile), [imageFile]);
-  const canSubmitVideo = useMemo(() => /^https?:\/\/.+/i.test(videoUrl), [videoUrl]);
+  const canSubmitVideo = useMemo(() => {
+    if (videoMode === "upload") return Boolean(videoFile);
+    return /^https?:\/\/.+/i.test(videoUrl);
+  }, [videoMode, videoFile, videoUrl]);
 
   useEffect(() => {
     if (!imageFile) {
@@ -56,7 +86,17 @@ export function MediaModal({ open, onOpenChange }: Props) {
     return () => URL.revokeObjectURL(url);
   }, [imageFile]);
 
-  function handleFileSelection(file: File | null | undefined) {
+  useEffect(() => {
+    if (!videoFile) {
+      setVideoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(videoFile);
+    setVideoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [videoFile]);
+
+  function handleImageSelection(file: File | null | undefined) {
     if (!file) {
       setImageFile(null);
       return;
@@ -66,6 +106,18 @@ export function MediaModal({ open, onOpenChange }: Props) {
       return;
     }
     setImageFile(file);
+  }
+
+  function handleVideoSelection(file: File | null | undefined) {
+    if (!file) {
+      setVideoFile(null);
+      return;
+    }
+    if (!file.type.startsWith("video/")) {
+      toast.error("Chỉ hỗ trợ tệp video");
+      return;
+    }
+    setVideoFile(file);
   }
 
   async function submitImage() {
@@ -88,10 +140,31 @@ export function MediaModal({ open, onOpenChange }: Props) {
     }
   }
 
-  async function submitVideo() {
+  async function submitVideoUpload() {
+    if (!videoFile) return;
     try {
       setSubmitting(true);
-      await createVideo({ externalUrl: videoUrl, title: videoTitle || undefined });
+      const fd = new FormData();
+      fd.append("file", videoFile);
+      if (videoTitle) fd.append("title", videoTitle);
+      const res = await fetch("/api/media/upload-video", { method: "POST", body: fd });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error || "Upload failed");
+      toast.success("Đã tải video lên storage");
+      setVideoFile(null);
+      setVideoPreview(null);
+      setVideoTitle("");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Lỗi upload video");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  async function submitVideoLink() {
+    try {
+      setSubmitting(true);
+      await createVideoLink({ externalUrl: videoUrl, title: videoTitle || undefined });
       toast.success("Đã thêm video");
       setVideoUrl("");
       setVideoTitle("");
@@ -125,39 +198,30 @@ export function MediaModal({ open, onOpenChange }: Props) {
                 Ảnh
               </Button>
               <Button variant={tab === "video" ? "default" : "outline"} onClick={() => setTab("video")}>
-                Video (link)
+                Video
               </Button>
             </div>
 
             {tab === "image" ? (
-              <div className="flex flex-col gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Chọn ảnh</Label>
                   <div
                     className={`flex flex-col items-center justify-center gap-2 rounded-md border border-dashed p-8 text-center transition-colors cursor-pointer hover:border-primary ${
-                      isDragging ? "border-primary bg-primary/5" : "border-border bg-muted/20"
+                      isDragging ? "border-primary bg-primary/5" : ""
                     }`}
-                    onDragEnter={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      setIsDragging(true);
-                    }}
                     onDragOver={(event) => {
                       event.preventDefault();
-                      event.stopPropagation();
                       setIsDragging(true);
                     }}
                     onDragLeave={(event) => {
                       event.preventDefault();
-                      event.stopPropagation();
                       setIsDragging(false);
                     }}
                     onDrop={(event) => {
                       event.preventDefault();
-                      event.stopPropagation();
                       setIsDragging(false);
-                      const file = event.dataTransfer?.files?.[0];
-                      handleFileSelection(file ?? null);
+                      handleImageSelection(event.dataTransfer?.files?.[0]);
                     }}
                     onClick={() => fileInputRef.current?.click()}
                     role="button"
@@ -170,57 +234,147 @@ export function MediaModal({ open, onOpenChange }: Props) {
                       }
                     }}
                   >
-                    <div className="text-sm text-muted-foreground">
-                      Kéo thả ảnh vào đây hoặc <span className="text-primary underline">bấm để chọn</span>
-                    </div>
+                    <p className="text-sm font-medium">Thả tệp ảnh vào đây hoặc bấm để chọn</p>
+                    <p className="text-xs text-muted-foreground">Hỗ trợ PNG, JPG, WebP...</p>
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) => handleImageSelection(event.target.files?.[0])}
+                    />
                   </div>
-                  <Input
-                    ref={fileInputRef as any}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(event) => handleFileSelection(event.target.files?.[0])}
-                  />
                 </div>
-                {imagePreview && (
-                  <div className="rounded-md border bg-muted/20 p-3">
-                    <div className="mb-2 text-xs text-muted-foreground">Xem trước</div>
+
+                {imagePreview ? (
+                  <div className="space-y-2">
+                    <div className="text-xs text-muted-foreground">Xem trước</div>
                     <div className="flex items-center justify-center rounded bg-background p-2">
                       <img src={imagePreview} alt="Xem trước ảnh" className="max-h-40 w-full object-contain" />
                     </div>
                   </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">Chưa chọn ảnh</p>
                 )}
+
                 <div className="space-y-2">
-                  <Label htmlFor="image-title">Tiêu đề (tùy chọn)</Label>
-                  <Input id="image-title" type="text" value={imageTitle} onChange={(event) => setImageTitle(event.target.value)} />
+                  <Label>Tiêu đề (tùy chọn)</Label>
+                  <Input placeholder="Nhập tiêu đề" value={imageTitle} onChange={(e) => setImageTitle(e.target.value)} />
                 </div>
-                <div className="sticky bottom-0 bg-background pt-2 pb-1">
-                  <Button className="w-full min-h-[44px]" disabled={!canSubmitImage || submitting} onClick={submitImage}>
-                    {submitting ? "Đang tải lên..." : "Tải lên ảnh (tự chuyển WebP)"}
-                  </Button>
-                </div>
+
+                <Button disabled={!canSubmitImage || submitting} onClick={submitImage}>
+                  Tải ảnh
+                </Button>
               </div>
             ) : (
-              <div className="flex flex-col gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="video-url">Link video</Label>
-                  <Input
-                    id="video-url"
-                    type="text"
-                    placeholder="https://..."
-                    value={videoUrl}
-                    onChange={(event) => setVideoUrl(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="video-title">Tiêu đề (tùy chọn)</Label>
-                  <Input id="video-title" type="text" value={videoTitle} onChange={(event) => setVideoTitle(event.target.value)} />
-                </div>
-                <div className="sticky bottom-0 bg-background pt-2 pb-1">
-                  <Button className="w-full min-h-[44px]" disabled={!canSubmitVideo || submitting} onClick={submitVideo}>
-                    {submitting ? "Đang thêm..." : "Thêm video"}
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button variant={videoMode === "upload" ? "default" : "outline"} onClick={() => setVideoMode("upload")}>
+                    Upload file
+                  </Button>
+                  <Button variant={videoMode === "link" ? "default" : "outline"} onClick={() => setVideoMode("link")}>
+                    Link ngoài
                   </Button>
                 </div>
+
+                {videoMode === "upload" ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Chọn video</Label>
+                      <div
+                        className={`flex flex-col items-center justify-center gap-2 rounded-md border border-dashed p-8 text-center transition-colors cursor-pointer hover:border-primary ${
+                          isVideoDragging ? "border-primary bg-primary/5" : ""
+                        }`}
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          setIsVideoDragging(true);
+                        }}
+                        onDragLeave={(event) => {
+                          event.preventDefault();
+                          setIsVideoDragging(false);
+                        }}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          setIsVideoDragging(false);
+                          handleVideoSelection(event.dataTransfer?.files?.[0]);
+                        }}
+                        onClick={() => videoFileInputRef.current?.click()}
+                        role="button"
+                        tabIndex={0}
+                        aria-label="Kéo thả video vào đây hoặc bấm để chọn"
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            videoFileInputRef.current?.click();
+                          }
+                        }}
+                      >
+                        <p className="text-sm font-medium">Thả file video vào đây hoặc bấm để chọn</p>
+                        <p className="text-xs text-muted-foreground">Khuyến nghị video ≤ 32MB (MP4, MOV, ...)</p>
+                        <Input
+                          ref={videoFileInputRef}
+                          type="file"
+                          accept="video/*"
+                          className="hidden"
+                          onChange={(event) => handleVideoSelection(event.target.files?.[0])}
+                        />
+                      </div>
+                    </div>
+
+                    {videoFile ? (
+                      <div className="space-y-3 rounded border p-3 text-sm">
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <p className="font-medium">{videoFile.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {(videoFile.size / (1024 * 1024)).toFixed(2)} MB · {videoFile.type || "video"}
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setVideoFile(null);
+                              setVideoPreview(null);
+                            }}
+                          >
+                            Xóa
+                          </Button>
+                        </div>
+                        {videoPreview && (
+                          <div className="rounded bg-black/80">
+                            <video src={videoPreview} controls className="w-full rounded" preload="metadata" height={200} />
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Chưa chọn video</p>
+                    )}
+
+                    <div className="space-y-2">
+                      <Label>Tiêu đề (tùy chọn)</Label>
+                      <Input placeholder="Nhập tiêu đề" value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} />
+                    </div>
+
+                    <Button disabled={!canSubmitVideo || submitting} onClick={submitVideoUpload}>
+                      Tải video
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label>Link video</Label>
+                      <Input type="url" placeholder="https://..." value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tiêu đề (tùy chọn)</Label>
+                      <Input placeholder="Nhập tiêu đề" value={videoTitle} onChange={(e) => setVideoTitle(e.target.value)} />
+                    </div>
+                    <Button disabled={!canSubmitVideo || submitting} onClick={submitVideoLink}>
+                      Thêm video
+                    </Button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -232,32 +386,39 @@ export function MediaModal({ open, onOpenChange }: Props) {
             </div>
             <div className="flex-1 overflow-y-auto pr-2 scroll-smooth">
               {recentList.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Chưa có media nào.</p>
+                <p className="text-sm text-muted-foreground">Chưa có media nào</p>
               ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {recentList.map((item) => (
-                    <div
-                      key={item._id}
-                      className="flex flex-col gap-2 rounded-md border bg-background p-3 transition-shadow hover:shadow-md"
-                    >
+                    <div key={item._id} className="rounded-lg border bg-card flex flex-col">
                       <div className="aspect-square w-full overflow-hidden rounded bg-muted">
-                        {item.kind === "image" ? (
+                        {item.kind === "image" && item.url ? (
                           <img src={item.url} alt={item.title || "Ảnh"} className="h-full w-full object-cover" loading="lazy" />
+                        ) : item.kind === "video" && item.url ? (
+                          <video src={item.url} className="h-full w-full object-cover" preload="metadata" controls muted />
                         ) : (
-                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">Video</div>
+                          <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+                            {item.kind === "video" && item.externalUrl ? "Video (link)" : "Không có preview"}
+                          </div>
                         )}
                       </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="truncate text-sm font-medium">{item.title || (item.kind === "image" ? "Ảnh" : "Video")}</div>
+                      <div className="p-3 space-y-2 flex flex-col flex-1">
+                        <div>
+                          <p className="text-sm font-semibold">{item.title || "Không tên"}</p>
+                          <p className="text-xs text-muted-foreground break-all">
+                            {item.kind === "image" ? "Ảnh" : item.externalUrl ? "Video (link)" : "Video upload"}
+                            {item.sizeBytes ? ` · ${(item.sizeBytes / (1024 * 1024)).toFixed(2)} MB` : ""}
+                          </p>
+                          {item.createdAt && (
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(item.createdAt).toLocaleString("vi-VN")}
+                            </p>
+                          )}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => onDelete(item._id)}
-                          className="flex-shrink-0 min-h-[44px] min-w-[44px]"
-                          aria-label={`Xóa ${item.title || (item.kind === "image" ? "ảnh" : "video")}`}
-                        >
+                        {item.storageId && (
+                          <div className="text-[10px] font-mono break-all text-muted-foreground">ID: {item.storageId}</div>
+                        )}
+                        <Button variant="destructive" size="sm" onClick={() => onDelete(item._id as any)}>
                           Xóa
                         </Button>
                       </div>
@@ -270,13 +431,5 @@ export function MediaModal({ open, onOpenChange }: Props) {
         </div>
       </DialogContent>
     </Dialog>
-  );
-}
-
-export function MediaTrigger({ onOpen }: { onOpen: () => void }) {
-  return (
-    <Button variant="outline" onClick={onOpen}>
-      Thêm media
-    </Button>
   );
 }

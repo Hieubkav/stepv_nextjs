@@ -185,7 +185,7 @@ export const updateVfxProduct = mutation({
         active: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const { id, slug, ...rest } = args;
+        const { id, slug, priceAmount, comparePriceAmount, ...rest } = args;
         const existing = await ctx.db.get(id);
         if (!existing) throw new Error("VFX product not found");
 
@@ -214,6 +214,14 @@ export const updateVfxProduct = mutation({
 
         if (rest.description !== undefined) {
             patch.description = rest.description ? rest.description.trim() : undefined;
+        }
+
+        if (priceAmount !== undefined) {
+            patch.price = priceAmount ?? 0;
+        }
+
+        if (comparePriceAmount !== undefined) {
+            patch.originalPrice = comparePriceAmount ?? undefined;
         }
 
         patch.updatedAt = Date.now();

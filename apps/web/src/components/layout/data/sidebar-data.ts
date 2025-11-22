@@ -62,6 +62,7 @@ export const sidebarData: SidebarData = {
             { title: 'Phần mềm', url: '/dashboard/library/software', icon: Monitor },
           ],
         },
+        { title: 'VFX Store', url: '/dashboard/vfx', icon: Palette },
       ],
     },
     {

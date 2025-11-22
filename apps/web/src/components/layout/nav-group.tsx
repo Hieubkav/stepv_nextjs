@@ -39,14 +39,25 @@ function NavBadge({ children }: { children: React.ReactNode }) {
   return <Badge className='rounded-full px-1 py-0 text-xs shrink-0'>{children}</Badge>
 }
 
+const cleanPath = (path: string) => path.split('?')[0];
+
 function isActive(href: string, item: NavItem, mainNav = false) {
+  const current = cleanPath(href);
+
   if ('url' in item) {
-    return href === item.url || href.split('?')[0] === item.url
+    const target = cleanPath(item.url);
+    if (current === target) return true;
+    // Cho phép highlight các trang con, trừ trang tổng quan (/dashboard) để tránh highlight toàn bộ
+    if (target !== "/dashboard" && current.startsWith(`${target}/`)) return true;
+    return false;
   }
+
   return (
-    !!item.items.find((i) => i.url === href) ||
-    (mainNav && href.split('/')[1] !== '' && href.split('/')[1] === item.items[0]?.url.split('/')[1])
-  )
+    !!item.items.find((i) => {
+      const child = cleanPath(i.url);
+      return current === child || current.startsWith(`${child}/`);
+    })
+  );
 }
 
 function SidebarMenuLink({ item, pathname }: { item: NavLink; pathname: string }) {

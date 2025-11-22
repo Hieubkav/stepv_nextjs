@@ -7,11 +7,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon, Video as VideoIcon, Link as LinkIcon, X } from "lucide-react";
 
 export type MediaItem = {
   _id: string;
+  kind?: "image" | "video";
   url?: string;
+  externalUrl?: string;
   title?: string;
   createdAt?: number;
 };
@@ -23,6 +25,7 @@ type MediaPickerDialogProps = {
   selectedId?: string | null;
   title?: string;
   autoCloseOnSelect?: boolean;
+  kind?: "image" | "video" | "all";
 };
 
 export function MediaPickerDialog({
@@ -30,36 +33,68 @@ export function MediaPickerDialog({
   onOpenChange,
   onSelect,
   selectedId,
-  title = "Chon media",
+  title = "Chọn media",
   autoCloseOnSelect = true,
+  kind = "image",
 }: MediaPickerDialogProps) {
-  const images = useQuery(api.media.list, { kind: "image" }) as MediaItem[] | undefined;
+  const media = useQuery(api.media.list, kind === "all" ? {} : { kind }) as MediaItem[] | undefined;
   const [searchQuery, setSearchQuery] = useState("");
 
-  const sortedImages = useMemo(() => {
-    if (!Array.isArray(images)) return [];
-    return [...images].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
-  }, [images]);
+  const sortedMedia = useMemo(() => {
+    if (!Array.isArray(media)) return [];
+    return [...media].sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+  }, [media]);
 
-  const filteredImages = useMemo(() => {
+  const filteredMedia = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
-    if (!keyword) return sortedImages;
-    return sortedImages.filter((item) => {
+    if (!keyword) return sortedMedia;
+    return sortedMedia.filter((item) => {
       const title = item.title?.toLowerCase() ?? "";
       const id = String(item._id).toLowerCase();
       return title.includes(keyword) || id.includes(keyword);
     });
-  }, [sortedImages, searchQuery]);
+  }, [sortedMedia, searchQuery]);
 
-  const isLoading = images === undefined;
-  const isEmpty = !isLoading && sortedImages.length === 0;
-  const hasNoResults = !isLoading && filteredImages.length === 0 && !!searchQuery;
+  const isLoading = media === undefined;
+  const isEmpty = !isLoading && sortedMedia.length === 0;
+  const hasNoResults = !isLoading && filteredMedia.length === 0 && !!searchQuery;
 
   function handleSelect(item: MediaItem) {
     onSelect(item);
     if (autoCloseOnSelect) {
       onOpenChange(false);
     }
+  }
+
+  function renderPreview(item: MediaItem) {
+    if (item.kind === "video") {
+      if (item.url) {
+        return <video src={item.url} className="h-full w-full object-cover" preload="metadata" muted />;
+      }
+      if (item.externalUrl) {
+        return (
+          <div className="flex h-full w-full items-center justify-center gap-2 text-xs text-muted-foreground px-3 text-center">
+            <VideoIcon className="h-4 w-4" />
+            <span>Video link</span>
+          </div>
+        );
+      }
+      return (
+        <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+          <VideoIcon className="h-4 w-4" />
+        </div>
+      );
+    }
+
+    if (item.url) {
+      return <img src={item.url} alt={item.title || "media"} className="h-full w-full object-contain p-2" loading="lazy" />;
+    }
+
+    return (
+      <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
+        <ImageIcon className="h-4 w-4" />
+      </div>
+    );
   }
 
   return (
@@ -73,11 +108,11 @@ export function MediaPickerDialog({
           <div className="relative">
             <Input
               type="text"
-              placeholder="Tim kiem media..."
+              placeholder="Tìm kiếm media..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pr-8"
-              aria-label="Tim kiem media"
+              aria-label="Tìm kiếm media"
             />
             {searchQuery && (
               <Button
@@ -86,7 +121,7 @@ export function MediaPickerDialog({
                 size="sm"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
                 onClick={() => setSearchQuery("")}
-                aria-label="Xoa tim kiem"
+                aria-label="Xóa tìm kiếm"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -103,21 +138,21 @@ export function MediaPickerDialog({
             ) : isEmpty ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
-                <p className="text-lg font-medium text-muted-foreground mb-2">Chua co media nao</p>
-                <p className="text-sm text-muted-foreground">Hay tai media tai trang Media truoc.</p>
+                <p className="text-lg font-medium text-muted-foreground mb-2">Chưa có media nào</p>
+                <p className="text-sm text-muted-foreground">Hãy tải media tại trang Media trước.</p>
               </div>
             ) : hasNoResults ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <ImageIcon className="h-16 w-16 text-muted-foreground/40 mb-4" />
-                <p className="text-lg font-medium text-muted-foreground mb-2">Khong tim thay ket qua</p>
-                <p className="text-sm text-muted-foreground">Thu tim kiem voi tu khoa khac</p>
+                <p className="text-lg font-medium text-muted-foreground mb-2">Không tìm thấy kết quả</p>
+                <p className="text-sm text-muted-foreground">Thử tìm kiếm với từ khóa khác</p>
                 <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => setSearchQuery("")}>
-                  Xoa bo loc
+                  Xóa bộ lọc
                 </Button>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredImages.map((item) => {
+                {filteredMedia.map((item) => {
                   const id = String(item._id);
                   const active = selectedId ? id === selectedId : false;
                   return (
@@ -128,22 +163,25 @@ export function MediaPickerDialog({
                         active ? "border-primary ring-2 ring-primary" : ""
                       }`}
                       onClick={() => handleSelect(item)}
-                      aria-label={`Chon ${item.title || "media"}`}
+                      aria-label={`Chọn ${item.title || "media"}`}
                     >
-                      {item.url ? (
-                        <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
-                          <img src={item.url} alt={item.title || "media"} className="h-full w-full object-contain p-2" loading="lazy" />
-                          <div
-                            className={`absolute inset-0 transition-colors ${
-                              active ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/10"
-                            }`}
-                          />
+                      <div className="relative h-40 w-full overflow-hidden rounded-t-lg bg-[repeating-conic-gradient(#d4d4d4_0%_25%,_white_0%_50%)] [background-size:20px_20px]">
+                        {renderPreview(item)}
+                        <div
+                          className={`absolute inset-0 transition-colors ${
+                            active ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/10"
+                          }`}
+                        />
+                        <div className="absolute left-2 top-2 rounded bg-background/80 px-2 py-0.5 text-[11px] font-medium capitalize shadow">
+                          {item.kind ?? "media"}
                         </div>
-                      ) : (
-                        <div className="flex h-40 w-full items-center justify-center rounded-t-lg bg-muted">
-                          <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                        </div>
-                      )}
+                        {item.externalUrl && (
+                          <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-background/90 px-2 py-0.5 text-[11px] text-muted-foreground shadow">
+                            <LinkIcon className="h-3 w-3" />
+                            <span>Link</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="p-3">
                         <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
                           {item.title || id}
@@ -157,10 +195,10 @@ export function MediaPickerDialog({
             )}
           </div>
 
-          {!isLoading && !isEmpty && filteredImages.length > 0 && (
+          {!isLoading && !isEmpty && filteredMedia.length > 0 && (
             <div className="text-sm text-muted-foreground text-center pt-2 border-t">
-              Hien thi {filteredImages.length} media
-              {searchQuery && ` (tu ${sortedImages.length} tong cong)`}
+              Hiển thị {filteredMedia.length} media
+              {searchQuery && ` (từ ${sortedMedia.length} tổng cộng)`}
             </div>
           )}
         </div>

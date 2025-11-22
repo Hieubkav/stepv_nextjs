@@ -23,10 +23,10 @@ import {
   Eye,
 } from 'lucide-react';
 
-type OrderStatus = 'pending' | 'paid' | 'activated';
+type OrderStatus = 'pending' | 'paid' | 'activated' | 'cancelled';
 type StatusFilter = 'all' | OrderStatus;
 
-const statusConfig = {
+const statusConfig: Record<OrderStatus, { label: string; color: string; icon: typeof Clock }> = {
   pending: {
     label: 'Chờ thanh toán',
     color: 'bg-yellow-100 text-yellow-800',
@@ -34,15 +34,22 @@ const statusConfig = {
   },
   paid: {
     label: 'Đã thanh toán',
-    color: 'bg-blue-100 text-blue-800',
+    color: 'bg-sky-100 text-sky-800',
     icon: CheckCircle,
   },
   activated: {
     label: 'Đã kích hoạt',
-    color: 'bg-green-100 text-green-800',
+    color: 'bg-emerald-100 text-emerald-800',
     icon: CheckCircle,
   },
+  cancelled: {
+    label: 'Đã hủy',
+    color: 'bg-slate-200 text-slate-800',
+    icon: AlertCircle,
+  },
 };
+
+const FILTER_TABS: Array<'all' | OrderStatus> = ['all', 'pending', 'paid', 'activated', 'cancelled'];
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -77,15 +84,21 @@ export default function OrdersPage() {
     return filtered;
   }, [pendingOrders, paidOrders, statusFilter, searchQuery]);
 
-  const counts = useMemo(
-    () => ({
+  const counts = useMemo(() => {
+    const summary: Record<'all' | OrderStatus, number> = {
       all: allOrders.length,
-      pending: pendingOrders?.filter((o) => o.status === 'pending').length || 0,
-      paid: paidOrders?.filter((o) => o.status === 'paid').length || 0,
-      activated: allOrders.filter((o) => o.status === 'activated').length || 0,
-    }),
-    [allOrders, pendingOrders, paidOrders]
-  );
+      pending: 0,
+      paid: 0,
+      activated: 0,
+      cancelled: 0,
+    };
+
+    for (const order of allOrders) {
+      summary[order.status] += 1;
+    }
+
+    return summary;
+  }, [allOrders]);
 
   return (
     <div className="space-y-6">
@@ -98,8 +111,8 @@ export default function OrdersPage() {
       </div>
 
       {/* Status tabs */}
-      <div className="flex gap-2 border-b pb-3">
-        {(['all', 'pending', 'paid', 'activated'] as const).map((status) => (
+      <div className="flex gap-2 border-b pb-3 overflow-x-auto">
+        {FILTER_TABS.map((status) => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
@@ -109,10 +122,10 @@ export default function OrdersPage() {
                 : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            {status === 'all' ? 'Tất cả' : statusConfig[status as OrderStatus]?.label}
+            {status === 'all' ? 'Tất cả' : statusConfig[status]?.label}
             {' '}
             <span className="inline-block ml-1 px-2 py-0.5 text-xs bg-muted rounded-full">
-              {status === 'all' ? counts.all : counts[status as OrderStatus]}
+              {status === 'all' ? counts.all : counts[status]}
             </span>
           </button>
         ))}

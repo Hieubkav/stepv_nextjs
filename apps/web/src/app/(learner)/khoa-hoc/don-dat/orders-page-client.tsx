@@ -19,8 +19,9 @@ type StudentOrder = {
   courseName: string;
   courseSlug?: string;
   thumbnailUrl?: string;
-  amount: number;
-  status: 'pending' | 'paid' | 'completed' | 'cancelled';
+  totalAmount?: number;
+  amount?: number;
+  status: 'pending' | 'paid' | 'activated' | 'cancelled';
   createdAt: number;
   updatedAt: number;
 };
@@ -49,12 +50,12 @@ const ORDER_STATUS_LABELS: Record<StudentOrder['status'], { label: string; tone:
   paid: {
     label: 'Đã xác nhận',
     tone: 'border-emerald-200 bg-emerald-50 text-emerald-800',
-    description: 'Thanh toán đã được xác nhận, bạn có quyền truy cập khóa học.',
+    description: 'Thanh toán đã được xác nhận, chờ hệ thống kích hoạt.',
   },
-  completed: {
-    label: 'Hoàn thành',
-    tone: 'border-blue-200 bg-blue-50 text-blue-800',
-    description: 'Bạn đã hoàn thành khóa học này.',
+  activated: {
+    label: 'Đã kích hoạt',
+    tone: 'border-emerald-300 bg-emerald-50 text-emerald-900',
+    description: 'Bạn đã có thể vào học ngay.',
   },
   cancelled: {
     label: 'Đã hủy',
@@ -164,8 +165,13 @@ export default function OrdersPageClient({ highlightOrderId }: OrdersPageClientP
 
 function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: boolean }) {
   const orderStatus = ORDER_STATUS_LABELS[order.status];
-  const currentStepIndex =
-    order.status === 'completed' ? 2 : order.status === 'paid' ? 1 : order.status === 'pending' ? 0 : -1;
+  const statusStepMap: Record<StudentOrder['status'], number> = {
+    pending: 0,
+    paid: 1,
+    activated: 2,
+    cancelled: -1,
+  };
+  const currentStepIndex = statusStepMap[order.status];
 
   return (
     <Card className={cn('border border-border/60 shadow-sm', highlighted && 'border-primary shadow-lg')}>
@@ -182,7 +188,9 @@ function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: b
             <div className="flex-1 min-w-0">
               <CardTitle className="text-lg truncate">{order.courseName}</CardTitle>
               <p className="text-xs text-muted-foreground">Mã đơn: {shortId(order._id)}</p>
-              <p className="text-sm font-semibold text-foreground mt-1">{currencyFormatter.format(order.amount)}</p>
+              <p className="text-sm font-semibold text-foreground mt-1">
+                {currencyFormatter.format(getOrderAmount(order))}
+              </p>
             </div>
           </div>
           <Badge className={cn('text-xs shrink-0', orderStatus.tone)}>{orderStatus.label}</Badge>
@@ -213,7 +221,7 @@ function OrderCard({ order, highlighted }: { order: StudentOrder; highlighted: b
           {order.courseSlug ? (
             <Button asChild size="sm">
               <Link href={`/khoa-hoc/${order.courseSlug}`}>
-                {order.status === 'completed' ? 'Vào học ngay' : 'Xem chi tiết'}
+                {order.status === 'activated' ? 'Vào học ngay' : 'Xem chi tiết'}
               </Link>
             </Button>
           ) : null}
@@ -250,6 +258,10 @@ function OrderProgress({ currentStepIndex }: { currentStepIndex: number }) {
       })}
     </div>
   );
+}
+
+function getOrderAmount(order: Pick<StudentOrder, 'totalAmount' | 'amount'>) {
+  return order.totalAmount ?? order.amount ?? 0;
 }
 
 function shortId(value: string) {

@@ -199,6 +199,12 @@ export const activateOrder = mutation({
             throw new Error("Order must be paid before activation");
         }
 
+        if (!order.customerId) {
+            throw new Error("Order customer not found");
+        }
+
+        const customerId = order.customerId;
+
         // Get order items
         const items = await ctx.db
             .query("order_items")
@@ -214,7 +220,7 @@ export const activateOrder = mutation({
             const existing = await ctx.db
                 .query("customer_purchases")
                 .withIndex("by_customer_product", (q) =>
-                    q.eq("customerId", order.customerId)
+                    q.eq("customerId", customerId)
                         .eq("productType", item.productType)
                         .eq("productId", item.productId)
                 )
@@ -222,7 +228,7 @@ export const activateOrder = mutation({
 
             if (!existing) {
                 await ctx.db.insert("customer_purchases", {
-                    customerId: order.customerId,
+                    customerId,
                     orderId,
                     productType: item.productType,
                     productId: item.productId,
@@ -246,7 +252,7 @@ export const activateOrder = mutation({
 export const getPendingOrders = query({
     args: {},
     handler: async (ctx) => {
-        let orders = await ctx.db
+        const orders = await ctx.db
             .query("orders")
             .withIndex("by_status", (q) => q.eq("status", "pending"))
             .collect();
@@ -282,17 +288,96 @@ export const cancelOrder = mutation({
         if (!order) throw new Error("Order not found");
 
         if (order.status === "activated") {
-            throw new Error("Cannot cancel activated order");
+            throw new Error("Cannot cancel an order that has been fulfilled");
         }
 
         const notes = reason ? `Cancelled: ${reason}` : "Cancelled by admin";
 
         await ctx.db.patch(orderId, {
             notes,
+            status: "cancelled",
             updatedAt: Date.now(),
         });
 
         // Note: We don't delete the order, just mark as cancelled via notes
+        return { ok: true } as const;
+    },
+});
+
+// Get order by ID
+export const getOrderById = query({
+    args: { orderId: v.id("orders") },
+    handler: async (ctx, { orderId }) => {
+        const order = await ctx.db.get(orderId);
+        if (!order) return null;
+
+        const items = await ctx.db
+            .query("order_items")
+            .withIndex("by_order", (q) => q.eq("orderId", orderId))
+            .collect();
+
+        return { ...order, items };
+    },
+});
+
+// List all orders (admin)
+export const listOrders = query({
+    args: { limit: v.optional(v.number()) },
+    handler: async (ctx, { limit }) => {
+        const orders = await ctx.db
+            .query("orders")
+            .order("desc")
+            .take(limit || 200);
+        return orders;
+    },
+});
+
+// Update order
+export const updateOrder = mutation({
+    args: {
+        orderId: v.id("orders"),
+        notes: v.optional(v.string()),
+        status: v.optional(
+            v.union(
+                v.literal("pending"),
+                v.literal("paid"),
+                v.literal("activated"),
+                v.literal("cancelled"),
+            ),
+        ),
+    },
+    handler: async (ctx, { orderId, notes, status }) => {
+        const order = await ctx.db.get(orderId);
+        if (!order) throw new Error("Order not found");
+
+        const updates: any = { updatedAt: Date.now() };
+        if (notes !== undefined) updates.notes = notes;
+        if (status !== undefined) updates.status = status;
+
+        await ctx.db.patch(orderId, updates);
+        return { ok: true } as const;
+    },
+});
+
+// Delete order
+export const deleteOrder = mutation({
+    args: { orderId: v.id("orders") },
+    handler: async (ctx, { orderId }) => {
+        const order = await ctx.db.get(orderId);
+        if (!order) throw new Error("Order not found");
+
+        // Delete order items first
+        const items = await ctx.db
+            .query("order_items")
+            .withIndex("by_order", (q) => q.eq("orderId", orderId))
+            .collect();
+
+        for (const item of items) {
+            await ctx.db.delete(item._id);
+        }
+
+        // Delete order
+        await ctx.db.delete(orderId);
         return { ok: true } as const;
     },
 });

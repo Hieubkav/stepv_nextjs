@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { X } from 'lucide-react';
-import { CartItem as CartItemType, useCart } from '@/context/cart-context';
+import type { CartItem as CartItemType } from '@/context/cart-context';
+import { useCart } from '@/context/cart-context';
 import { formatPrice } from '@/lib/format';
 
 type CartItemProps = {

@@ -17,10 +17,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 
+type OrderStatus = 'pending' | 'paid' | 'activated' | 'cancelled';
+
 interface Order {
   _id: string;
   orderNumber: string;
-  status: 'pending' | 'paid' | 'activated';
+  status: OrderStatus;
   totalAmount: number;
   items: Array<{
     _id: string;
@@ -236,13 +238,13 @@ export default function OrderActions({ order, onRefresh }: OrderActionsProps) {
     );
   }
 
-  // Activated: Show Completed badge
+  // Activated: Inform no more actions
   if (order.status === 'activated') {
     return (
       <div className="space-y-3">
         <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
           <p className="text-sm text-green-800">
-            <strong>✓ Đã hoàn thành:</strong> Khách hàng có thể truy cập các sản phẩm trong "Thư viện của tôi".
+            <strong>✓ Đã kích hoạt:</strong> Khách hàng có thể truy cập các sản phẩm trong "Thư viện của tôi".
           </p>
         </div>
 
@@ -253,6 +255,23 @@ export default function OrderActions({ order, onRefresh }: OrderActionsProps) {
         <p className="text-xs text-muted-foreground text-center">
           Để hủy đơn, vui lòng liên hệ quản trị viên hệ thống
         </p>
+      </div>
+    );
+  }
+
+  // Cancelled: display info only
+  if (order.status === 'cancelled') {
+    return (
+      <div className="space-y-3">
+        <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+          <p className="text-sm text-slate-800">
+            <strong>Đơn đã hủy:</strong> Không còn hành động nào khả dụng cho đơn này.
+          </p>
+        </div>
+
+        <Button disabled className="w-full" size="lg" variant="outline">
+          Không có thao tác
+        </Button>
       </div>
     );
   }

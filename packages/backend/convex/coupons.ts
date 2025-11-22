@@ -392,7 +392,7 @@ export const applyCoupon = mutation({
     const validation = (await ctx.runQuery(api.coupons.validateCoupon, {
       code: coupon.code,
       courseId: orderItems.productId as any,
-      amount: order.totalAmount,
+      amount: order.totalAmount ?? 0,
       studentId: args.studentId,
     })) as ValidateCouponResult;
 
@@ -419,7 +419,7 @@ export const applyCoupon = mutation({
     return {
       useId,
       discountAmount,
-      newTotal: Math.max(0, order.totalAmount - discountAmount),
+      newTotal: Math.max(0, (order.totalAmount ?? 0) - discountAmount),
     };
   },
 });

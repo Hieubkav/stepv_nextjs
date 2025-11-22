@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
-type OrderStatus = "pending" | "paid" | "completed" | "cancelled";
+type OrderStatus = "pending" | "paid" | "activated" | "cancelled";
 type PaymentStatus = "pending" | "confirmed" | "rejected";
 
 type AdminOrder = {
@@ -37,7 +37,8 @@ type AdminOrder = {
   courseId: Id<"courses">;
   courseTitle: string;
   courseSlug?: string;
-  amount: number;
+  totalAmount?: number;
+  amount?: number;
   status: OrderStatus;
   paymentMethod: string;
   notes?: string;
@@ -63,14 +64,14 @@ const dateFormatter = new Intl.DateTimeFormat("vi-VN", {
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Chờ thanh toán",
   paid: "Đã thanh toán",
-  completed: "Đã kích hoạt",
+  activated: "Đã kích hoạt",
   cancelled: "Đã hủy",
 };
 
 const ORDER_STATUS_STYLES: Record<OrderStatus, string> = {
   pending: "border-amber-200 bg-amber-50 text-amber-800",
   paid: "border-sky-200 bg-sky-50 text-sky-800",
-  completed: "border-emerald-200 bg-emerald-50 text-emerald-800",
+  activated: "border-emerald-200 bg-emerald-50 text-emerald-800",
   cancelled: "border-slate-200 bg-slate-50 text-slate-700",
 };
 
@@ -207,7 +208,7 @@ export default function OrderDetailPage() {
               </Badge>
             </DetailCard>
             <DetailCard label="Tổng tiền">
-              {currencyFormatter.format(order.amount)}
+              {currencyFormatter.format(getOrderAmount(order))}
             </DetailCard>
             <DetailCard label="Phương thức">
               <div className="flex items-center gap-2">
@@ -287,7 +288,7 @@ export default function OrderDetailPage() {
             <div className="my-4 space-y-2 rounded-lg bg-muted p-3 text-sm">
               <p><span className="font-medium">Học viên:</span> {order.studentName}</p>
               <p><span className="font-medium">Khóa học:</span> {order.courseTitle}</p>
-              <p><span className="font-medium">Giá:</span> {currencyFormatter.format(order.amount)}</p>
+              <p><span className="font-medium">Giá:</span> {currencyFormatter.format(getOrderAmount(order))}</p>
             </div>
           )}
           <div className="flex gap-2 justify-end">
@@ -319,6 +320,10 @@ function DetailCard({ label, children }: { label: string; children: React.ReactN
       </CardContent>
     </Card>
   );
+}
+
+function getOrderAmount(order: Pick<AdminOrder, "totalAmount" | "amount">) {
+  return order.totalAmount ?? order.amount ?? 0;
 }
 
 function shortId(id: string) {

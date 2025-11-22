@@ -11,9 +11,9 @@ import { formatPrice, formatDate } from '@/lib/format';
 import { ChevronLeft, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import OrderActions from '@/components/admin/OrderActions';
 
-type OrderStatus = 'pending' | 'paid' | 'activated';
+type OrderStatus = 'pending' | 'paid' | 'activated' | 'cancelled';
 
-const statusConfig = {
+const statusConfig: Record<OrderStatus, { label: string; color: string; icon: typeof Clock }> = {
   pending: {
     label: 'Chờ thanh toán',
     color: 'bg-yellow-100 text-yellow-800',
@@ -21,13 +21,18 @@ const statusConfig = {
   },
   paid: {
     label: 'Đã thanh toán',
-    color: 'bg-blue-100 text-blue-800',
+    color: 'bg-sky-100 text-sky-800',
     icon: CheckCircle,
   },
   activated: {
     label: 'Đã kích hoạt',
-    color: 'bg-green-100 text-green-800',
+    color: 'bg-emerald-100 text-emerald-800',
     icon: CheckCircle,
+  },
+  cancelled: {
+    label: 'Đã hủy',
+    color: 'bg-slate-200 text-slate-800',
+    icon: AlertCircle,
   },
 };
 
