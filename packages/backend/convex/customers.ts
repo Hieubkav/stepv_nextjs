@@ -453,3 +453,15 @@ export const changePassword = mutation({
         return { ok: true } as const;
     },
 });
+
+// Delete customer (MVP: hard delete)
+export const deleteCustomer = mutation({
+    args: { id: v.id("customers") },
+    handler: async (ctx, { id }) => {
+        const existing = await ctx.db.get(id);
+        if (!existing) return { ok: false } as const;
+
+        await ctx.db.delete(id);
+        return { ok: true } as const;
+    },
+});
