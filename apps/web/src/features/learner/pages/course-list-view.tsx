@@ -86,18 +86,19 @@ function normalizeText(value: unknown) {
 
 function CourseCardSkeleton() {
     return (
-        <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/20 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-            <Skeleton className="aspect-video w-full rounded-none bg-slate-800/80" />
+        <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+            <Skeleton className="aspect-video w-full rounded-none bg-slate-800/70" />
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="space-y-2">
-                    <Skeleton className="h-5 w-2/3 rounded-md bg-slate-800/80" />
-                    <Skeleton className="h-3 w-full rounded-md bg-slate-800/80" />
-                    <Skeleton className="h-3 w-4/5 rounded-md bg-slate-800/80" />
+                    <Skeleton className="h-5 w-2/3 rounded-md bg-slate-800/70" />
+                    <Skeleton className="h-3 w-full rounded-md bg-slate-800/70" />
+                    <Skeleton className="h-3 w-4/5 rounded-md bg-slate-800/70" />
                 </div>
                 <div className="mt-auto flex items-center justify-end">
-                    <Skeleton className="h-4 w-24 rounded-md bg-slate-800/80" />
+                    <Skeleton className="h-4 w-24 rounded-md bg-slate-800/70" />
                 </div>
             </div>
+            <div className="h-[52px] border-t border-amber-500/25 bg-[#0f0f18]" />
         </div>
     );
 }

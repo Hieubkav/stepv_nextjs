@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useContext, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Loader2, Menu, X } from 'lucide-react';
 import XIcon from '@/components/ui/XIcon';
 import { Button } from '@/components/ui/button';
+import { HeaderSkeleton } from '@/components/ui/section-skeletons';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,7 @@ import {
 import CartIcon from '@/components/cart/CartIcon';
 import { useCustomerAuth } from '@/features/auth';
 import { getLucideIcon } from '@/lib/lucide-icons';
+import { SiteLayoutDataContext } from '@/context/site-layout-data';
 import type { SiteHeaderAuth, SiteHeaderMenuItem, SiteHeaderProps, SiteHeaderSocial } from '@/lib/site-layout';
 
 type SiteHeaderSectionProps = SiteHeaderProps;
@@ -31,24 +33,6 @@ type ResolvedAuth = {
   dropdownTitle: string;
   showCart: boolean;
 };
-
-const DEFAULT_MENU: SiteHeaderMenuItem[] = [
-  { label: 'Trang chủ', url: '/', highlight: true },
-  { label: 'Dự án', url: '#projects' },
-  { label: 'Dịch vụ', url: '#services' },
-  { label: 'Về chúng tôi', url: '#about' },
-  { label: 'Thư viện', url: '#library' },
-  { label: 'Liên hệ', url: '#contact' },
-];
-
-const DEFAULT_SOCIALS: SiteHeaderSocial[] = [
-  { platform: 'YouTube', url: 'https://www.youtube.com/@dohystudio', icon: 'Youtube' },
-  { platform: 'TikTok', url: 'https://www.tiktok.com/@dohystudio', icon: 'Music4' },
-  { platform: 'Facebook', url: 'https://www.facebook.com/profile.php?id=61574798173124&sk=friends_likes', icon: 'Facebook' },
-  { platform: 'Instagram', url: 'https://www.instagram.com/dohy_studio/', icon: 'Instagram' },
-  { platform: 'Pinterest', url: 'https://www.pinterest.com/dohy_studio/', icon: 'Palette' },
-  { platform: 'X', url: 'https://x.com/dohystudio', icon: 'X' },
-];
 
 const FALLBACK_LOGO = '/images/logo.png';
 const DEFAULT_AUTH: ResolvedAuth = {
@@ -128,6 +112,7 @@ const SiteHeaderSection = ({
   socials,
   auth,
 }: SiteHeaderSectionProps) => {
+  const layout = useContext(SiteLayoutDataContext);
   const router = useRouter();
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -139,9 +124,7 @@ const SiteHeaderSection = ({
 
   const resolvedMenu = useMemo<NormalizedMenuItem[]>(() => {
     const source = (menuItems ?? []).filter((item) => item?.label?.trim());
-    const base = source.length > 0 ? source : DEFAULT_MENU;
-
-    return base
+    return source
       .map((item) => {
         if (!item?.label) return null;
         const label = item.label.trim();
@@ -169,9 +152,7 @@ const SiteHeaderSection = ({
 
   const resolvedSocials = useMemo<NormalizedSocialItem[]>(() => {
     const source = (socials ?? []).filter((item) => item?.url);
-    const base = source.length > 0 ? source : DEFAULT_SOCIALS;
-
-    return base.reduce<NormalizedSocialItem[]>((acc, item) => {
+    return source.reduce<NormalizedSocialItem[]>((acc, item) => {
       if (!item?.url) return acc;
       const platform = item.platform?.trim() ?? '';
       acc.push({
@@ -273,6 +254,19 @@ const SiteHeaderSection = ({
       </a>
     );
   };
+
+  const showSkeleton =
+    Boolean(layout?.isLoading) ||
+    !(
+      Boolean(logo) ||
+      Boolean(backgroundImage) ||
+      resolvedMenu.length > 0 ||
+      resolvedSocials.length > 0
+    );
+
+  if (showSkeleton) {
+    return <HeaderSkeleton />;
+  }
 
   const renderDesktopActions = () => {
     if (!resolvedAuth.enabled) return null;

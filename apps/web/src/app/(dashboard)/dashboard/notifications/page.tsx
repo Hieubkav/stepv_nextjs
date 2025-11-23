@@ -341,7 +341,7 @@ function NotificationsContent({ studentId }: { studentId: Id<"students"> }) {
                           size="sm"
                           onClick={() => notification.link && window.location.assign(notification.link)}
                         >
-                          Xem chi ti?t
+                          Xem chi tiểt
                         </Button>
                       )}
                     </div>
