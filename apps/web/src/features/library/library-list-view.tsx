@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, stripHtml } from "@/lib/utils";
+import { formatPrice } from "@/lib/format";
 import type {
   LibraryResourceDoc,
   LibraryResourceSoftwareLink,
@@ -40,7 +41,12 @@ type SoftwareBadge = {
   iconUrl?: string;
 };
 
-type ResourceExtrasMap = Record<string, LibraryResourceSoftwareLink[]>;
+type ResourceExtras = {
+  softwares: LibraryResourceSoftwareLink[];
+  firstImageMediaId?: Id<"media">;
+};
+
+type ResourceExtrasMap = Record<string, ResourceExtras>;
 
 const pricingConfig: Record<LibraryResourceDoc["pricingType"], { label: string; badgeClassName: string }> = {
   free: {
@@ -66,6 +72,15 @@ type LibraryCardProps = {
 function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
   const pricing = pricingConfig[resource.pricingType];
   const detailHref = `/thu-vien/${resource.slug}` as Route;
+  const paidPriceLabel =
+    typeof resource.price === "number" && resource.price > 0
+      ? formatPrice(resource.price)
+      : "Trả phí";
+  const priceLabel = resource.pricingType === "free" ? "Miễn phí" : paidPriceLabel;
+  const compareLabel =
+    resource.originalPrice && resource.originalPrice > (resource.price ?? 0)
+      ? formatPrice(resource.originalPrice)
+      : null;
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/70 hover:shadow-[0_25px_80px_rgba(255,191,0,0.18)]">
@@ -130,9 +145,14 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
         ) : null}
 
         <div className="mt-auto flex items-center justify-end">
-          <span className="text-sm font-semibold bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
-            {resource.pricingType === "free" ? "Miễn phí" : "Trả phí"}
-          </span>
+          <div className="flex items-baseline gap-2">
+            <span className="text-sm font-semibold bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
+              {priceLabel}
+            </span>
+            {compareLabel ? (
+              <span className="text-[11px] text-amber-100/70 line-through">{compareLabel}</span>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -253,8 +273,20 @@ export default function LibraryListView() {
         const id = String(resource._id);
         loadedVersions.current.set(id, resource.updatedAt);
         const softwaresList = detail?.softwares ?? [];
-        nextExtras[id] = softwaresList;
-        changed = true;
+        const firstImageMediaId = detail?.images?.[0]?.mediaId;
+        const previous = extrasRef.current[id];
+        const nextEntry: ResourceExtras = {
+          softwares: softwaresList,
+          firstImageMediaId: firstImageMediaId ?? previous?.firstImageMediaId,
+        };
+        const hasChanged =
+          !previous ||
+          previous.firstImageMediaId !== nextEntry.firstImageMediaId ||
+          previous.softwares !== nextEntry.softwares;
+        if (hasChanged) {
+          nextExtras[id] = nextEntry;
+          changed = true;
+        }
       }
 
       if (changed) {
@@ -297,7 +329,7 @@ export default function LibraryListView() {
           return false;
         }
         if (state.selectedSoftware !== "all") {
-          const list = extras[String(resource._id)];
+          const list = extras[String(resource._id)]?.softwares;
           if (!list || !list.some((entry) => entry.software.slug === state.selectedSoftware)) {
             return false;
           }
@@ -431,10 +463,13 @@ export default function LibraryListView() {
           {isLoading
             ? Array.from({ length: 8 }).map((_, index) => <LibraryCardSkeleton key={index} />)
             : filteredResources.map((resource) => {
-                const coverUrl = resource.coverImageId
-                  ? mediaMap.get(String(resource.coverImageId))?.url
+                const extra = extras[String(resource._id)];
+                const preferredMediaId =
+                  extra?.firstImageMediaId ?? resource.coverImageId ?? undefined;
+                const coverUrl = preferredMediaId
+                  ? mediaMap.get(String(preferredMediaId))?.url
                   : undefined;
-                const resourceSoftwares = extras[String(resource._id)] ?? [];
+                const resourceSoftwares = extra?.softwares ?? [];
                 const softwaresForCard: SoftwareBadge[] = resourceSoftwares.map((entry) => ({
                   slug: entry.software.slug,
                   name: entry.software.name,

@@ -7,6 +7,8 @@ export type LibraryResourceDoc = {
   description?: string;
   features?: string[];
   pricingType: "free" | "paid";
+  price?: number | null;
+  originalPrice?: number | null;
   coverImageId?: Id<"media">;
   downloadUrl?: string;
   isDownloadVisible: boolean;

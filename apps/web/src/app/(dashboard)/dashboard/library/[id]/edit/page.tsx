@@ -20,7 +20,16 @@ function toInitial(resource: any | null): ResourceFormValues {
     slug: resource?.slug ?? "",
     description: resource?.description ?? "",
     pricingType: resource?.pricingType ?? "free",
-    coverImageId: resource?.coverImageId ?? "",
+    price:
+      resource?.price !== undefined && resource?.price !== null
+        ? String(resource.price)
+        : resource?.pricingType === "paid"
+          ? ""
+          : "0",
+    originalPrice:
+      resource?.originalPrice !== undefined && resource?.originalPrice !== null
+        ? String(resource.originalPrice)
+        : "",
     downloadUrl: resource?.downloadUrl ?? "",
     isDownloadVisible: resource?.isDownloadVisible ?? true,
     active: resource?.active ?? true,
@@ -58,6 +67,15 @@ export default function LibraryEditPage({ params }: PageProps) {
       toast.error("Cần nhập đầy đủ title và slug");
       return;
     }
+    const priceNumber = values.pricingType === "paid" ? Number(values.price) : 0;
+    if (values.pricingType === "paid" && (!Number.isFinite(priceNumber) || priceNumber <= 0)) {
+      toast.error("Vui lòng nhập giá bán hợp lệ");
+      return;
+    }
+    const rawOriginal = values.pricingType === "paid" && values.originalPrice.trim()
+      ? Number(values.originalPrice)
+      : null;
+    const normalizedOriginal = rawOriginal && rawOriginal > priceNumber ? rawOriginal : null;
     const orderNumber = Number.parseInt(values.order, 10);
     const parsedOrder = Number.isFinite(orderNumber) ? orderNumber : resource.order;
 
@@ -69,7 +87,8 @@ export default function LibraryEditPage({ params }: PageProps) {
         slug,
         description: values.description.trim() || undefined,
         pricingType: values.pricingType,
-        coverImageId: values.coverImageId.trim() || undefined,
+        price: priceNumber,
+        originalPrice: normalizedOriginal ?? undefined,
         downloadUrl: values.downloadUrl.trim() || undefined,
         isDownloadVisible: values.isDownloadVisible,
         order: parsedOrder,

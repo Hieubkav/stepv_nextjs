@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useConvex, useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { formatPrice } from "@/lib/format";
 import { toast } from "sonner";
 import { Pencil, Plus, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 
@@ -16,6 +17,8 @@ type ResourceDoc = {
   description?: string;
   features?: string[];
   pricingType: "free" | "paid";
+  price?: number | null;
+  originalPrice?: number | null;
   coverImageId?: string;
   downloadUrl?: string;
   isDownloadVisible: boolean;
@@ -25,13 +28,14 @@ type ResourceDoc = {
   updatedAt: number;
 };
 
-type SortColumn = "title" | "pricingType" | "order" | "createdAt" | null;
+type SortColumn = "title" | "pricingType" | "price" | "order" | "createdAt" | null;
 type SortDirection = "asc" | "desc";
 type FilterPricingType = "all" | "free" | "paid";
 
 export default function LibraryListPage() {
   const resources = useQuery(api.library.listResources, {}) as ResourceDoc[] | undefined;
   const media = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
+  const convex = useConvex();
   const updateResource = useMutation(api.library.updateResource);
   const setResourceActive = useMutation(api.library.setResourceActive);
   const deleteResource = useMutation(api.library.deleteResource);
@@ -40,6 +44,8 @@ export default function LibraryListPage() {
   const [sortColumn, setSortColumn] = useState<SortColumn>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [filterPricingType, setFilterPricingType] = useState<FilterPricingType>("all");
+  const [previewIds, setPreviewIds] = useState<Record<string, string | undefined>>({});
+  const loadedPreviewVersions = useRef(new Map<string, number>());
 
   const items = resources ?? [];
   
@@ -52,6 +58,61 @@ export default function LibraryListPage() {
     }
     return map;
   }, [media]);
+
+  useEffect(() => {
+    if (!resources) return;
+
+    const pending = resources.filter((r) => {
+      const id = String(r._id);
+      const known = loadedPreviewVersions.current.get(id);
+      return known !== r.updatedAt;
+    });
+
+    if (pending.length === 0) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const results = await Promise.all(
+        pending.map(async (resource) => {
+          try {
+            const detail = await convex.query(api.library.getResourceDetail, {
+              id: resource._id as any,
+              includeInactive: false,
+            });
+            const first = detail?.images?.[0];
+            return {
+              id: String(resource._id),
+              mediaId: first ? String(first.mediaId) : undefined,
+              updatedAt: resource.updatedAt,
+            };
+          } catch (error) {
+            console.error("Không thể tải ảnh thư viện", error);
+            return { id: String(resource._id), mediaId: undefined, updatedAt: resource.updatedAt };
+          }
+        }),
+      );
+
+      if (cancelled) return;
+
+      setPreviewIds((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        for (const { id, mediaId, updatedAt } of results) {
+          loadedPreviewVersions.current.set(id, updatedAt);
+          if (next[id] !== mediaId) {
+            next[id] = mediaId;
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [convex, resources]);
 
   const filteredAndSortedItems = useMemo(() => {
     let result = [...items];
@@ -73,6 +134,10 @@ export default function LibraryListPage() {
           case "pricingType":
             aVal = a.pricingType;
             bVal = b.pricingType;
+            break;
+          case "price":
+            aVal = typeof a.price === "number" ? a.price : 0;
+            bVal = typeof b.price === "number" ? b.price : 0;
             break;
           case "order":
             aVal = a.order || 0;
@@ -231,11 +296,11 @@ export default function LibraryListPage() {
                 <SortIcon column="title" />
               </button>
               <button
-                onClick={() => handleSort("pricingType")}
-                className="w-24 text-left hover:text-foreground transition-colors cursor-pointer"
+                onClick={() => handleSort("price")}
+                className="w-32 text-left hover:text-foreground transition-colors cursor-pointer"
               >
                 Giá
-                <SortIcon column="pricingType" />
+                <SortIcon column="price" />
               </button>
               <div className="w-24">Trạng thái</div>
               <div className="w-28">Link tải</div>
@@ -250,7 +315,12 @@ export default function LibraryListPage() {
             </div>
 
             {filteredAndSortedItems.map((r) => {
-              const coverUrl = r.coverImageId ? mediaMap.get(String(r.coverImageId))?.url : null;
+              const previewMediaId = previewIds[String(r._id)];
+              const coverUrl = previewMediaId
+                ? mediaMap.get(previewMediaId)?.url
+                : r.coverImageId
+                  ? mediaMap.get(String(r.coverImageId))?.url
+                  : null;
               return (
               <div key={String(r._id)} className="flex items-center gap-3 p-3">
                 <div className="w-8 flex items-center justify-center">
@@ -270,14 +340,25 @@ export default function LibraryListPage() {
                   )}
                 </div>
                 <div className="flex-1 truncate font-medium">{r.title}</div>
-                <div className="w-24 text-sm capitalize">
-                  <span className={`inline-block px-2 py-0.5 rounded-full text-xs ${
-                    r.pricingType === "free" 
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
-                      : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                  }`}>
-                    {r.pricingType === "free" ? "Miễn phí" : "Trả phí"}
-                  </span>
+                <div className="w-32 text-sm">
+                  {r.pricingType === "free" ? (
+                    <span
+                      className="inline-block rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                    >
+                      Miễn phí
+                    </span>
+                  ) : (
+                    <div className="space-y-0.5">
+                      <div className="font-semibold">
+                        {formatPrice(typeof r.price === "number" ? r.price : 0)}
+                      </div>
+                      {r.originalPrice && r.originalPrice > (r.price ?? 0) ? (
+                        <div className="text-xs text-muted-foreground line-through">
+                          {formatPrice(r.originalPrice)}
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
                 </div>
                 <div className="w-24">
                   <button

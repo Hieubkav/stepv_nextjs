@@ -47,6 +47,30 @@ const assertSoftwareSlugUnique = async (
   }
 };
 
+const normalizePricing = (
+  pricingType: "free" | "paid",
+  price?: number | null,
+  originalPrice?: number | null
+) => {
+  if (pricingType === "free") {
+    return { price: 0, originalPrice: null };
+  }
+
+  const nextPrice =
+    typeof price === "number" && Number.isFinite(price) ? price : null;
+  if (!nextPrice || nextPrice <= 0) {
+    throw new Error("Gia ban phai lon hon 0 voi tai nguyen tra phi");
+  }
+
+  const compare =
+    typeof originalPrice === "number" && Number.isFinite(originalPrice)
+      ? originalPrice
+      : null;
+  const nextOriginal = compare && compare > nextPrice ? compare : null;
+
+  return { price: nextPrice, originalPrice: nextOriginal };
+};
+
 const nextImageOrder = async (ctx: AnyCtx, resourceId: ResourceId) => {
   const siblings = await ctx.db
     .query("library_resource_images")
@@ -168,6 +192,8 @@ export const createResource = mutation({
     description: v.optional(v.string()),
     features: v.optional(v.array(v.string())),
     pricingType,
+    price: v.optional(v.union(v.number(), v.null())),
+    originalPrice: v.optional(v.union(v.number(), v.null())),
     coverImageId: v.optional(v.id("media")),
     downloadUrl: v.optional(v.string()),
     isDownloadVisible: v.boolean(),
@@ -178,12 +204,19 @@ export const createResource = mutation({
     await assertResourceSlugUnique(ctx, args.slug);
     const now = Date.now();
     const features = normalizeFeatures(args.features) ?? [];
+    const { price, originalPrice } = normalizePricing(
+      args.pricingType,
+      args.price,
+      args.originalPrice
+    );
     const id = await ctx.db.insert("library_resources", {
       title: args.title,
       slug: args.slug,
       description: args.description,
       features,
       pricingType: args.pricingType,
+      price,
+      originalPrice,
       coverImageId: args.coverImageId,
       downloadUrl: args.downloadUrl,
       isDownloadVisible: args.isDownloadVisible,
@@ -204,6 +237,8 @@ export const updateResource = mutation({
     description: v.optional(v.string()),
     features: v.optional(v.array(v.string())),
     pricingType: v.optional(pricingType),
+    price: v.optional(v.union(v.number(), v.null())),
+    originalPrice: v.optional(v.union(v.number(), v.null())),
     coverImageId: v.optional(v.id("media")),
     downloadUrl: v.optional(v.string()),
     isDownloadVisible: v.optional(v.boolean()),
@@ -211,7 +246,8 @@ export const updateResource = mutation({
     active: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { id, slug, features, ...rest } = args;
+    const { id, slug, features, price, originalPrice, pricingType, ...rest } =
+      args;
     const existing = await ctx.db.get(id);
     if (!existing) throw new Error("Resource not found");
     if (slug && slug !== existing.slug) {
@@ -220,6 +256,16 @@ export const updateResource = mutation({
 
     const patch: Partial<typeof existing> = { ...rest };
     if (slug !== undefined) patch.slug = slug;
+    const nextPricingType = pricingType ?? existing.pricingType;
+    const normalized = normalizePricing(
+      nextPricingType,
+      price ?? existing.price ?? null,
+      originalPrice ?? existing.originalPrice ?? null
+    );
+    patch.pricingType = nextPricingType;
+    patch.price = normalized.price as any;
+    patch.originalPrice = normalized.originalPrice as any;
+
     if (features !== undefined) {
       patch.features = normalizeFeatures(features) ?? [];
     }

@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useQuery } from "convex/react";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { FullRichEditor } from "@/components/ui/full-rich-editor";
-import { api } from "@dohy/backend/convex/_generated/api";
-import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 
 export type ResourceFormValues = {
   title: string;
   slug: string;
   description: string;
   pricingType: "free" | "paid";
-  coverImageId: string;
+  price: string;
+  originalPrice: string;
   downloadUrl: string;
   isDownloadVisible: boolean;
   active: boolean;
@@ -46,15 +44,6 @@ const slugify = (value: string) =>
 
 export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit, onCancel, mode = "new" }: ResourceFormProps) {
   const [values, setValues] = useState<ResourceFormValues>(initialValues);
-  const images = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
-  const [pickerOpen, setPickerOpen] = useState(false);
-
-  const selectedCover = useMemo(() => {
-    if (!values.coverImageId) return null;
-    const list = Array.isArray(images) ? images : [];
-    const found = list.find((img: any) => String(img._id) === String(values.coverImageId));
-    return found ?? null;
-  }, [images, values.coverImageId]);
 
   const shouldSlugStayAuto = useMemo(() => {
     const suggested = slugify(initialValues.title || "");
@@ -90,11 +79,18 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
       return;
     }
 
-    setValues((prev) => ({ ...prev, [field]: value }));
-  }
+    if (field === "pricingType") {
+      const nextType = value as ResourceFormValues["pricingType"];
+      setValues((prev) => ({
+        ...prev,
+        pricingType: nextType,
+        price: nextType === "free" ? "0" : prev.price,
+        originalPrice: nextType === "free" ? "" : prev.originalPrice,
+      }));
+      return;
+    }
 
-  function handleSelectCover(item: MediaItem) {
-    setValues((prev) => ({ ...prev, coverImageId: String(item._id) }));
+    setValues((prev) => ({ ...prev, [field]: value }));
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -134,69 +130,18 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
         {/* Media & Downloads */}
         <div className="space-y-4 pt-4 border-t">
           <h3 className="text-base font-semibold">Hình ảnh & Tải xuống</h3>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ảnh cover</label>
-            <div className="flex gap-3">
-              <div className="flex-1 space-y-2">
-                <Input
-                  value={values.coverImageId}
-                  onChange={(e) => update("coverImageId", e.target.value)}
-                  placeholder="Media ID..."
-                  className="font-mono text-xs"
-                />
-                {values.coverImageId ? (
-                  selectedCover ? (
-                    <div className="flex items-center gap-3 rounded border bg-muted/20 p-2">
-                      {selectedCover.url ? (
-                        <img
-                          src={selectedCover.url}
-                          alt={selectedCover.title || "cover"}
-                          className="h-16 w-16 rounded object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-16 w-16 items-center justify-center rounded border border-dashed text-[10px] text-muted-foreground">
-                          No URL
-                        </div>
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-medium">{selectedCover.title || "Cover"}</div>
-                        <div className="truncate text-xs text-muted-foreground">{values.coverImageId}</div>
-                      </div>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => update("coverImageId", "")}>
-                        Xóa
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between gap-2 rounded border border-dashed p-2 text-xs text-muted-foreground">
-                      <span className="truncate">Không tìm thấy: {values.coverImageId}</span>
-                      <Button type="button" variant="ghost" size="sm" onClick={() => update("coverImageId", "")}>
-                        Xóa
-                      </Button>
-                    </div>
-                  )
-                ) : (
-                  <div className="rounded border border-dashed p-3 text-xs text-muted-foreground text-center">
-                    Chưa chọn ảnh cover
-                  </div>
-                )}
-              </div>
-              <div className="flex items-start">
-                <Button type="button" variant="outline" onClick={() => setPickerOpen(true)} className="whitespace-nowrap">
-                  Chọn ảnh
-                </Button>
-              </div>
-            </div>
-          </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Link tải xuống</label>
-            <Input 
-              value={values.downloadUrl} 
-              onChange={(e) => update("downloadUrl", e.target.value)} 
+            <Input
+              value={values.downloadUrl}
+              onChange={(e) => update("downloadUrl", e.target.value)}
               placeholder="https://example.com/download"
               type="url"
             />
+            <p className="text-xs text-muted-foreground">
+              Hệ thống tự dùng ảnh thư viện có order nhỏ nhất làm thumbnail.
+            </p>
           </div>
         </div>
 
@@ -227,6 +172,35 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
             )}
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Giá bán (VND)</label>
+              <Input
+                type="number"
+                min="0"
+                step="1000"
+                value={values.price}
+                onChange={(e) => update("price", e.target.value)}
+                placeholder="100000"
+                disabled={values.pricingType === "free"}
+                required={values.pricingType === "paid"}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Giá gốc (tuỳ chọn)</label>
+              <Input
+                type="number"
+                min="0"
+                step="1000"
+                value={values.originalPrice}
+                onChange={(e) => update("originalPrice", e.target.value)}
+                placeholder="150000"
+                disabled={values.pricingType === "free"}
+              />
+              <p className="text-xs text-muted-foreground">Chỉ hiển thị nếu lớn hơn giá bán.</p>
+            </div>
+          </div>
+
           <div className="flex flex-col gap-3 sm:flex-row sm:gap-6">
             <label className="inline-flex items-center gap-2 text-sm cursor-pointer">
               <Checkbox
@@ -255,15 +229,6 @@ export function ResourceForm({ initialValues, submitting, submitLabel, onSubmit,
         </div>
       </form>
 
-      <MediaPickerDialog
-        open={pickerOpen}
-        onOpenChange={setPickerOpen}
-        title="Chọn ảnh cover"
-        selectedId={values.coverImageId}
-        onSelect={handleSelectCover}
-      />
     </>
   );
 }
-
-

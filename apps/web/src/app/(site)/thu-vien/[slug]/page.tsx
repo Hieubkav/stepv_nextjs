@@ -42,3 +42,5 @@ export default async function LibraryDetailPage({ params }: PageProps) {
   return <LibraryDetailView slug={slug} initialDetail={detail} />;
 }
 
+
+

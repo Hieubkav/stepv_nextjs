@@ -160,25 +160,29 @@ export default function MyLibraryPage() {
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {resources.map((purchase) => (
-                                        <ResourceCard
-                                            key={purchase._id}
-                                            purchaseId={purchase._id}
-                                            id={purchase.productId}
-                                            title={purchase.product?.title || 'Tài nguyên không xác định'}
-                                            thumbnail={
-                                                purchase.product?.coverImageId
-                                                    ? '/placeholder-resource.jpg'
-                                                    : undefined
-                                            }
-                                            downloadUrl={
-                                                purchase.product?.downloadUrl
-                                                    ? '/download/resource'
-                                                    : undefined
-                                            }
-                                            downloadCount={purchase.downloadCount}
-                                        />
-                                    ))}
+                                    {resources.map((purchase) => {
+                                        const product = purchase.product;
+                                        const downloadUrl =
+                                            product?.isDownloadVisible && product?.downloadUrl
+                                                ? product.downloadUrl
+                                                : undefined;
+
+                                        return (
+                                            <ResourceCard
+                                                key={purchase._id}
+                                                purchaseId={purchase._id}
+                                                id={purchase.productId}
+                                                title={product?.title || 'Tài nguyên không xác định'}
+                                                thumbnail={
+                                                    product?.coverImageId
+                                                        ? '/placeholder-resource.jpg'
+                                                        : undefined
+                                                }
+                                                downloadUrl={downloadUrl}
+                                                downloadCount={purchase.downloadCount}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             )}
                         </TabsContent>

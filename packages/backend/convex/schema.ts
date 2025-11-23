@@ -70,6 +70,8 @@ export default defineSchema({
     description: v.optional(v.string()),
     features: v.optional(v.array(v.string())),
     pricingType: v.union(v.literal("free"), v.literal("paid")),
+    price: v.optional(v.union(v.number(), v.null())),
+    originalPrice: v.optional(v.union(v.number(), v.null())),
     coverImageId: v.optional(v.id("media")),
     downloadUrl: v.optional(v.string()),
     isDownloadVisible: v.boolean(),
