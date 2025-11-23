@@ -83,8 +83,8 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
       : null;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/70 hover:shadow-[0_25px_80px_rgba(255,191,0,0.18)]">
-      <div className="relative aspect-video overflow-hidden bg-[#0f0f18]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-800/70 bg-[#050914] shadow-[0_20px_60px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/70 hover:shadow-[0_25px_80px_rgba(255,191,0,0.16)]">
+      <div className="relative aspect-video overflow-hidden bg-[#0a1424]">
         {coverUrl ? (
           <img
             src={coverUrl}
@@ -97,7 +97,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
           </div>
         )}
 
-        <div className="absolute left-3 top-3">
+        <div className="absolute left-3 top-3 drop-shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
           <Badge
             className={cn(
               "border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]",
@@ -124,7 +124,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
             {softwares.slice(0, 3).map((software) => (
               <span
                 key={software.slug}
-                className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-[#12121b] px-3 py-1 text-[11px] font-semibold text-amber-100"
+                className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-[#0a1424] px-3 py-1 text-[11px] font-semibold text-amber-100"
               >
                 {software.iconUrl ? (
                   <img
@@ -137,7 +137,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
               </span>
             ))}
             {softwares.length > 3 ? (
-              <span className="rounded-full border border-amber-500/40 bg-[#12121b] px-3 py-1 text-[11px] font-semibold text-amber-100">
+              <span className="rounded-full border border-amber-500/40 bg-[#0a1424] px-3 py-1 text-[11px] font-semibold text-amber-100">
                 +{softwares.length - 3}
               </span>
             ) : null}
@@ -146,7 +146,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
 
         <div className="mt-auto flex items-center justify-end">
           <div className="flex items-baseline gap-2">
-            <span className="text-sm font-semibold bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
+            <span className="text-sm font-semibold bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
               {priceLabel}
             </span>
             {compareLabel ? (
@@ -156,7 +156,7 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
         </div>
       </div>
 
-      <div className="border-t border-amber-500/20 bg-[#0f0f18] px-4 py-3">
+      <div className="border-t border-slate-800/70 bg-[#081120] px-4 py-3">
         <Link
           href={detailHref}
           className="block rounded-lg bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 px-3 py-2.5 text-center text-sm font-semibold text-black transition-all duration-200 hover:translate-y-[-1px] hover:shadow-[0_18px_40px_rgba(255,193,7,0.35)] active:opacity-95"
@@ -170,15 +170,15 @@ function LibraryCard({ resource, coverUrl, softwares }: LibraryCardProps) {
 
 function LibraryCardSkeleton() {
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
-      <Skeleton className="aspect-video w-full rounded-none bg-slate-800/80" />
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-800/70 bg-[#050914] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+      <Skeleton className="aspect-video w-full rounded-none bg-slate-800/70" />
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <Skeleton className="h-5 w-2/3 rounded-md bg-slate-800/80" />
-        <Skeleton className="h-3 w-full rounded-md bg-slate-800/80" />
-        <Skeleton className="h-3 w-4/5 rounded-md bg-slate-800/80" />
-        <Skeleton className="mt-auto h-4 w-1/3 rounded-md bg-slate-800/80" />
+        <Skeleton className="h-5 w-2/3 rounded-md bg-slate-800/70" />
+        <Skeleton className="h-3 w-full rounded-md bg-slate-800/70" />
+        <Skeleton className="h-3 w-4/5 rounded-md bg-slate-800/70" />
+        <Skeleton className="mt-auto h-4 w-1/3 rounded-md bg-slate-800/70" />
       </div>
-      <div className="h-[52px] border-t border-amber-500/25 bg-[#0f0f18]" />
+      <div className="h-[52px] border-t border-slate-800/70 bg-[#081120]" />
     </div>
   );
 }
@@ -360,9 +360,14 @@ export default function LibraryListView() {
 
   return (
     <main
-      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050507] via-[#080810] to-[#0b0b14] pb-12 text-slate-50"
+      className="relative min-h-screen overflow-hidden bg-[#030712] pb-12 text-slate-50 selection:bg-amber-500/25 selection:text-amber-100"
       style={{ paddingTop: headerOffset }}
     >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-24 -top-32 h-72 w-72 rounded-full bg-sky-500/10 blur-[140px]" />
+        <div className="absolute right-[-22%] top-6 h-80 w-80 rounded-full bg-amber-500/10 blur-[150px]" />
+        <div className="absolute left-1/3 bottom-[-30%] h-96 w-96 rounded-full bg-indigo-600/8 blur-[200px]" />
+      </div>
       <div className="relative mx-auto max-w-7xl px-4 md:px-6">
         <div className="mb-10">
           <div className="mb-6 space-y-3">
@@ -371,35 +376,35 @@ export default function LibraryListView() {
             </h1>
           </div>
 
-          <section className="rounded-xl border border-amber-500/25 bg-[#0f0f18] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
+          <section className="rounded-xl border border-slate-800/70 bg-[#050914]/90 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.55)]">
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 shadow-inner shadow-black/40">
-                <Search className="size-4 text-amber-300" />
+              <div className="flex min-w-[240px] flex-1 items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 shadow-inner shadow-black/40">
+                <Search className="size-4 text-amber-300/90" />
                 <input
                   value={state.searchTerm}
                   onChange={(event) => setState((prev) => ({ ...prev, searchTerm: event.target.value }))}
                   placeholder="Tìm tài nguyên..."
-                  className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-amber-100/50"
+                  className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-slate-400"
                 />
               </div>
 
-              <label className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 md:shrink-0 text-white">
-                <span className="whitespace-nowrap text-sm font-semibold text-amber-100/80">Sắp xếp</span>
+              <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Sắp xếp</span>
                 <select
                   value={state.sortBy}
                   onChange={(event) => setState((prev) => ({ ...prev, sortBy: event.target.value as SortOption }))}
                   className="bg-transparent text-sm text-white outline-none"
                 >
                   {sortOptions.map((option) => (
-                    <option key={option.value} value={option.value} className="bg-[#0f0f18] text-white">
+                    <option key={option.value} value={option.value} className="bg-[#050914] text-white">
                       {option.label}
                     </option>
                   ))}
                 </select>
               </label>
 
-              <label className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 md:shrink-0 text-white">
-                <span className="whitespace-nowrap text-sm font-semibold text-amber-100/80">Giá</span>
+              <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Giá</span>
                 <select
                   value={state.selectedPrice}
                   onChange={(event) =>
@@ -408,15 +413,15 @@ export default function LibraryListView() {
                   className="bg-transparent text-sm text-white outline-none"
                 >
                   {priceOptions.map((option) => (
-                    <option key={option.value} value={option.value} className="bg-[#0f0f18] text-white">
+                    <option key={option.value} value={option.value} className="bg-[#050914] text-white">
                       {option.label}
                     </option>
                   ))}
                 </select>
               </label>
 
-              <label className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 md:shrink-0 text-white">
-                <span className="whitespace-nowrap text-sm font-semibold text-amber-100/80">Phần mềm</span>
+              <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Phần mềm</span>
                 <select
                   value={state.selectedSoftware}
                   onChange={(event) =>
@@ -424,11 +429,11 @@ export default function LibraryListView() {
                   }
                   className="bg-transparent text-sm text-white outline-none"
                 >
-                  <option value="all" className="bg-[#0f0f18] text-white">
+                  <option value="all" className="bg-[#050914] text-white">
                     Tất cả phần mềm
                   </option>
                   {softwareBadges.map((software) => (
-                    <option key={software.slug} value={software.slug} className="bg-[#0f0f18] text-white">
+                    <option key={software.slug} value={software.slug} className="bg-[#050914] text-white">
                       {software.name}
                     </option>
                   ))}
@@ -439,7 +444,7 @@ export default function LibraryListView() {
         </div>
 
         {filteredResources.length === 0 && !isLoading ? (
-          <div className="rounded-xl border border-dashed border-amber-500/40 bg-[#0f0f18] px-6 py-16 text-center shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+          <div className="rounded-xl border border-dashed border-slate-800/60 bg-[#050914]/80 px-6 py-16 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
             <div className="space-y-3">
               <div className="text-5xl">🤔</div>
               <p className="text-lg font-semibold text-white">Không tìm thấy tài nguyên</p>
@@ -449,7 +454,7 @@ export default function LibraryListView() {
               <div className="mt-4 flex justify-center">
                 <Button
                   variant="outline"
-                  className="rounded-lg border-amber-500/40 bg-[#12121b] text-xs font-semibold uppercase tracking-wide text-amber-100 hover:border-amber-400/80 hover:bg-[#171722]"
+                  className="rounded-lg border-slate-700 bg-[#0a1220] text-xs font-semibold uppercase tracking-wide text-amber-100 hover:border-amber-400/80 hover:bg-[#0f1b30]"
                   onClick={() => setState(initialState)}
                 >
                   Đặt lại bộ lọc

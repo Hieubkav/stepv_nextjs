@@ -86,7 +86,7 @@ function normalizeText(value: unknown) {
 
 function CourseCardSkeleton() {
     return (
-        <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+        <div className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-800/70 bg-[#050914] shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
             <Skeleton className="aspect-video w-full rounded-none bg-slate-800/70" />
             <div className="flex flex-1 flex-col gap-3 p-4">
                 <div className="space-y-2">
@@ -98,7 +98,7 @@ function CourseCardSkeleton() {
                     <Skeleton className="h-4 w-24 rounded-md bg-slate-800/70" />
                 </div>
             </div>
-            <div className="h-[52px] border-t border-amber-500/25 bg-[#0f0f18]" />
+            <div className="h-[52px] border-t border-slate-800/70 bg-[#081120]" />
         </div>
     );
 }
@@ -116,8 +116,8 @@ function CourseCard({
     const subtitle = course.subtitle ?? course.description;
 
     return (
-        <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-amber-500/25 bg-[#0c0c12] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/60 hover:shadow-[0_25px_80px_rgba(255,191,0,0.18)] shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
-            <div className="relative aspect-video overflow-hidden bg-[#0f0f18]">
+        <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-slate-800/70 bg-[#050914] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/60 hover:shadow-[0_25px_80px_rgba(255,191,0,0.16)] shadow-[0_18px_55px_rgba(0,0,0,0.5)]">
+            <div className="relative aspect-video overflow-hidden bg-[#0a1424]">
                 {thumbnail?.url ? (
                     <img
                         src={thumbnail.url}
@@ -152,7 +152,7 @@ function CourseCard({
                 </div>
             </div>
 
-            <div className="border-t border-amber-500/20 bg-[#0f0f18] px-4 py-3">
+            <div className="border-t border-slate-800/70 bg-[#081120] px-4 py-3">
                 <Link
                     href={detailHref}
                     className="block rounded-lg bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-300 px-3 py-2.5 text-center text-sm font-semibold text-black transition-all duration-200 hover:shadow-[0_18px_40px_rgba(255,193,7,0.35)] hover:translate-y-[-1px] active:opacity-95"
@@ -259,9 +259,14 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
 
     return (
         <main
-            className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050507] via-[#080810] to-[#0b0b14] pb-8 text-slate-50"
+            className="relative min-h-screen overflow-hidden bg-[#030712] pb-8 text-slate-50 selection:bg-amber-500/25 selection:text-amber-100"
             style={{ paddingTop: headerOffset }}
         >
+            <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                <div className="absolute -left-24 -top-28 h-72 w-72 rounded-full bg-sky-500/10 blur-[140px]" />
+                <div className="absolute right-[-20%] top-4 h-80 w-80 rounded-full bg-amber-500/10 blur-[150px]" />
+                <div className="absolute left-1/3 bottom-[-28%] h-96 w-96 rounded-full bg-indigo-600/8 blur-[190px]" />
+            </div>
             <div className="relative mx-auto max-w-7xl px-4 md:px-6">
                 {/* Header Section */}
                 <div className="mb-8">
@@ -272,29 +277,29 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                     </div>
 
                     {/* Filter Bar */}
-                    <section className="rounded-xl border border-amber-500/25 bg-[#0f0f18] p-4 shadow-[0_18px_50px_rgba(0,0,0,0.55)]">
+                    <section className="rounded-xl border border-slate-800/70 bg-[#050914]/90 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.55)]">
                         <div className="flex flex-wrap items-center gap-3">
                             {/* Search */}
-                            <div className="flex flex-1 min-w-[220px] items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 shadow-inner shadow-black/40">
-                                <Search className="shrink-0 size-4 text-amber-300" />
+                            <div className="flex flex-1 min-w-[220px] items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 shadow-inner shadow-black/40">
+                                <Search className="shrink-0 size-4 text-amber-300/90" />
                                 <input
                                     value={searchTerm}
                                     onChange={(event) => setSearchTerm(event.target.value)}
                                     placeholder="Tìm khóa học..."
-                                    className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-amber-100/50"
+                                    className="w-full min-w-0 bg-transparent text-sm text-white outline-none placeholder:text-slate-400"
                                 />
                             </div>
 
                             {/* Sort */}
-                            <label className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 md:shrink-0 text-white">
-                                <span className="whitespace-nowrap text-sm font-semibold text-amber-100/80">Sắp xếp</span>
+                            <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                                <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Sắp xếp</span>
                                 <select
                                     value={sortBy}
                                     onChange={(event) => setSortBy(event.target.value as SortOption)}
                                     className="bg-transparent text-sm text-white outline-none"
                                 >
                                     {sortOptions.map((option) => (
-                                        <option key={option.value} value={option.value} className="bg-[#0f0f18] text-white">
+                                        <option key={option.value} value={option.value} className="bg-[#050914] text-white">
                                             {option.label}
                                         </option>
                                     ))}
@@ -302,15 +307,15 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                             </label>
 
                             {/* Price filter dropdown */}
-                            <label className="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-[#12121b] px-4 py-2.5 md:shrink-0 text-white">
-                                <span className="whitespace-nowrap text-sm font-semibold text-amber-100/80">Giá</span>
+                            <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                                <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Giá</span>
                                 <select
                                     value={priceFilter}
                                     onChange={(event) => setPriceFilter(event.target.value as PriceFilter)}
                                     className="bg-transparent text-sm text-white outline-none"
                                 >
                                     {priceFilters.map((filter) => (
-                                        <option key={filter.value} value={filter.value} className="bg-[#0f0f18] text-white">
+                                        <option key={filter.value} value={filter.value} className="bg-[#050914] text-white">
                                             {filter.label}
                                         </option>
                                     ))}
@@ -327,7 +332,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                 ) : null}
 
                 {filteredCourses.length === 0 && !error ? (
-                    <div className="rounded-xl border border-dashed border-amber-500/30 bg-[#0f0f18] px-6 py-16 text-center shadow-[0_18px_50px_rgba(0,0,0,0.45)]">
+                    <div className="rounded-xl border border-dashed border-slate-800/60 bg-[#050914]/80 px-6 py-16 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
                         <div className="space-y-3">
                             <div className="text-5xl">📚</div>
                             <p className="text-lg font-semibold text-white">Không tìm thấy khóa học</p>
@@ -360,7 +365,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     type="button"
                                     onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                                     disabled={currentPage === 1}
-                                    className="grid size-9 place-items-center rounded-lg border border-amber-500/40 bg-[#12121b] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#171722] disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="grid size-9 place-items-center rounded-lg border border-slate-800/70 bg-[#0a1220] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#0f1b30] disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang trước"
                                 >
                                     ‹
@@ -376,7 +381,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                                 "grid size-9 place-items-center rounded-lg border text-sm font-semibold transition duration-200",
                                                 isActive
                                                     ? "border-amber-500 bg-gradient-to-r from-amber-500 to-yellow-400 text-black shadow-[0_12px_30px_rgba(255,193,7,0.25)]"
-                                                    : "border-amber-500/40 bg-[#12121b] text-amber-100 hover:border-amber-400/80 hover:bg-[#171722]"
+                                                    : "border-slate-800/70 bg-[#0a1220] text-amber-100 hover:border-amber-400/80 hover:bg-[#0f1b30]"
                                             )}
                                             aria-current={isActive ? "page" : undefined}
                                         >
@@ -388,7 +393,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     type="button"
                                     onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="grid size-9 place-items-center rounded-lg border border-amber-500/40 bg-[#12121b] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#171722] disabled:cursor-not-allowed disabled:opacity-40"
+                                    className="grid size-9 place-items-center rounded-lg border border-slate-800/70 bg-[#0a1220] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#0f1b30] disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang sau"
                                 >
                                     ›

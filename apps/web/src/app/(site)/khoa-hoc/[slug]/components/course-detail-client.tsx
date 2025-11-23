@@ -132,7 +132,7 @@ export function CourseDetailClient({
           <div className="flex justify-center">
             <button
               onClick={handleClearSelection}
-              className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors underline underline-offset-4"
+              className="px-4 py-2 text-sm font-medium text-slate-400 underline underline-offset-4 transition-colors hover:text-amber-200"
               type="button"
             >
               Quay lại video giới thiệu

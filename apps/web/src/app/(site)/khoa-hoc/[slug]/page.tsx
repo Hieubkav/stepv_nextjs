@@ -394,8 +394,15 @@ function buildFeatureLines(data: CourseDetailPageData) {
 
 function PageShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900">
-      {children}
+    <div className="relative min-h-screen bg-[#030712] text-slate-100 selection:bg-amber-500/25 selection:text-amber-50">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-32 -top-40 h-80 w-80 rounded-full bg-sky-500/10 blur-[160px]" />
+        <div className="absolute right-[-26%] top-10 h-96 w-96 rounded-full bg-amber-500/12 blur-[180px]" />
+        <div className="absolute left-1/3 bottom-[-32%] h-[420px] w-[420px] rounded-full bg-indigo-700/8 blur-[220px]" />
+      </div>
+      <div className="relative">
+        {children}
+      </div>
     </div>
   );
 }
@@ -409,19 +416,19 @@ function ErrorState({
 }) {
   return (
     <PageShell>
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-slate-800/60 bg-[#030712]/80 backdrop-blur">
         <div className="mx-auto max-w-6xl px-4 py-4">
-          <p className="text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">Course</p>
-          <h1 className="text-lg font-semibold leading-tight text-balance">Chi tiết khóa học</h1>
+          <p className="text-xs font-medium uppercase tracking-[0.3em] text-slate-400">Course</p>
+          <h1 className="text-lg font-semibold leading-tight text-balance text-white">Chi tiết khóa học</h1>
         </div>
       </header>
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <Card>
+        <Card className="border-slate-800/70 bg-[#050914] shadow-[0_22px_60px_rgba(0,0,0,0.55)]">
           <CardHeader>
-            <CardTitle className="text-2xl font-semibold">{title}</CardTitle>
+            <CardTitle className="text-2xl font-semibold text-white">{title}</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className="text-sm text-slate-300">{description}</p>
           </CardContent>
         </Card>
       </div>
@@ -583,8 +590,13 @@ export default async function CourseDetailPage({
   return (
     <PageShell>
       <JsonLd data={[breadcrumbSchema, courseSchema]} />
-      <main className="mx-auto max-w-7xl px-4 pb-10 pt-32 lg:pt-36 lg:pb-14">
-        <Button variant="outline" size="sm" className="gap-2 mb-8" asChild>
+      <main className="relative mx-auto max-w-7xl px-4 pb-12 pt-28 text-slate-100 lg:pt-32 lg:pb-16">
+        <Button
+          variant="outline"
+          size="sm"
+          className="mb-8 gap-2 border-slate-800 bg-[#0a1220] text-slate-100 hover:border-amber-400 hover:text-amber-200"
+          asChild
+        >
           <Link href="/khoa-hoc">
             <ArrowLeft className="h-4 w-4" />
             Tất cả khóa học

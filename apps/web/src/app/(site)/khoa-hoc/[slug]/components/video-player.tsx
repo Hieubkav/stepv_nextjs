@@ -223,7 +223,7 @@ export function VideoPlayer({
   if (videoType === "none") {
     if (thumbnail?.url) {
       return (
-        <Card className="overflow-hidden py-0">
+        <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
           <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={thumbnail.url} alt={thumbnail.title ?? "Ảnh khóa học"} className="h-full w-full object-cover" />
@@ -238,7 +238,7 @@ export function VideoPlayer({
     }
 
     return (
-      <Card className="overflow-hidden py-0">
+      <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
         <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center text-white/75">
           <AlertCircle className="mb-4 h-10 w-10" />
           <p className="text-sm font-medium">Bài học này không có video</p>
@@ -255,7 +255,7 @@ export function VideoPlayer({
 
     if (!embedUrl) {
       return (
-        <Card className="overflow-hidden py-0">
+        <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
           <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center text-white/75">
             <AlertCircle className="mb-4 h-10 w-10" />
             <p className="text-sm">Google Drive URL không hợp lệ</p>
@@ -283,7 +283,7 @@ export function VideoPlayer({
   if (!videoId) {
     if (thumbnail?.url) {
       return (
-        <Card className="overflow-hidden py-0">
+        <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
           <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={thumbnail.url} alt={thumbnail.title ?? "Ảnh khóa học"} className="h-full w-full object-cover" />
@@ -303,7 +303,7 @@ export function VideoPlayer({
     }
 
     return (
-      <Card className="overflow-hidden py-0">
+      <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
         <div className="relative aspect-video bg-gradient-to-br from-slate-900 to-slate-800 flex flex-col items-center justify-center text-white/75">
           <Play className="mb-4 h-10 w-10" />
           <p className="text-sm">Video giới thiệu đang cập nhật</p>
@@ -314,7 +314,7 @@ export function VideoPlayer({
 
   // Handle YouTube video
   return (
-    <Card className="overflow-hidden py-0">
+    <Card className="overflow-hidden border border-slate-800/70 bg-[#050914] py-0 shadow-[0_22px_70px_rgba(0,0,0,0.55)]">
       <div
         ref={playerContainerRef}
         className="relative aspect-video bg-black overflow-hidden"
@@ -327,26 +327,26 @@ export function VideoPlayer({
 
       {/* Progress Bar */}
       {selectedLesson && totalDuration > 0 && (
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200">
-          <div className="flex items-center justify-between mb-2">
+        <div className="border-t border-slate-800/70 bg-[#0a1220] px-6 py-4">
+          <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="text-sm font-medium text-gray-700">
+              <div className="text-sm font-medium text-slate-200">
                 Tiến độ: {Math.round((watchedSeconds / totalDuration) * 100)}%
               </div>
               {isCompleted && (
-                <div className="flex items-center gap-1 text-green-600">
+                <div className="flex items-center gap-1 text-emerald-300">
                   <CheckCircle2 className="w-4 h-4" />
                   <span className="text-xs font-medium">Hoàn thành</span>
                 </div>
               )}
             </div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-slate-400">
               {Math.floor(watchedSeconds / 60)}:{String(watchedSeconds % 60).padStart(2, '0')} / {Math.floor(totalDuration / 60)}:{String(Math.floor(totalDuration) % 60).padStart(2, '0')}
             </div>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
             <div
-              className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-200"
+              className="h-full bg-gradient-to-r from-amber-400 to-yellow-300 transition-all duration-200"
               style={{ width: `${Math.min((watchedSeconds / totalDuration) * 100, 100)}%` }}
             />
           </div>

@@ -90,23 +90,26 @@ export function CourseCurriculum({
       </Card> */}
 
       {/* Course Curriculum */}
-      <Card id="curriculum" className="scroll-mt-32 bg-white/95 backdrop-blur-sm border-slate-200 shadow-[0_16px_60px_rgba(15,23,42,0.08)]">
+      <Card
+        id="curriculum"
+        className="scroll-mt-32 border border-slate-800/70 bg-[#050914] text-slate-200 shadow-[0_22px_60px_rgba(0,0,0,0.55)]"
+      >
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Play className="h-5 w-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-white">
+            <Play className="h-5 w-5 text-amber-300" />
             Lộ trình học
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{summary || "Nội dung khóa học đang cập nhật."}</p>
+          <p className="text-sm text-slate-400">{summary || "Nội dung khóa học đang cập nhật."}</p>
           
           {hasFullAccess && completionPercentage !== undefined && (
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-foreground font-medium">Tiến độ học tập</span>
-                <span className="text-emerald-600 font-semibold">{completionPercentage}%</span>
+                <span className="font-medium text-slate-200">Tiến độ học tập</span>
+                <span className="font-semibold text-emerald-300">{completionPercentage}%</span>
               </div>
-              <div className="w-full bg-muted rounded-full h-2">
+              <div className="h-2 w-full rounded-full bg-slate-800">
                 <div
-                  className="bg-emerald-500 h-2 rounded-full transition-all"
+                  className="h-2 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-all"
                   style={{ width: `${completionPercentage}%` }}
                 />
               </div>
@@ -121,23 +124,23 @@ export function CourseCurriculum({
                   {/* Chapter Header */}
                   <button
                     onClick={() => toggleChapter(chapter.id)}
-                    className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors border-b"
+                    className="w-full flex items-center gap-3 border-b border-slate-800/70 p-4 text-left transition-colors hover:bg-slate-900/60"
                     type="button"
                   >
                     <ChevronDown 
-                      className={`h-4 w-4 text-muted-foreground transition-transform ${
+                      className={`h-4 w-4 text-slate-500 transition-transform ${
                         expandedChapters.has(chapter.id) ? 'rotate-180' : ''
                       }`}
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{chapter.title}</p>
-                      <p className="text-xs text-muted-foreground">{chapter.lessons.length} bài học</p>
+                      <p className="text-sm font-medium text-white">{chapter.title}</p>
+                      <p className="text-xs text-slate-500">{chapter.lessons.length} bài học</p>
                     </div>
                   </button>
 
                   {/* Lessons */}
                   {expandedChapters.has(chapter.id) && (
-                    <div className="bg-muted/30">
+                    <div className="border-b border-slate-800/70 bg-slate-900/40">
                       {chapter.lessons.map((lesson) => {
                         const lessonProgress = chaptersProgress
                           ?.find(cp => cp.chapterId === chapter.id)
@@ -163,22 +166,22 @@ export function CourseCurriculum({
               {hasMoreChapters && (
                 <button
                   onClick={() => setShowAllChapters(!showAllChapters)}
-                  className="w-full flex items-center gap-2 p-4 text-left hover:bg-muted/50 transition-colors border-t border-b"
+                  className="w-full flex items-center gap-2 border-t border-b border-slate-800/70 p-4 text-left transition-colors hover:bg-slate-900/60"
                   type="button"
                 >
                   <ChevronDown 
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${
+                    className={`h-4 w-4 text-slate-500 transition-transform ${
                       showAllChapters ? 'rotate-180' : ''
                     }`}
                   />
-                  <span className="text-sm font-medium text-muted-foreground">
+                  <span className="text-sm font-medium text-slate-400">
                     {showAllChapters ? `Ẩn ${chapters.length - 2} chương` : `Xem thêm ${chapters.length - 2} chương`}
                   </span>
                 </button>
               )}
             </div>
           ) : (
-            <div className="px-4 py-6 text-sm text-muted-foreground">Chương trình học sẽ được cập nhật sớm.</div>
+            <div className="px-4 py-6 text-sm text-slate-400">Chương trình học sẽ được cập nhật sớm.</div>
           )}
         </CardContent>
       </Card>
@@ -217,8 +220,8 @@ function CurriculumLessonRow({
       className={cn(
         "w-full border-l-4 p-4 text-left transition-colors flex items-center justify-between gap-3",
         isUnlocked
-          ? "border-l-primary hover:bg-primary/5"
-          : "border-l-muted text-muted-foreground opacity-60",
+          ? "border-l-amber-400/70 bg-slate-900/40 hover:bg-slate-900/70"
+          : "border-l-slate-800 text-slate-500/90 opacity-70",
       )}
     >
       {showCompleteCheckbox ? (
@@ -238,11 +241,14 @@ function CurriculumLessonRow({
             type="button"
           >
             <div className="min-w-0 flex items-center gap-2">
-              <p className={cn("text-sm font-medium text-pretty truncate", isUnlocked ? "text-foreground" : "")}>
+              <p className={cn("text-sm font-medium text-pretty truncate", isUnlocked ? "text-slate-100" : "")}>
                 {lesson.title}
               </p>
               {showUnlockedBadge ? (
-                <Badge variant="outline" className="hidden sm:flex items-center gap-1 bg-emerald-100 text-emerald-800">
+                <Badge
+                  variant="outline"
+                  className="hidden sm:flex items-center gap-1 border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
+                >
                   <Unlock className="h-3 w-3" />
                   Đã mở
                 </Badge>
@@ -262,27 +268,30 @@ function CurriculumLessonRow({
         >
           <div className="flex-shrink-0">
             {isLocked ? (
-              <Lock className="h-4 w-4 text-muted-foreground" />
+              <Lock className="h-4 w-4 text-slate-500" />
             ) : isCompleted ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
             ) : (
               <div
                 className={cn(
                   "flex h-4 w-4 items-center justify-center rounded-full",
-                  isUnlocked ? "bg-primary" : "bg-muted",
+                  isUnlocked ? "bg-amber-400" : "bg-slate-700",
                 )}
               >
-                <Play className="h-2 w-2 text-primary-foreground" />
+                <Play className="h-2 w-2 text-black" />
               </div>
             )}
           </div>
 
           <div className="min-w-0 flex items-center gap-2">
-            <p className={cn("text-sm font-medium text-pretty truncate", isUnlocked ? "text-foreground" : "")}>
+            <p className={cn("text-sm font-medium text-pretty truncate", isUnlocked ? "text-slate-100" : "")}>
               {lesson.title}
             </p>
             {showUnlockedBadge ? (
-              <Badge variant="outline" className="hidden sm:flex items-center gap-1 bg-emerald-100 text-emerald-800">
+              <Badge
+                variant="outline"
+                className="hidden sm:flex items-center gap-1 border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
+              >
                 <Unlock className="h-3 w-3" />
                 Đã mở
               </Badge>
@@ -291,7 +300,7 @@ function CurriculumLessonRow({
         </button>
       )}
       
-      <div className="flex items-center gap-1 text-xs text-muted-foreground flex-shrink-0">
+      <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
         <Clock className="h-3 w-3" />
         <span>{lesson.durationLabel ?? "00:00"}</span>
       </div>
