@@ -141,6 +141,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
   const contactPhone = siteSettings?.value?.contactPhone;
 
   const canDownload = Boolean(resource.isDownloadVisible && resource.downloadUrl);
+  const descriptionHasHtml = Boolean(resource.description && /<\/?[a-z][\s\S]*>/i.test(resource.description));
 
   return (
     <div className="bg-[#05070f] text-white">
@@ -204,9 +205,18 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
               </div>
 
               <h1 className="text-3xl font-semibold text-white sm:text-4xl">{resource.title}</h1>
-              {resource.description && (
-                <p className="text-base text-white/82">{resource.description}</p>
-              )}
+              {resource.description ? (
+                descriptionHasHtml ? (
+                  <div
+                    className="prose prose-sm prose-invert max-w-none leading-relaxed text-white/85 prose-headings:text-white prose-strong:text-white prose-a:text-amber-300 prose-li:marker:text-amber-300"
+                    dangerouslySetInnerHTML={{ __html: resource.description }}
+                  />
+                ) : (
+                  <p className="whitespace-pre-line text-base leading-relaxed text-white/82">
+                    {resource.description}
+                  </p>
+                )
+              ) : null}
 
               {softwares.length > 0 && (
                 <div className="space-y-3">
@@ -283,4 +293,3 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     </div>
   );
 }
-
