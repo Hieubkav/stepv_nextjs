@@ -163,7 +163,9 @@ export function VideoPlayer({
         height: '100%',
         width: '100%',
         videoId: videoId,
+        host: 'https://www.youtube-nocookie.com',
         playerVars: {
+          playsinline: 1,
           modestbranding: 1,
           controls: 1,
           showinfo: 0,
@@ -172,6 +174,7 @@ export function VideoPlayer({
           iv_load_policy: 3,
           autoplay: 0,
           disablekb: 0,
+          origin: typeof window !== 'undefined' ? window.location.origin : undefined,
         },
         events: {
           onReady: (event: any) => {
@@ -202,8 +205,10 @@ export function VideoPlayer({
       if (iframe) {
         iframe.style.display = 'block';
         iframe.setAttribute('allowfullscreen', 'true');
-        const allowAttr = iframe.getAttribute('allow');
-        iframe.setAttribute('allow', allowAttr ? `${allowAttr}; fullscreen` : 'fullscreen');
+        iframe.setAttribute(
+          'allow',
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen',
+        );
       }
     };
 

@@ -90,7 +90,7 @@ export function CourseCurriculum({
       </Card> */}
 
       {/* Course Curriculum */}
-      <Card id="curriculum" className="scroll-mt-28 bg-[#0d1220]/80 border-white/10 shadow-[0_20px_70px_rgba(0,0,0,0.55)]">
+      <Card id="curriculum" className="scroll-mt-32 bg-white/95 backdrop-blur-sm border-slate-200 shadow-[0_16px_60px_rgba(15,23,42,0.08)]">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Play className="h-5 w-5 text-primary" />

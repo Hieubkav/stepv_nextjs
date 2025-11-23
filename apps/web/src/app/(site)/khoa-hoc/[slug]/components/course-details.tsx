@@ -15,7 +15,7 @@ export function CourseDetails({
   const isHtml = description.includes('<') && description.includes('>');
 
   return (
-    <Card id="description" className="scroll-mt-28 bg-[#0d1220]/80 border-white/10 shadow-[0_25px_80px_rgba(0,0,0,0.55)]">
+    <Card id="description" className="scroll-mt-32 bg-white/95 backdrop-blur-sm border-slate-200 shadow-[0_16px_60px_rgba(15,23,42,0.08)]">
       <CardHeader>
         <CardTitle className="text-2xl font-bold text-balance">{title}</CardTitle>
         {subtitle ? <p className="text-muted-foreground">{subtitle}</p> : null}
