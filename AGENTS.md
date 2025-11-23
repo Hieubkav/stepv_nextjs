@@ -15,3 +15,4 @@
 - Use TypeScript strict mode
 - Prefer composition over inheritance
 - Keep functions under 20 lines
+- Theme mặc định: đặt Light (next-themes `defaultTheme="light"`, `resetTheme` về "light")

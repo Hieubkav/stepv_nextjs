@@ -14,9 +14,9 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  defaultTheme: 'system',
+  defaultTheme: 'light',
   resolvedTheme: 'light',
-  theme: 'system',
+  theme: 'light',
   setTheme: () => {},
   resetTheme: () => {},
 }
@@ -29,11 +29,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo<ThemeProviderState>(() => {
     const currentResolved = (resolvedTheme ?? (systemTheme === 'dark' ? 'dark' : 'light')) as ResolvedTheme
     return {
-      defaultTheme: 'system',
+      defaultTheme: 'light',
       resolvedTheme: currentResolved,
-      theme: (theme as Theme) ?? 'system',
+      theme: (theme as Theme) ?? 'light',
       setTheme: (t: Theme) => setTheme(t),
-      resetTheme: () => setTheme('system'),
+      resetTheme: () => setTheme('light'),
     }
   }, [theme, setTheme, systemTheme, resolvedTheme])
 
