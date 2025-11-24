@@ -32,13 +32,13 @@ export default function CheckoutForm({ onSubmit, isLoading = false }: CheckoutFo
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (!formData.fullName.trim()) next.fullName = 'Vui long nhap ho ten day du';
+    if (!formData.fullName.trim()) next.fullName = 'Vui lòng nhập họ tên đầy đủ';
     if (!formData.email.trim()) {
-      next.email = 'Vui long nhap email';
+      next.email = 'Vui lòng nhập email';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      next.email = 'Email khong hop le';
+      next.email = 'Email không hợp lệ';
     }
-    if (!formData.phone.trim()) next.phone = 'Vui long nhap so dien thoai';
+    if (!formData.phone.trim()) next.phone = 'Vui lòng nhập số điện thoại';
     return next;
   };
 
