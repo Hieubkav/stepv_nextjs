@@ -15,7 +15,6 @@ import {
   Wrench,
   UserCog,
   UserX,
-  Users,
   MessagesSquare,
   ShieldCheck,
   AudioWaveform,
@@ -53,7 +52,6 @@ export const sidebarData: SidebarData = {
         { title: 'Media', url: '/dashboard/media', icon: GalleryVerticalEnd },
         { title: 'Khóa học', url: '/dashboard/courses', icon: GraduationCap },
         { title: 'Khách hàng', url: '/dashboard/customers', icon: UserCog },
-        { title: 'Học viên', url: '/dashboard/students', icon: Users },
         { title: 'Đơn hàng', url: '/dashboard/orders', icon: ShoppingCart },
         {
           title: 'Thư viện',
