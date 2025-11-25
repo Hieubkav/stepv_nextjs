@@ -755,6 +755,185 @@ export const sendPaymentReceivedEmail = internalAction({
     },
 });
 
+export const sendCheckoutTransferEmails = internalAction({
+    args: {
+        adminEmail: v.optional(v.string()),
+        customerEmail: v.optional(v.string()),
+        customerName: v.optional(v.string()),
+        orderNumber: v.string(),
+        amount: v.number(),
+        itemCount: v.number(),
+    },
+    returns: v.object({
+        sentToAdmin: v.boolean(),
+        sentToCustomer: v.boolean(),
+    }),
+    handler: async (_, args) => {
+        const {
+            adminEmail,
+            customerEmail,
+            customerName = "Khach hang",
+            orderNumber,
+            amount,
+            itemCount,
+        } = args;
+
+        const currency = amount.toLocaleString("vi-VN");
+        let sentToAdmin = false;
+        let sentToCustomer = false;
+
+        if (adminEmail) {
+            const adminHtml = `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; background: #f8fafc; padding: 16px;">
+          <div style="max-width: 620px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+            <div style="background: linear-gradient(120deg, #fbbf24, #f59e0b); color: #111; padding: 14px 18px; font-weight: 700;">
+              Khach da bam "Toi da chuyen khoan"
+            </div>
+            <div style="background: #ffffff; padding: 18px;">
+              <p><strong>Ma don:</strong> ${orderNumber}</p>
+              <p><strong>Tong tien:</strong> ${currency} VND</p>
+              <p><strong>So san pham:</strong> ${itemCount}</p>
+              <p><strong>Khach hang:</strong> ${customerName}</p>
+              <p><strong>Email:</strong> ${customerEmail ?? "Chua cap nhat"}</p>
+              <p style="margin-top: 16px;">Vui long kiem tra giao dich va cap nhat trang thai don trong dashboard.</p>
+              <a href="${BASE_URL}/dashboard/orders" style="display:inline-block;margin-top:12px;background:#fbbf24;color:#111;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">Mo dashboard</a>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+            sentToAdmin = await sendEmailViaSMTP({
+                to: adminEmail,
+                subject: `[Dohy] Don #${orderNumber} da bao chuyen khoan`,
+                html: adminHtml,
+            });
+        }
+
+        if (customerEmail) {
+            const customerHtml = `
+      <!DOCTYPE html>
+      <html>
+        <body style="font-family: Arial, sans-serif; background: #0b1021; padding: 16px;">
+          <div style="max-width: 620px; margin: 0 auto; border: 1px solid #1f2937; border-radius: 12px; overflow: hidden; background: #0f172a; color: #e2e8f0;">
+            <div style="background: linear-gradient(120deg, #22d3ee, #3b82f6); color: #0b1021; padding: 14px 18px; font-weight: 700;">
+              Da nhan yeu cau thanh toan
+            </div>
+            <div style="padding: 18px;">
+              <p>Chao ${customerName},</p>
+              <p>Hệ thống đã nhận thông báo "Tôi đã chuyển khoản" của bạn.</p>
+              <p><strong>Ma don:</strong> ${orderNumber}</p>
+              <p><strong>So tien:</strong> ${currency} VND</p>
+              <p><strong>Trang thai:</strong> Cho xac nhan thanh toan tu admin.</p>
+              <p style="margin-top: 14px;">Ban se nhan email xac nhan ngay khi don duoc duyet.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+            sentToCustomer = await sendEmailViaSMTP({
+                to: customerEmail,
+                subject: `Da nhan yeu cau thanh toan don #${orderNumber}`,
+                html: customerHtml,
+            });
+        }
+
+        return { sentToAdmin, sentToCustomer };
+    },
+});
+
+export const sendOrderActivatedEmail = internalAction({
+    args: {
+        customerEmail: v.string(),
+        customerName: v.string(),
+        orderNumber: v.string(),
+        totalAmount: v.number(),
+        items: v.array(
+            v.object({
+                name: v.string(),
+                type: v.union(v.literal("course"), v.literal("resource"), v.literal("vfx")),
+                slug: v.optional(v.string()),
+            }),
+        ),
+    },
+    returns: v.boolean(),
+    handler: async (_, { customerEmail, customerName, orderNumber, totalAmount, items }) => {
+        const libraryUrl = `${BASE_URL}/my-library`;
+        const currency = totalAmount.toLocaleString("vi-VN");
+
+        const productLink = (item: { type: string; slug?: string }) => {
+            if (!item.slug) return null;
+            if (item.type === "course") return `${BASE_URL}/khoa-hoc/${item.slug}`;
+            if (item.type === "resource") return `${BASE_URL}/thu-vien/${item.slug}`;
+            return `${BASE_URL}/vfx/${item.slug}`;
+        };
+
+        const itemsHtml = items
+            .map((item) => {
+                const link = productLink(item);
+                const label =
+                    item.type === "course" ? "Khóa học" : item.type === "resource" ? "Tài nguyên" : "VFX";
+
+                return `<li style="margin-bottom:10px;">
+                  <span style="display:inline-block;min-width:80px;font-weight:600;color:#0f172a;">${label}</span>
+                  <span style="color:#0f172a;">${item.name}</span>
+                  ${link ? `<div><a href="${link}" style="color:#2563eb;text-decoration:none;">Xem ngay</a></div>` : ""}
+                </li>`;
+            })
+            .join("");
+
+        const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; background: #f8fafc; color: #0f172a; }
+            .wrap { max-width: 640px; margin: 0 auto; padding: 24px; }
+            .card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 30px rgba(15,23,42,0.08); overflow: hidden; }
+            .header { background: linear-gradient(120deg, #22c55e, #16a34a); color: #ecfdf3; padding: 20px 24px; }
+            .title { margin: 0; font-size: 20px; font-weight: 700; }
+            .content { padding: 24px; }
+            .cta { display: inline-block; margin-top: 18px; background: #0ea5e9; color: #0b1120; padding: 12px 24px; border-radius: 10px; font-weight: 700; text-decoration: none; }
+            .box { background: #f8fafc; border: 1px dashed #e2e8f0; padding: 16px; border-radius: 10px; margin: 16px 0; }
+            ul { padding-left: 18px; margin: 12px 0 0; }
+          </style>
+        </head>
+        <body>
+          <div class="wrap">
+            <div class="card">
+              <div class="header">
+                <p class="title">Đơn hàng #${orderNumber} đã hoàn thành</p>
+                <p style="margin:6px 0 0;font-size:13px;color:#d1fae5;">Bạn đã có thể tải VFX, tài nguyên và học khóa học ngay.</p>
+              </div>
+              <div class="content">
+                <p style="margin:0 0 12px;">Chào ${customerName},</p>
+                <p style="margin:0 0 12px;">Thanh toán đã được xác nhận. Tài khoản của bạn vừa được mở quyền truy cập cho các sản phẩm sau:</p>
+                <div class="box">
+                  <div style="font-weight:700;color:#0f172a;">Tổng thanh toán: ${currency} VND</div>
+                  <ul>${itemsHtml}</ul>
+                </div>
+                <p style="margin:0 0 12px;">Nhấn nút bên dưới để vào ngay thư viện, tải file VFX, tài nguyên hoặc bắt đầu học.</p>
+                <a class="cta" href="${libraryUrl}">Mở thư viện của tôi</a>
+                <p style="margin:16px 0 0;font-size:13px;color:#475569;">Nếu cần hỗ trợ, hãy trả lời email này hoặc liên hệ đội ngũ Dohy.</p>
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+        return await sendEmailViaSMTP({
+            to: customerEmail,
+            subject: `Đơn ${orderNumber} đã hoàn thành - Dohy`,
+            html,
+        });
+    },
+});
+
 export const sendPaymentConfirmedEmail = internalAction({
     args: {
         studentEmail: v.string(),

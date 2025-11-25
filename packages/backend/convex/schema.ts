@@ -454,7 +454,8 @@ export default defineSchema({
   })
     .index("by_customer", ["customerId"])
     .index("by_order", ["orderId"])
-    .index("by_customer_product", ["customerId", "productType", "productId"]),
+    .index("by_customer_product", ["customerId", "productType", "productId"])
+    .index("by_product", ["productType", "productId"]),
 
   // Course favorites (danh sach yeu thich hoc vien)
   course_favorites: defineTable({

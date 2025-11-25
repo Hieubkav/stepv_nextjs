@@ -71,20 +71,18 @@ export default function OrdersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch orders based on status
-  const pendingOrders = useQuery(api.orders.getPendingOrders) || [];
-  const paidOrders = useQuery(api.orders.getPaidOrders) || [];
+  const allOrders = useQuery(api.orders.listOrders, { limit: 500 }) || [];
   const deleteOrderMutation = useMutation(api.orders.deleteOrder);
 
-  const allOrders = useMemo(() => {
-    const orders = [...(pendingOrders || []), ...(paidOrders || [])];
+  const filteredOrders = useMemo(() => {
+    let filtered = [...(allOrders || [])];
 
     // Filter by status
-    let filtered = orders;
     if (statusFilter !== 'all') {
       filtered = filtered.filter((o) => o.status === statusFilter);
     }
 
-    // Filter by search (order number or customer email)
+    // Filter by search (order number or notes)
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -97,7 +95,7 @@ export default function OrdersPage() {
     // Sort by date descending
     filtered.sort((a, b) => b.createdAt - a.createdAt);
     return filtered;
-  }, [pendingOrders, paidOrders, statusFilter, searchQuery]);
+  }, [allOrders, statusFilter, searchQuery]);
 
   const counts = useMemo(() => {
     const summary: Record<'all' | OrderStatus, number> = {
@@ -178,7 +176,7 @@ export default function OrdersPage() {
           <CardTitle>Danh sách đơn hàng</CardTitle>
         </CardHeader>
         <CardContent>
-          {allOrders.length === 0 ? (
+          {filteredOrders.length === 0 ? (
             <div className="py-8 text-center text-muted-foreground">
               <p>Không có đơn hàng nào</p>
             </div>
@@ -196,7 +194,7 @@ export default function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {allOrders.map((order) => {
+                  {filteredOrders.map((order) => {
                     const config = statusConfig[order.status as OrderStatus];
                     const itemCount = (order as any).items?.length || 1;
 

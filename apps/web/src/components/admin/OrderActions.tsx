@@ -217,13 +217,17 @@ export default function OrderActions({ order, onRefresh }: OrderActionsProps) {
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Kích hoạt đơn hàng?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Kích hoạt đơn hàng <strong>{order.orderNumber}</strong> sẽ:
-                <ul className="list-disc pl-5 mt-2 space-y-1">
-                  <li>Tạo quyền truy cập cho {order.items.length} sản phẩm</li>
-                  <li>Khách hàng có thể xem trong "Thư viện của tôi"</li>
-                  <li>Cho phép download/truy cập ngay lập tức</li>
-                </ul>
+              <AlertDialogDescription asChild>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    Kích hoạt đơn hàng <strong>{order.orderNumber}</strong> sẽ:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Tạo quyền truy cập cho {order.items.length} sản phẩm</li>
+                    <li>Khách hàng có thể xem trong "Thư viện của tôi"</li>
+                    <li>Cho phép download/truy cập ngay lập tức</li>
+                  </ul>
+                </div>
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

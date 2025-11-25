@@ -1,8 +1,18 @@
 // Purchase management - lifetime access after buying
 import { mutation, query } from "./_generated/server";
-import type { QueryCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
+
+type AnyCtx = QueryCtx | MutationCtx;
+type ProductType = "course" | "resource" | "vfx";
+
+const loadProduct = async (ctx: AnyCtx, productType: string, productId: string) => {
+    if (productType === "course") return ctx.db.get(productId as Id<"courses">);
+    if (productType === "resource") return ctx.db.get(productId as Id<"library_resources">);
+    if (productType === "vfx") return ctx.db.get(productId as Id<"vfx_products">);
+    return null;
+};
 
 // Get customer purchases
 export const getCustomerPurchases = query({
@@ -12,6 +22,44 @@ export const getCustomerPurchases = query({
             .query("customer_purchases")
             .withIndex("by_customer", (q) => q.eq("customerId", customerId))
             .collect();
+    },
+});
+
+// List purchases for a product (admin view)
+export const listPurchasesByProduct = query({
+    args: {
+        productType: v.union(v.literal("course"), v.literal("resource"), v.literal("vfx")),
+        productId: v.string(),
+    },
+    handler: async (ctx, { productType, productId }) => {
+        const purchases = await ctx.db
+            .query("customer_purchases")
+            .withIndex("by_product", (q) => q.eq("productType", productType).eq("productId", productId))
+            .collect();
+
+        purchases.sort((a, b) => b.createdAt - a.createdAt);
+
+        return Promise.all(
+            purchases.map(async (purchase) => {
+                const customer = await ctx.db.get(purchase.customerId);
+                const order = await ctx.db.get(purchase.orderId);
+                return {
+                    ...purchase,
+                    customer: customer
+                        ? {
+                              _id: customer._id,
+                              fullName: customer.fullName,
+                              email: customer.email,
+                              phone: customer.phone,
+                              account: customer.account,
+                              active: customer.active,
+                          }
+                        : null,
+                    orderNumber: order?.orderNumber ?? null,
+                    orderStatus: order?.status ?? null,
+                };
+            })
+        );
     },
 });
 
@@ -159,6 +207,27 @@ export const getCustomerLibrary = query({
     },
 });
 
+// Admin: purchases kèm product + order
+export const getCustomerPurchasesWithMeta = query({
+    args: { customerId: v.id("customers") },
+    handler: async (ctx, { customerId }) => {
+        const purchases = await ctx.db
+            .query("customer_purchases")
+            .withIndex("by_customer", (q) => q.eq("customerId", customerId))
+            .collect();
+
+        purchases.sort((a, b) => b.createdAt - a.createdAt);
+
+        return Promise.all(
+            purchases.map(async (purchase) => {
+                const product = await loadProduct(ctx, purchase.productType, purchase.productId);
+                const order = await ctx.db.get(purchase.orderId);
+                return { ...purchase, product, order };
+            })
+        );
+    },
+});
+
 // Get recent purchases (for dashboard)
 export const getRecentPurchases = query({
     args: {
@@ -184,5 +253,17 @@ export const getPurchasesByOrder = query({
             .query("customer_purchases")
             .withIndex("by_order", (q) => q.eq("orderId", orderId))
             .collect();
+    },
+});
+
+// Revoke a purchase (admin)
+export const revokePurchase = mutation({
+    args: { purchaseId: v.id("customer_purchases") },
+    handler: async (ctx, { purchaseId }) => {
+        const purchase = await ctx.db.get(purchaseId);
+        if (!purchase) return { ok: false } as const;
+
+        await ctx.db.delete(purchaseId);
+        return { ok: true } as const;
     },
 });

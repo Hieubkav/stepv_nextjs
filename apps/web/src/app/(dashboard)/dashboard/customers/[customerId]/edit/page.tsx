@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
@@ -26,6 +26,19 @@ type CustomerDetail = {
   createdAt?: number;
   updatedAt?: number;
 };
+
+type PurchaseWithMeta = {
+  _id: Id<"customer_purchases">;
+  customerId: Id<"customers">;
+  orderId: Id<"orders">;
+  productType: "course" | "resource" | "vfx";
+  productId: string;
+  createdAt: number;
+  product?: Record<string, any> | null;
+  order?: { _id: Id<"orders">; orderNumber?: string | null; status?: string; createdAt: number } | null;
+};
+
+type ProductOption = { id: string; label: string; type: "course" | "resource" | "vfx" };
 
 const buildInitial = (customer: CustomerDetail): CustomerFormValues => ({
   account: customer.account,
@@ -55,13 +68,73 @@ export default function CustomerEditPage() {
   const customer = useQuery(api.customers.getCustomer, { id: customerId }) as CustomerDetail | null | undefined;
   const updateCustomer = useMutation(api.customers.updateCustomer);
   const setActive = useMutation(api.customers.setCustomerActive);
+  const purchases = useQuery(api.purchases.getCustomerPurchasesWithMeta, { customerId }) as
+    | PurchaseWithMeta[]
+    | undefined;
+  const courses = useQuery(api.courses.listCourses, { includeInactive: true }) as any[] | undefined;
+  const resources = useQuery(api.library.listResources, { activeOnly: false }) as any[] | undefined;
+  const vfxList = useQuery(api.vfx.listVfxProducts, { activeOnly: false }) as any[] | undefined;
+  const grantProduct = useMutation(api.orders.grantProductToCustomer);
+  const revokePurchase = useMutation(api.purchases.revokePurchase);
 
   const [submitting, setSubmitting] = useState(false);
+  const [granting, setGranting] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<"course" | "resource" | "vfx">("course");
+  const [selectedProductId, setSelectedProductId] = useState("");
 
   const initialValues = useMemo(() => {
     if (!customer) return emptyInitial;
     return buildInitial(customer);
   }, [customer]);
+
+  const courseOptions = useMemo(
+    () =>
+      (courses ?? [])
+        .slice()
+        .sort((a, b) => (a.title || "").localeCompare(b.title || ""))
+        .map((c) => ({ id: String(c._id), label: c.title || c.slug || "Course" })),
+    [courses],
+  );
+
+  const resourceOptions = useMemo(
+    () =>
+      (resources ?? [])
+        .slice()
+        .sort((a, b) => (a.title || "").localeCompare(b.title || ""))
+        .map((r) => ({ id: String(r._id), label: r.title || r.slug || "Resource" })),
+    [resources],
+  );
+
+  const vfxOptions = useMemo(
+    () =>
+      (vfxList ?? [])
+        .slice()
+        .sort((a, b) => (a.title || "").localeCompare(b.title || ""))
+        .map((vfx) => ({ id: String(vfx._id), label: vfx.title || vfx.slug || "VFX" })),
+    [vfxList],
+  );
+
+  const currentOptions =
+    selectedType === "course" ? courseOptions : selectedType === "resource" ? resourceOptions : vfxOptions;
+
+  useEffect(() => {
+    if (currentOptions.length && !selectedProductId) {
+      setSelectedProductId(currentOptions[0].id);
+    }
+  }, [currentOptions, selectedProductId]);
+
+  useEffect(() => {
+    if (currentOptions.length && selectedProductId && !currentOptions.find((opt) => opt.id === selectedProductId)) {
+      setSelectedProductId(currentOptions[0].id);
+    }
+  }, [currentOptions, selectedProductId]);
+
+  const sortedPurchases = useMemo(() => {
+    const list = Array.isArray(purchases) ? [...purchases] : [];
+    list.sort((a, b) => b.createdAt - a.createdAt);
+    return list;
+  }, [purchases]);
 
   async function handleSubmit(values: CustomerFormValues) {
     if (!customer) return;
@@ -91,6 +164,46 @@ export default function CustomerEditPage() {
       toast.error(error?.message ?? "Không thể cập nhật khách hàng");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleAddPurchase(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedProductId) {
+      toast.error("Chọn sản phẩm trước khi thêm");
+      return;
+    }
+    setGranting(true);
+    try {
+      const result = await grantProduct({
+        customerId,
+        productType: selectedType,
+        productId: selectedProductId,
+      } as any);
+      if (result?.ok) {
+        toast.success("Đã cấp quyền sản phẩm cho khách");
+      } else if (result?.reason === "already_purchased") {
+        toast.info("Khách đã sở hữu sản phẩm này");
+      } else if (result?.reason === "has_active_order") {
+        toast.info("Khách đang có đơn liên quan, không thể thêm mới.");
+      }
+    } catch (error: any) {
+      toast.error(error?.message ?? "Không thể thêm quyền");
+    } finally {
+      setGranting(false);
+    }
+  }
+
+  async function handleRevokePurchase(purchaseId: Id<"customer_purchases">) {
+    if (!window.confirm("Gỡ quyền sản phẩm này khỏi khách hàng?")) return;
+    setRevokingId(String(purchaseId));
+    try {
+      await revokePurchase({ purchaseId });
+      toast.success("Đã gỡ quyền truy cập");
+    } catch (error: any) {
+      toast.error(error?.message ?? "Không thể gỡ quyền");
+    } finally {
+      setRevokingId(null);
     }
   }
 
@@ -144,6 +257,112 @@ export default function CustomerEditPage() {
             onSubmit={handleSubmit}
             requirePassword={false}
           />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quyền sản phẩm</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form className="grid gap-3 sm:grid-cols-[1fr,2fr,auto]" onSubmit={handleAddPurchase}>
+            <div>
+              <label className="text-sm font-medium">Loại sản phẩm</label>
+              <select
+                className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                value={selectedType}
+                onChange={(event) => {
+                  setSelectedType(event.target.value as "course" | "resource" | "vfx");
+                  setSelectedProductId("");
+                }}
+              >
+                <option value="course">Khóa học</option>
+                <option value="resource">Thư viện</option>
+                <option value="vfx">VFX</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Sản phẩm</label>
+              {currentOptions.length === 0 ? (
+                <div className="mt-2 text-xs text-muted-foreground">Không có sản phẩm khả dụng.</div>
+              ) : (
+                <select
+                  className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  value={selectedProductId}
+                  onChange={(event) => setSelectedProductId(event.target.value)}
+                >
+                  {currentOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            <div className="flex items-end">
+              <Button type="submit" disabled={granting || !currentOptions.length}>
+                {granting ? "Đang thêm..." : "Thêm quyền"}
+              </Button>
+            </div>
+          </form>
+
+          <Separator />
+
+          {purchases === undefined && (
+            <div className="text-sm text-muted-foreground">Đang tải danh sách quyền...</div>
+          )}
+          {purchases && sortedPurchases.length === 0 && (
+            <div className="text-sm text-muted-foreground">Khách chưa sở hữu sản phẩm nào.</div>
+          )}
+          {sortedPurchases.length > 0 && (
+            <div className="space-y-2">
+              {sortedPurchases.map((purchase) => {
+                const product = (purchase.product as any) ?? {};
+                const title =
+                  product.title ||
+                  product.name ||
+                  product.subtitle ||
+                  product.slug ||
+                  "Sản phẩm";
+                const typeLabel =
+                  purchase.productType === "course"
+                    ? "Khóa học"
+                    : purchase.productType === "resource"
+                      ? "Thư viện"
+                      : "VFX";
+                const orderNumber = purchase.order?.orderNumber ?? purchase.orderId;
+                return (
+                  <div
+                    key={String(purchase._id)}
+                    className="flex flex-col gap-2 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold">{title}</span>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                          {typeLabel}
+                        </span>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        Đơn: {orderNumber}{" "}
+                        {purchase.order?.status ? `(${purchase.order?.status})` : ""}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRevokePurchase(purchase._id)}
+                        disabled={revokingId === String(purchase._id)}
+                      >
+                        {revokingId === String(purchase._id) ? "Đang gỡ..." : "Gỡ quyền"}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
