@@ -26,10 +26,8 @@ const defaultValues: VfxFormValues = {
   order: "0",
   active: true,
   thumbnailId: "",
-  previewVideoId: "",
-  downloadFileId: "",
-  downloadMode: "media",
-  downloadLink: "",
+  previews: [],
+  downloads: [],
   tags: "",
 };
 
@@ -47,35 +45,16 @@ export default function NewVfxPage() {
   async function handleSubmit(values: VfxFormValues) {
     const title = values.title.trim();
     const slug = values.slug.trim().toLowerCase();
-    const previewVideoId = values.previewVideoId.trim();
-    let downloadFileId = values.downloadFileId.trim();
+    const activePreviews = values.previews.filter((item) => item.active);
+    const activeDownloads = values.downloads.filter((item) => item.active);
 
-    if (!title || !slug || !previewVideoId) {
-      toast.error("Vui lòng nhập Title và preview video (slug tự sinh)");
+    if (!title || !slug) {
+      toast.error("Vui lòng nhập Title và slug hợp lệ");
       return;
     }
 
-    if (values.downloadMode === "media") {
-      if (!downloadFileId) {
-        toast.error("Vui lòng chọn file download từ Media");
-        return;
-      }
-    } else {
-      const link = values.downloadLink.trim();
-      if (!link) {
-        toast.error("Nhập link download ngoài");
-        return;
-      }
-      try {
-        downloadFileId = (await createMediaLink({ externalUrl: link, title: title || undefined })) as any;
-      } catch (error: any) {
-        toast.error(error?.message ?? "Không tạo được media cho link download");
-        return;
-      }
-    }
-
-    if (!downloadFileId) {
-      toast.error("Thiếu file download");
+    if (!activePreviews.length || !activeDownloads.length) {
+      toast.error("Cần ít nhất 1 preview và 1 file download (đang bật)");
       return;
     }
 
@@ -93,6 +72,30 @@ export default function NewVfxPage() {
         .map((tag) => tag.trim())
         .filter(Boolean);
 
+      async function ensureMediaId(asset: (typeof values.previews)[number]) {
+        if (asset.mediaId) return asset.mediaId as any;
+        if (asset.source === "link" && asset.url.trim()) {
+          return (await createMediaLink({ externalUrl: asset.url.trim(), title: title || undefined })) as any;
+        }
+        throw new Error("Thiếu media cho asset");
+      }
+
+      const allAssets = [...values.previews, ...values.downloads];
+      const assetsPayload = [] as any[];
+      for (const asset of allAssets) {
+        const mediaId = await ensureMediaId(asset);
+        assetsPayload.push({
+          id: asset.id ? (asset.id as any) : undefined,
+          mediaId,
+          kind: asset.kind,
+          label: asset.label?.trim() || undefined,
+          variant: asset.variant?.trim() || undefined,
+          isPrimary: Boolean(asset.isPrimary),
+          active: asset.active,
+          order: asset.order,
+        });
+      }
+
       await createVfx({
         slug,
         title,
@@ -100,8 +103,6 @@ export default function NewVfxPage() {
         description: values.description.trim() || undefined,
         category: values.category as any,
         thumbnailId: values.thumbnailId ? (values.thumbnailId as any) : undefined,
-        previewVideoId: previewVideoId as any,
-        downloadFileId: downloadFileId as any,
         pricingType: values.pricingType,
         priceAmount: price,
         comparePriceAmount: originalPrice,
@@ -114,6 +115,7 @@ export default function NewVfxPage() {
         tags,
         order,
         active: values.active,
+        assets: assetsPayload,
       } as any);
 
       toast.success("Đã tạo VFX mới");

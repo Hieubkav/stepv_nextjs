@@ -5,7 +5,7 @@ import type { Route } from "next";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
-import { Search, Play, Gauge } from "lucide-react";
+import { Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +33,6 @@ const priceOptions = [
 ] as const;
 
 type PriceFilter = (typeof priceOptions)[number]["value"];
-
 type SortOption = "latest" | "oldest" | "popular" | "priceHigh" | "priceLow";
 
 const sortOptions: { label: string; value: SortOption }[] = [
@@ -48,57 +47,48 @@ function normalizeText(value: unknown) {
   return typeof value === "string" ? value.normalize("NFC").toLowerCase() : "";
 }
 
-function formatDuration(seconds: number) {
-  if (!Number.isFinite(seconds) || seconds <= 0) return "Đang cập nhật";
-  if (seconds < 1) return `${(seconds * 1000).toFixed(0)}ms`;
-  if (seconds < 60) return `${seconds.toFixed(1).replace(/\.0$/, "")}s`;
-  const mins = Math.round(seconds / 60);
-  return `${mins} phút`;
-}
-
 type VfxCardProps = {
   product: VfxProductDoc;
-  previewUrl?: string | null;
   thumbUrl?: string | null;
 };
 
-function VfxCard({ product, previewUrl, thumbUrl }: VfxCardProps) {
+function VfxCard({ product, thumbUrl }: VfxCardProps) {
   const detailHref = (`/vfx/${product.slug}`) as Route;
   const isFree = product.pricingType === "free";
   const priceLabel = isFree ? "Miễn phí" : formatPrice(product.price ?? 0);
-  const compareLabel = !isFree && product.originalPrice && product.originalPrice > (product.price ?? 0)
-    ? formatPrice(product.originalPrice)
-    : null;
-  const specs = [product.resolution, `${product.frameRate}fps`, product.format];
+  const compareLabel =
+    !isFree && product.originalPrice && product.originalPrice > (product.price ?? 0)
+      ? formatPrice(product.originalPrice)
+      : null;
+
+  const sizeLabel =
+    Number.isFinite(product.fileSize) && product.fileSize > 0
+      ? `${(product.fileSize / (1024 * 1024)).toFixed(1).replace(/\.0$/, "")} MB`
+      : "Kích thước ?";
+  const specs = [product.resolution || "Độ phân giải ?", sizeLabel];
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800/70 bg-[#050914] shadow-[0_20px_60px_rgba(0,0,0,0.45)] transition-all duration-300 hover:-translate-y-1 hover:border-amber-400/60 hover:shadow-[0_25px_80px_rgba(255,193,7,0.18)]">
       <div className="relative aspect-video overflow-hidden bg-[#0a1424]">
-        {previewUrl ? (
-          <video
-            src={previewUrl}
-            className="h-full w-full object-cover transition duration-700 group-hover:scale-[1.02]"
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          />
-        ) : thumbUrl ? (
+        {thumbUrl ? (
           <img src={thumbUrl} alt={product.title} className="h-full w-full object-cover" />
         ) : (
           <div className="absolute inset-0 grid place-items-center text-xs uppercase tracking-[0.35em] text-amber-200/70">
-            Chưa có preview
+            Chưa có thumbnail
           </div>
         )}
         <div className="absolute left-3 top-3 flex gap-2 drop-shadow-[0_10px_25px_rgba(0,0,0,0.35)]">
-          <Badge className={cn("border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]", isFree ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-50" : "border-amber-400/60 bg-amber-500/15 text-amber-50")}>{isFree ? "Free" : "Paid"}</Badge>
+          <Badge
+            className={cn(
+              "border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]",
+              isFree ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-50" : "border-amber-400/60 bg-amber-500/15 text-amber-50",
+            )}
+          >
+            {isFree ? "Free" : "Paid"}
+          </Badge>
           <Badge variant="outline" className="border-amber-400/40 bg-black/30 text-amber-100/90 text-[11px]">
             {product.category}
           </Badge>
-        </div>
-        <div className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full border border-white/10 bg-black/40 px-3 py-1 text-[11px] text-white backdrop-blur">
-          <Play className="h-3.5 w-3.5" />
-          <span>{formatDuration(product.duration)}</span>
         </div>
       </div>
 
@@ -107,9 +97,7 @@ function VfxCard({ product, previewUrl, thumbUrl }: VfxCardProps) {
           <h3 className="line-clamp-2 text-base font-semibold leading-tight text-white transition-colors duration-300 group-hover:text-amber-300">
             {product.title}
           </h3>
-          {product.subtitle ? (
-            <p className="line-clamp-2 text-xs text-slate-400">{product.subtitle}</p>
-          ) : null}
+          {product.subtitle ? <p className="line-clamp-2 text-xs text-slate-400">{product.subtitle}</p> : null}
         </div>
 
         <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-amber-100">
@@ -118,11 +106,6 @@ function VfxCard({ product, previewUrl, thumbUrl }: VfxCardProps) {
               {spec}
             </span>
           ))}
-          {product.hasAlpha ? (
-            <span className="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-3 py-1 text-emerald-50">
-              Alpha
-            </span>
-          ) : null}
         </div>
 
         <div className="mt-auto flex items-center justify-between">
@@ -130,14 +113,9 @@ function VfxCard({ product, previewUrl, thumbUrl }: VfxCardProps) {
             <span className="text-sm font-semibold bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
               {priceLabel}
             </span>
-            {compareLabel ? (
-              <span className="text-[11px] text-amber-100/70 line-through">{compareLabel}</span>
-            ) : null}
+            {compareLabel ? <span className="text-[11px] text-amber-100/70 line-through">{compareLabel}</span> : null}
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            <Gauge className="h-3.5 w-3.5" />
-            {product.downloadCount ?? 0} tải
-          </div>
+          <div />
         </div>
       </div>
 
@@ -347,11 +325,9 @@ export default function VfxListView() {
         {filtered.length === 0 && !isLoading ? (
           <div className="rounded-xl border border-dashed border-slate-800/60 bg-[#050914]/80 px-6 py-16 text-center shadow-[0_20px_60px_rgba(0,0,0,0.55)]">
             <div className="space-y-3">
-              <div className="text-5xl">✨</div>
+              <div className="text-5xl">🙁</div>
               <p className="text-lg font-semibold text-white">Chưa có VFX phù hợp</p>
-              <p className="text-sm text-amber-100/80">
-                Hãy thử đổi bộ lọc, tìm kiếm khác hoặc xem tất cả VFX.
-              </p>
+              <p className="text-sm text-amber-100/80">Hãy thử đổi bộ lọc, tìm kiếm khác hoặc xem tất cả VFX.</p>
               <div className="mt-4 flex justify-center">
                 <Button
                   variant="outline"
@@ -369,19 +345,10 @@ export default function VfxListView() {
           {isLoading
             ? Array.from({ length: 8 }).map((_, index) => <VfxCardSkeleton key={index} />)
             : filtered.map((product) => {
-                const mediaPreview = mediaMap.get(String(product.previewVideoId));
                 const thumb = product.thumbnailId ? mediaMap.get(String(product.thumbnailId)) : null;
-                const previewUrl = mediaPreview?.url ?? mediaPreview?.externalUrl ?? null;
                 const thumbUrl = thumb?.url ?? thumb?.externalUrl ?? null;
 
-                return (
-                  <VfxCard
-                    key={String(product._id)}
-                    product={product}
-                    previewUrl={previewUrl}
-                    thumbUrl={previewUrl ? previewUrl : thumbUrl}
-                  />
-                );
+                return <VfxCard key={String(product._id)} product={product} thumbUrl={thumbUrl} />;
               })}
         </section>
       </div>

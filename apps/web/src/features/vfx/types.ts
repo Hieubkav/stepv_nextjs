@@ -39,6 +39,21 @@ export type VfxProductDoc = {
   updatedAt: number;
 };
 
+export type VfxAssetDoc = {
+  _id: Id<"vfx_assets">;
+  vfxId: Id<"vfx_products">;
+  mediaId: Id<"media">;
+  kind: "preview" | "download";
+  label?: string;
+  variant?: string;
+  isPrimary?: boolean;
+  sizeBytes?: number;
+  order: number;
+  active: boolean;
+  createdAt: number;
+  updatedAt: number;
+};
+
 export type MediaDoc = {
   _id: Id<"media">;
   kind?: "image" | "video" | string;

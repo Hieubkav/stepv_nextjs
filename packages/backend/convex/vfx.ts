@@ -7,6 +7,107 @@ import type { Id } from "./_generated/dataModel";
 type AnyCtx = MutationCtx | QueryCtx;
 
 type VfxCategory = "explosion" | "fire" | "smoke" | "water" | "magic" | "particle" | "transition" | "other";
+type VfxAssetKind = "preview" | "download";
+
+type VfxAssetInput = {
+  id?: Id<"vfx_assets">;
+  mediaId: Id<"media">;
+  kind: VfxAssetKind;
+  label?: string;
+  variant?: string;
+  isPrimary?: boolean;
+  sizeBytes?: number;
+  order: number;
+  active: boolean;
+};
+
+const assetValidator = v.object({
+  id: v.optional(v.id("vfx_assets")),
+  mediaId: v.id("media"),
+  kind: v.union(v.literal("preview"), v.literal("download")),
+  label: v.optional(v.string()),
+  variant: v.optional(v.string()),
+  isPrimary: v.optional(v.boolean()),
+  sizeBytes: v.optional(v.number()),
+  order: v.number(),
+  active: v.boolean(),
+});
+
+function enforceSinglePrimary(assets: VfxAssetInput[], kind: VfxAssetKind) {
+  const firstPrimary = assets.findIndex((asset) => asset.kind === kind && asset.isPrimary);
+  const firstOfKind = assets.findIndex((asset) => asset.kind === kind);
+  if (firstOfKind === -1) return assets;
+  const primaryIndex = firstPrimary !== -1 ? firstPrimary : firstOfKind;
+  return assets.map((asset, index) =>
+    asset.kind !== kind ? asset : { ...asset, isPrimary: index === primaryIndex }
+  );
+}
+
+function normalizeAssets(assets: VfxAssetInput[]) {
+  const withPrimaryPreview = enforceSinglePrimary(assets, "preview");
+  return enforceSinglePrimary(withPrimaryPreview, "download");
+}
+
+function pickPrimaryMediaId(assets: VfxAssetInput[], kind: VfxAssetKind) {
+  const list = assets.filter((asset) => asset.kind === kind && asset.active);
+  if (list.length === 0) return null;
+  const primary = list.find((asset) => asset.isPrimary) ?? list[0];
+  return primary.mediaId;
+}
+
+async function replaceAssets(ctx: MutationCtx, vfxId: Id<"vfx_products">, assets: VfxAssetInput[]) {
+  const now = Date.now();
+  const normalized = normalizeAssets(assets).map((asset) => ({
+    ...asset,
+    isPrimary: Boolean(asset.isPrimary),
+  }));
+
+  const existing = await ctx.db
+    .query("vfx_assets")
+    .withIndex("by_vfx_kind_order", (q) => q.eq("vfxId", vfxId))
+    .collect();
+  const existingMap = new Map(existing.map((doc) => [doc._id, doc]));
+  const keep = new Set<string>();
+
+  for (const asset of normalized) {
+    if (asset.id && existingMap.has(asset.id)) {
+      await ctx.db.patch(asset.id, {
+        mediaId: asset.mediaId,
+        kind: asset.kind,
+        label: asset.label,
+        variant: asset.variant,
+        isPrimary: asset.isPrimary,
+        sizeBytes: asset.sizeBytes,
+        order: asset.order,
+        active: asset.active,
+        updatedAt: now,
+      });
+      keep.add(asset.id.toString());
+      continue;
+    }
+
+    const newId = await ctx.db.insert("vfx_assets", {
+      vfxId,
+      mediaId: asset.mediaId,
+      kind: asset.kind,
+      label: asset.label,
+      variant: asset.variant,
+      isPrimary: asset.isPrimary,
+      sizeBytes: asset.sizeBytes,
+      order: asset.order,
+      active: asset.active,
+      createdAt: now,
+      updatedAt: now,
+    });
+    keep.add(newId.toString());
+  }
+
+  for (const doc of existing) {
+    if (!keep.has(doc._id.toString())) {
+      await ctx.db.delete(doc._id);
+    }
+  }
+}
 
 // List VFX products with filtering
 export const listVfxProducts = query({
@@ -49,6 +150,27 @@ export const listVfxProducts = query({
     },
 });
 
+// List assets of a VFX (preview/download)
+export const listVfxAssets = query({
+    args: {
+        vfxId: v.id("vfx_products"),
+        kind: v.optional(v.union(v.literal("preview"), v.literal("download"))),
+    },
+    handler: async (ctx, { vfxId, kind }) => {
+        let assets;
+        if (kind) {
+            assets = await ctx.db
+                .query("vfx_assets")
+                .withIndex("by_vfx_kind_order", (q) => q.eq("vfxId", vfxId).eq("kind", kind))
+                .collect();
+        } else {
+            assets = await ctx.db.query("vfx_assets").filter((q) => q.eq(q.field("vfxId"), vfxId)).collect();
+        }
+        assets.sort((a, b) => a.order - b.order);
+        return assets;
+    },
+});
+
 // Get single VFX product
 export const getVfxProduct = query({
     args: { id: v.id("vfx_products") },
@@ -88,8 +210,8 @@ export const createVfxProduct = mutation({
             v.literal("other")
         ),
         thumbnailId: v.optional(v.id("media")),
-        previewVideoId: v.id("media"),
-        downloadFileId: v.id("media"),
+        previewVideoId: v.optional(v.id("media")),
+        downloadFileId: v.optional(v.id("media")),
         pricingType: v.union(v.literal("free"), v.literal("paid")),
         priceAmount: v.optional(v.number()),
         comparePriceAmount: v.optional(v.number()),
@@ -102,6 +224,7 @@ export const createVfxProduct = mutation({
         tags: v.optional(v.array(v.string())),
         order: v.number(),
         active: v.boolean(),
+        assets: v.optional(v.array(assetValidator)),
     },
     handler: async (ctx, args) => {
         const slug = args.slug.trim().toLowerCase();
@@ -116,6 +239,13 @@ export const createVfxProduct = mutation({
         const title = args.title.trim();
         if (!title) throw new Error("Title is required");
 
+        const assets = normalizeAssets(args.assets ?? []);
+        const primaryPreview = args.previewVideoId ?? pickPrimaryMediaId(assets, "preview");
+        const primaryDownload = args.downloadFileId ?? pickPrimaryMediaId(assets, "download");
+
+        if (!primaryPreview) throw new Error("Thiếu preview video");
+        if (!primaryDownload) throw new Error("Thiếu file download");
+
         const now = Date.now();
 
         const id = await ctx.db.insert("vfx_products", {
@@ -125,8 +255,8 @@ export const createVfxProduct = mutation({
             description: args.description?.trim() || undefined,
             category: args.category,
             thumbnailId: args.thumbnailId,
-            previewVideoId: args.previewVideoId,
-            downloadFileId: args.downloadFileId,
+            previewVideoId: primaryPreview,
+            downloadFileId: primaryDownload,
             pricingType: args.pricingType,
             price: args.priceAmount || 0,
             originalPrice: args.comparePriceAmount,
@@ -143,6 +273,10 @@ export const createVfxProduct = mutation({
             createdAt: now,
             updatedAt: now,
         });
+
+        if (assets.length > 0) {
+            await replaceAssets(ctx, id, assets);
+        }
 
         return await ctx.db.get(id);
     },
@@ -183,9 +317,10 @@ export const updateVfxProduct = mutation({
         tags: v.optional(v.array(v.string())),
         order: v.optional(v.number()),
         active: v.optional(v.boolean()),
+        assets: v.optional(v.array(assetValidator)),
     },
     handler: async (ctx, args) => {
-        const { id, slug, priceAmount, comparePriceAmount, ...rest } = args;
+        const { id, slug, priceAmount, comparePriceAmount, assets = undefined, ...rest } = args;
         const existing = await ctx.db.get(id);
         if (!existing) throw new Error("VFX product not found");
 
@@ -224,9 +359,24 @@ export const updateVfxProduct = mutation({
             patch.originalPrice = comparePriceAmount ?? undefined;
         }
 
+        let normalizedAssets: VfxAssetInput[] | undefined;
+        if (assets) {
+            normalizedAssets = normalizeAssets(assets);
+            const primaryPreview = rest.previewVideoId ?? pickPrimaryMediaId(normalizedAssets, "preview");
+            const primaryDownload = rest.downloadFileId ?? pickPrimaryMediaId(normalizedAssets, "download");
+            if (!primaryPreview) throw new Error("Thiếu preview video");
+            if (!primaryDownload) throw new Error("Thiếu file download");
+            patch.previewVideoId = primaryPreview;
+            patch.downloadFileId = primaryDownload;
+        }
+
         patch.updatedAt = Date.now();
 
         await ctx.db.patch(id, patch as any);
+        if (normalizedAssets) {
+            await replaceAssets(ctx, id, normalizedAssets);
+        }
+
         return await ctx.db.get(id);
     },
 });

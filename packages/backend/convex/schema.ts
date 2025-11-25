@@ -180,6 +180,23 @@ export default defineSchema({
     .index("by_active_order", ["active", "order"])
     .index("by_pricing_order", ["pricingType", "order"]),
 
+  // VFX assets (nhiều preview/download cho mỗi VFX)
+  vfx_assets: defineTable({
+    vfxId: v.id("vfx_products"),
+    mediaId: v.id("media"),
+    kind: v.union(v.literal("preview"), v.literal("download")),
+    label: v.optional(v.string()),
+    variant: v.optional(v.string()), // ví dụ: "4K ProRes", "1080p H264"
+    isPrimary: v.optional(v.boolean()),
+    sizeBytes: v.optional(v.number()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_vfx_kind_order", ["vfxId", "kind", "order"])
+    .index("by_media", ["mediaId"]),
+
   // Course categories (danh muc khoa hoc)
   course_categories: defineTable({
     name: v.string(),
