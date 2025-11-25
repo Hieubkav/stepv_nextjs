@@ -58,8 +58,27 @@ export function CheckoutPageContent({
       ? { customerId: customer._id as any, productType: 'course', productId: String(courseId) }
       : 'skip',
   ) as { _id: Id<'customer_purchases'> } | null | undefined;
+  const productLock = useQuery(
+    api.orders.getProductLockStatus,
+    customer
+      ? ({
+          customerId: customer._id as any,
+          productType: 'course',
+          productId: String(courseId),
+        } as const)
+      : 'skip',
+  ) as
+    | {
+        hasPurchased: boolean;
+        hasActiveOrder: boolean;
+        activeOrderStatus: string | null;
+        activeOrderNumber: string | null;
+      }
+    | null
+    | undefined;
 
   const createOrder = useMutation(api.orders.createOrderWithItems);
+  const hasActiveOrder = Boolean(productLock?.hasActiveOrder);
 
   const summaryPaymentConfig = useMemo<PaymentConfig | null>(() => {
     if (
@@ -141,6 +160,13 @@ export function CheckoutPageContent({
 
     if (existingPurchase) {
       router.push((courseSlug ? `/khoa-hoc/${courseSlug}` : '/my-library') as Route);
+      return;
+    }
+    if (hasActiveOrder) {
+      toast.message('Khóa học đã có đơn đang chờ xử lý.', {
+        description: productLock?.activeOrderNumber ?? undefined,
+      });
+      router.push('/khoa-hoc/don-dat');
       return;
     }
 

@@ -7,6 +7,21 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
 import { toast } from "sonner";
 
+type CoursePriceProps = {
+  priceText: string;
+  comparePriceText: string | null;
+  priceNote: string | null;
+  pricingType: "free" | "paid";
+  priceAmount: number;
+  courseTitle: string;
+  courseSlug?: string;
+  courseId: string;
+  hasFullAccess: boolean;
+  thumbnailUrl?: string | null;
+  hasActiveOrder?: boolean;
+  pendingOrderLabel?: string | null;
+};
+
 export function CoursePrice({
   priceText,
   comparePriceText,
@@ -18,22 +33,26 @@ export function CoursePrice({
   courseId,
   hasFullAccess,
   thumbnailUrl,
-}: {
-  priceText: string;
-  comparePriceText: string | null;
-  priceNote: string | null;
-  pricingType: "free" | "paid";
-  priceAmount: number;
-  courseTitle: string;
-  courseSlug?: string;
-  courseId: string;
-  hasFullAccess: boolean;
-  thumbnailUrl?: string | null;
-}) {
+  hasActiveOrder,
+  pendingOrderLabel,
+}: CoursePriceProps) {
   const router = useRouter();
   const { addItem, hasDuplicate } = useCart();
 
   const handleAddToCart = () => {
+    if (hasFullAccess) {
+      router.push(courseSlug ? `/khoa-hoc/${courseSlug}` : "/khoa-hoc");
+      return;
+    }
+
+    if (hasActiveOrder) {
+      toast.message("Sản phẩm đã được đặt, vui lòng chờ xử lý.", {
+        description: pendingOrderLabel ?? "Kiểm tra trang đơn hàng của bạn.",
+      });
+      router.push("/khoa-hoc/don-dat");
+      return;
+    }
+
     if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
       toast.error("Học phí chưa được cấu hình.");
       return;
@@ -70,9 +89,7 @@ export function CoursePrice({
               <span className="text-sm text-slate-500 line-through">{comparePriceText}</span>
             ) : null}
           </div>
-          {priceNote ? (
-            <p className="text-sm leading-relaxed text-slate-300">{priceNote}</p>
-          ) : null}
+          {priceNote ? <p className="text-sm leading-relaxed text-slate-300">{priceNote}</p> : null}
         </div>
 
         {hasFullAccess ? (
@@ -88,8 +105,9 @@ export function CoursePrice({
             size="lg"
             className="w-full font-semibold bg-gradient-to-r from-amber-500 to-yellow-300 text-black hover:brightness-110"
             onClick={handleAddToCart}
+            disabled={hasActiveOrder}
           >
-            Thêm vào giỏ &amp; thanh toán
+            {hasActiveOrder ? "Đã đặt, chờ duyệt" : "Thêm vào giỏ & thanh toán"}
           </Button>
         ) : (
           <Button

@@ -92,8 +92,27 @@ export function CourseDetailClient({
     api.purchases.getPurchase,
     customer ? { customerId: customer._id as Id<"customers">, productType: "course", productId: course.id } : "skip",
   ) as { _id: Id<"customer_purchases">; progressPercent?: number } | null | undefined;
+  const productLock = useQuery(
+    api.orders.getProductLockStatus,
+    customer
+      ? ({
+          customerId: customer._id as Id<"customers">,
+          productType: "course",
+          productId: course.id,
+        } as const)
+      : "skip",
+  ) as
+    | {
+        hasPurchased: boolean;
+        hasActiveOrder: boolean;
+        activeOrderStatus: string | null;
+        activeOrderNumber: string | null;
+      }
+    | null
+    | undefined;
 
   const hasFullAccess = course.pricingType === "free" || Boolean(customer && purchase);
+  const hasActiveOrder = Boolean(productLock?.hasActiveOrder);
 
   useEffect(() => {
     if (selectedLesson && !hasFullAccess && !selectedLesson.isPreview) {
@@ -170,6 +189,12 @@ export function CourseDetailClient({
           courseId={courseId}
           hasFullAccess={hasFullAccess}
           thumbnailUrl={thumbnail?.url}
+          hasActiveOrder={hasActiveOrder}
+          pendingOrderLabel={
+            productLock?.activeOrderNumber
+              ? `${productLock.activeOrderNumber} (${productLock.activeOrderStatus ?? "pending"})`
+              : null
+          }
         />
         <CourseCurriculum
           chapters={chapters}

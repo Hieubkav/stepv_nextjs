@@ -9,6 +9,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -16,11 +26,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { formatPrice, formatDate } from '@/lib/format';
+import { toast } from 'sonner';
 import {
   Clock,
   CheckCircle,
   AlertCircle,
   Eye,
+  Trash2,
 } from 'lucide-react';
 
 type OrderStatus = 'pending' | 'paid' | 'activated' | 'cancelled';
@@ -55,10 +67,13 @@ export default function OrdersPage() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; code?: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch orders based on status
   const pendingOrders = useQuery(api.orders.getPendingOrders) || [];
   const paidOrders = useQuery(api.orders.getPaidOrders) || [];
+  const deleteOrderMutation = useMutation(api.orders.deleteOrder);
 
   const allOrders = useMemo(() => {
     const orders = [...(pendingOrders || []), ...(paidOrders || [])];
@@ -99,6 +114,22 @@ export default function OrdersPage() {
 
     return summary;
   }, [allOrders]);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await deleteOrderMutation({ orderId: deleteTarget.id as any });
+      toast.success('Đã xóa đơn hàng vĩnh viễn');
+      setDeleteTarget(null);
+      router.refresh();
+    } catch (error) {
+      toast.error('Xóa đơn thất bại');
+      console.error(error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -194,14 +225,25 @@ export default function OrdersPage() {
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => router.push(`/dashboard/orders/${order._id}`)}
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            Xem
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => router.push(`/dashboard/orders/${order._id}`)}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Xem
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-red-600 hover:text-red-700"
+                              onClick={() => setDeleteTarget({ id: order._id, code: order.orderNumber })}
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Xóa
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -212,6 +254,32 @@ export default function OrdersPage() {
           )}
         </CardContent>
       </Card>
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xóa đơn hàng?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Thao tác này sẽ xóa cùng đơn hàng khỏi hệ thống và không thể khôi phục.
+              {deleteTarget?.code ? ` Mã đơn: ${deleteTarget.code}.` : ''}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Đang xóa...' : 'Xóa vĩnh viễn'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

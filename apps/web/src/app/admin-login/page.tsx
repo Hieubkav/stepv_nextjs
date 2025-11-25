@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 
 type AdminLoginPageProps = {
-  searchParams?: Record<string, string | string[] | undefined>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
 };
 
 const DEFAULT_REDIRECT: Route = "/dashboard";
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
-  const nextPath = getSafeNextPath(searchParams?.next);
+  const resolvedSearchParams = await searchParams;
+  const nextPath = getSafeNextPath(resolvedSearchParams?.next);
   const cookieStore = await cookies();
   const adminSession = cookieStore.get("admin_session");
 

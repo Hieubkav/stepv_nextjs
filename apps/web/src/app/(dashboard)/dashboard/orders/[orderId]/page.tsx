@@ -1,5 +1,8 @@
 'use client';
 
+import { useMemo } from 'react';
+import Link from 'next/link';
+import type { Route } from 'next';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
@@ -11,6 +14,31 @@ import { ChevronLeft, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import OrderActions from '@/components/admin/OrderActions';
 
 type OrderStatus = 'pending' | 'paid' | 'activated' | 'cancelled';
+type ProductType = 'course' | 'resource' | 'vfx';
+type OrderCustomer = {
+  _id: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  account?: string;
+  notes?: string;
+  active?: boolean;
+};
+type OrderItem = {
+  _id: string;
+  productType: ProductType;
+  productId: string;
+  price: number;
+  createdAt: number;
+  product?: {
+    _id?: string;
+    title?: string;
+    subtitle?: string;
+    thumbnailMediaId?: string;
+    coverImageId?: string;
+    thumbnailId?: string;
+  } | null;
+};
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; icon: typeof Clock }> = {
   pending: {
@@ -35,22 +63,50 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; icon: ty
   },
 };
 
+const productLabels: Record<ProductType, string> = {
+  course: 'Khóa học',
+  resource: 'Tài nguyên',
+  vfx: 'VFX',
+};
+
+const getEditHref = (item: OrderItem): Route => {
+  if (item.productType === 'course') {
+    return `/dashboard/courses/${item.productId}/edit` as Route;
+  }
+  if (item.productType === 'resource') {
+    return `/dashboard/library/${item.productId}/edit` as Route;
+  }
+  return `/dashboard/vfx/${item.productId}/edit` as Route;
+};
+
+const resolveProductInfo = (item: OrderItem, mediaMap: Map<string, string>) => {
+  const product = item.product ?? null;
+  const title =
+    (product as any)?.title ??
+    (product as any)?.name ??
+    (product as any)?.subtitle ??
+    'Sản phẩm đã bị xoá';
+  const thumbnailId =
+    (product as any)?.thumbnailMediaId ??
+    (product as any)?.coverImageId ??
+    (product as any)?.thumbnailId ??
+    null;
+  const thumbnailUrl = thumbnailId ? mediaMap.get(String(thumbnailId)) ?? null : null;
+
+  return { title, thumbnailUrl };
+};
+
 interface OrderDetail {
   _id: string;
   orderNumber: string;
-  customerId: string;
+  customerId?: string;
+  customer?: OrderCustomer | null;
   totalAmount: number;
   status: OrderStatus;
   notes?: string;
   createdAt: number;
   updatedAt: number;
-  items: Array<{
-    _id: string;
-    productType: 'course' | 'resource' | 'vfx';
-    productId: string;
-    price: number;
-    createdAt: number;
-  }>;
+  items: OrderItem[];
 }
 
 export default function OrderDetailPage() {
@@ -67,6 +123,22 @@ export default function OrderDetailPage() {
         }
       : 'skip'
   ) as OrderDetail | null | undefined;
+
+  const media = useQuery(api.media.list, { kind: 'image' }) as Array<
+    { _id: string; url?: string } | null
+  > | undefined;
+
+  const mediaMap = useMemo(() => {
+    const map = new Map<string, string>();
+    if (Array.isArray(media)) {
+      media.forEach((item) => {
+        if (item?._id && item.url) {
+          map.set(String(item._id), item.url);
+        }
+      });
+    }
+    return map;
+  }, [media]);
 
   const status = orderData?.status as OrderStatus;
   const config = statusConfig[status] || statusConfig.pending;
@@ -132,52 +204,51 @@ export default function OrderDetailPage() {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Left: Order Details (2 columns) */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Order Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Thông tin đơn hàng</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Mã đơn hàng</p>
-                  <p className="font-mono font-bold text-primary">{orderData.orderNumber}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Trạng thái</p>
-                  <p className="font-semibold">{config.label}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Ngày tạo</p>
-                  <p className="font-semibold">{formatDate(orderData.createdAt)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Cập nhật lúc</p>
-                  <p className="font-semibold">{formatDate(orderData.updatedAt)}</p>
-                </div>
-              </div>
-              {orderData.notes && (
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-muted-foreground">Ghi chú</p>
-                  <p className="text-sm mt-1">{orderData.notes}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
           {/* Customer Info */}
           <Card>
             <CardHeader>
               <CardTitle>Thông tin khách hàng</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Mã học viên</p>
-                <p className="font-mono text-sm">{orderData.customerId}</p>
-              </div>
-              <p className="text-xs text-muted-foreground italic">
-                💡 MVP: Dùng studentId làm customerId. Xem Convex Dashboard để lấy tên, email, phone
-              </p>
+              {orderData.customer ? (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Họ tên</p>
+                      <p className="font-semibold">
+                        {orderData.customer.fullName || 'Chưa có tên'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Email</p>
+                      <p className="font-medium">
+                        {orderData.customer.email || 'Chưa cập nhật'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Số điện thoại</p>
+                      <p className="font-medium">
+                        {orderData.customer.phone || 'Chưa cập nhật'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tài khoản</p>
+                      <p className="font-mono text-sm">
+                        {orderData.customer.account || '—'}
+                      </p>
+                    </div>
+                  </div>
+                  {orderData.customer.notes && (
+                    <p className="text-sm text-muted-foreground border-t pt-2">
+                      Ghi chú: {orderData.customer.notes}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Không tìm thấy thông tin khách hàng trong bảng customers.
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -193,36 +264,61 @@ export default function OrderDetailPage() {
                     <tr className="border-b">
                       <th className="text-left py-3 px-4 font-semibold">#</th>
                       <th className="text-left py-3 px-4 font-semibold">Loại</th>
-                      <th className="text-left py-3 px-4 font-semibold">Mã sản phẩm</th>
+                      <th className="text-left py-3 px-4 font-semibold">Sản phẩm</th>
                       <th className="text-right py-3 px-4 font-semibold">Giá</th>
+                      <th className="text-right py-3 px-4 font-semibold">Chỉnh sửa</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orderData.items.map((item, idx) => (
-                      <tr key={item._id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4">{idx + 1}</td>
-                        <td className="py-3 px-4">
-                          <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
-                            {item.productType === 'course'
-                              ? '🎓 Khóa học'
-                              : item.productType === 'resource'
-                              ? '📦 Tài nguyên'
-                              : '✨ VFX'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-mono text-xs">{item.productId}</td>
-                        <td className="py-3 px-4 text-right font-semibold">
-                          {formatPrice(item.price)}
-                        </td>
-                      </tr>
-                    ))}
+                    {orderData.items.map((item, idx) => {
+                      const { title, thumbnailUrl } = resolveProductInfo(item, mediaMap);
+                      const editHref = getEditHref(item);
+                      return (
+                        <tr key={item._id} className="border-b hover:bg-muted/50">
+                          <td className="py-3 px-4">{idx + 1}</td>
+                          <td className="py-3 px-4">
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs font-medium">
+                              {productLabels[item.productType]}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-12 w-12 overflow-hidden rounded border bg-muted flex items-center justify-center">
+                                {thumbnailUrl ? (
+                                  <img
+                                    src={thumbnailUrl}
+                                    alt={title}
+                                    className="h-full w-full object-cover"
+                                  />
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground">Không có ảnh</span>
+                                )}
+                              </div>
+                              <div className="space-y-1">
+                                <p className="font-semibold leading-tight">{title}</p>
+                                <p className="text-xs text-muted-foreground capitalize">
+                                  {productLabels[item.productType]}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-right font-semibold">
+                            {formatPrice(item.price)}
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <Button asChild size="sm" variant="outline">
+                              <Link href={editHref}>Sửa</Link>
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
             </CardContent>
           </Card>
         </div>
-
         {/* Right: Summary & Actions (1 column) */}
         <div className="space-y-6">
           {/* Total */}
@@ -250,3 +346,4 @@ export default function OrderDetailPage() {
     </div>
   );
 }
+

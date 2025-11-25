@@ -114,6 +114,24 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
         }
       : "skip",
   ) as any;
+  const productLock = useQuery(
+    api.orders.getProductLockStatus,
+    resourceId && customer?._id
+      ? ({
+          customerId: customer._id as any,
+          productType: "resource",
+          productId: resourceId,
+        } as const)
+      : "skip",
+  ) as
+    | {
+        hasPurchased: boolean;
+        hasActiveOrder: boolean;
+        activeOrderStatus: string | null;
+        activeOrderNumber: string | null;
+      }
+    | null
+    | undefined;
   useEffect(() => {
     if (initialDetail !== undefined) {
       setDetail(initialDetail);
@@ -212,6 +230,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     compareAmount && compareAmount > priceAmount ? formatPrice(compareAmount) : null;
   const priceText = resource.pricingType === "free" ? "Miễn phí" : formatPrice(priceAmount);
   const hasPurchase = Boolean(purchase);
+  const hasActiveOrder = Boolean(productLock?.hasActiveOrder);
 
   const canDownload = Boolean(
     resource.isDownloadVisible &&
@@ -245,8 +264,21 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
   function handleAddToCart() {
     if (resource.pricingType !== "paid") return;
+    if (hasPurchase) {
+      toast.message("Bạn đã mua tài nguyên này.", {
+        description: "Kiểm tra thư viện hoặc đơn hàng của bạn.",
+      });
+      return;
+    }
+    if (hasActiveOrder) {
+      toast.message("Đã có đơn cho tài nguyên này, vui lòng chờ xử lý.", {
+        description: productLock?.activeOrderNumber ?? undefined,
+      });
+      router.push("/khoa-hoc/don-dat");
+      return;
+    }
     if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
-      toast.error("Tài nguyên chưa được cấu hình giá hợp lệ.");
+      toast.error("Tài nguyên chưa được cấu hình giá hợp lý.");
       return;
     }
     const resourceIdString = String(resource._id);
@@ -422,9 +454,9 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
                     <div className="grid gap-3">
                       {resource.pricingType === "paid" && !hasPurchase ? (
-                        <Button variant="default" size="lg" className="h-12 w-full font-bold tracking-wide bg-gradient-to-r from-amber-400 to-yellow-300 text-black hover:brightness-110" onClick={handleAddToCart}>
+                        <Button variant="default" size="lg" className="h-12 w-full font-bold tracking-wide bg-gradient-to-r from-amber-400 to-yellow-300 text-black hover:brightness-110" onClick={handleAddToCart} disabled={hasActiveOrder}>
                           <ShoppingCart className="w-5 h-5 mr-2" />
-                          Thêm vào giỏ
+                          {hasActiveOrder ? "Đã đặt, chờ duyệt" : "Thêm vào giỏ"}
                         </Button>
                       ) : (
                         <Button
@@ -550,3 +582,11 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     </div>
   );
 }
+
+
+
+
+
+
+
+

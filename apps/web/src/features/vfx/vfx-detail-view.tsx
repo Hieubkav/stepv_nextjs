@@ -111,6 +111,24 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
         } as any)
       : "skip",
   ) as any;
+  const productLock = useQuery(
+    api.orders.getProductLockStatus,
+    productIdForPurchase && customer?._id
+      ? ({
+          customerId: customer._id as any,
+          productType: "vfx",
+          productId: String(productIdForPurchase),
+        } as const)
+      : "skip",
+  ) as
+    | {
+        hasPurchased: boolean;
+        hasActiveOrder: boolean;
+        activeOrderStatus: string | null;
+        activeOrderNumber: string | null;
+      }
+    | null
+    | undefined;
 
   const incrementPurchaseDownload = useMutation(api.purchases.incrementDownloadCount);
   const incrementVfxDownload = useMutation(api.vfx.incrementVfxDownloadCount);
@@ -236,6 +254,7 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
   const priceText = product.pricingType === "free" ? "Miễn phí" : formatPrice(priceAmount);
   const compareText = compareAmount && compareAmount > priceAmount ? formatPrice(compareAmount) : null;
   const isOwned = product.pricingType === "free" || Boolean(purchase);
+  const hasActiveOrder = Boolean(productLock?.hasActiveOrder);
   const canDownload = isOwned && Boolean(primaryDownloadUrl);
   const fileSizeLabel = formatFileSize(product.fileSize);
   const resolutionLabel = product.resolution;
@@ -269,11 +288,22 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
     }
   }
 
-  function handleAddToCart() {
+    function handleAddToCart() {
     if (!product) return;
     if (product.pricingType !== "paid") return;
+    if (isOwned) {
+      toast.message("Bạn đã sở hữu VFX này.");
+      return;
+    }
+    if (hasActiveOrder) {
+      toast.message("VFX đã được đặt, vui lòng chờ xử lý.", {
+        description: productLock?.activeOrderNumber ?? undefined,
+      });
+      router.push("/khoa-hoc/don-dat");
+      return;
+    }
     if (!Number.isFinite(priceAmount) || priceAmount <= 0) {
-      toast.error("VFX chưa cấu hình giá hợp lệ.");
+      toast.error("VFX chưa cấu hình giá hợp lý.");
       return;
     }
     const id = String(product._id);
@@ -475,8 +505,9 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
                         size="lg"
                         className="h-12 w-full font-bold tracking-wide bg-gradient-to-r from-amber-400 to-yellow-300 text-black hover:brightness-110"
                         onClick={handleAddToCart}
+                        disabled={hasActiveOrder}
                       >
-                        <ShoppingCart className="w-5 h-5 mr-2" /> Thêm vào giỏ
+                        <ShoppingCart className="w-5 h-5 mr-2" /> {hasActiveOrder ? "Đã đặt, chờ duyệt" : "Thêm vào giỏ"}
                       </Button>
                     ) : null}
 
@@ -571,3 +602,8 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
     </div>
   );
 }
+
+
+
+
+

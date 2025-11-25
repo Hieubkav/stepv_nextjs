@@ -5,6 +5,7 @@ import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 type AnyCtx = MutationCtx | QueryCtx;
+type ProductTypeLiteral = "course" | "resource" | "vfx";
 
 // Generate order number: DH-YYMM-XXX
 // Example: DH-2411-001 (November 2024, order 001)
@@ -57,6 +58,38 @@ const getProductByType = async (ctx: QueryCtx, productType: string, productId: s
     return ctx.db.get(productId as Id<"vfx_products">);
 };
 
+const activeStatuses = new Set(["pending", "paid", "activated"]);
+
+const findActiveOrderForProduct = async (
+    ctx: AnyCtx,
+    customerId: Id<"customers">,
+    productType: ProductTypeLiteral,
+    productId: string,
+) => {
+    const orders = await ctx.db
+        .query("orders")
+        .withIndex("by_customer", (q) => q.eq("customerId", customerId))
+        .collect();
+
+    for (const order of orders) {
+        if (!activeStatuses.has(order.status)) continue;
+        const items = await ctx.db
+            .query("order_items")
+            .withIndex("by_order", (q) => q.eq("orderId", order._id))
+            .collect();
+        const matched = items.find(
+            (item) => item.productType === productType && item.productId === productId,
+        );
+        if (matched) {
+            return {
+                order,
+                item: matched,
+            };
+        }
+    }
+    return null;
+};
+
 const getOrderItemsWithProduct = async (ctx: QueryCtx, orderId: Id<"orders">) => {
     const items = await ctx.db
         .query("order_items")
@@ -97,12 +130,21 @@ export const getOrderWithItems = query({
         const order = await ctx.db.get(orderId);
         if (!order) return null;
 
-        const items = await ctx.db
-            .query("order_items")
-            .withIndex("by_order", (q) => q.eq("orderId", orderId))
-            .collect();
+        const items = await getOrderItemsWithProduct(ctx, orderId);
+        const customer = order.customerId ? await ctx.db.get(order.customerId) : null;
+        const customerSafe = customer
+            ? {
+                  _id: customer._id,
+                  fullName: customer.fullName,
+                  email: customer.email,
+                  phone: customer.phone,
+                  account: customer.account,
+                  notes: customer.notes,
+                  active: customer.active,
+              }
+            : null;
 
-        return { ...order, items };
+        return { ...order, customer: customerSafe, items };
     },
 });
 
@@ -141,10 +183,35 @@ export const createOrderWithItems = mutation({
     handler: async (ctx, { customerId, items }) => {
         if (!items.length) throw new Error("At least one item is required");
 
-        // For MVP: customerId can be either customers or students (passed as customerId)
-        // Just verify the ID is valid, no need to check if customer exists
-        // const customer = await ctx.db.get(customerId);
-        // if (!customer) throw new Error("Customer not found");
+        // Ki?m tra tr�ng mua (purchase) ho?c ??n dang x? ly cho t?ng s?n ph?m
+        for (const item of items) {
+            const purchase = await ctx.db
+                .query("customer_purchases")
+                .withIndex("by_customer_product", (q) =>
+                    q.eq("customerId", customerId)
+                        .eq("productType", item.productType)
+                        .eq("productId", item.productId),
+                )
+                .first();
+
+            if (purchase) {
+                throw new Error("S?n ph?m da du?c m?a, kh�ng th? t?o don m?i.");
+            }
+
+            const activeOrder = await findActiveOrderForProduct(
+                ctx,
+                customerId,
+                item.productType as ProductTypeLiteral,
+                item.productId,
+            );
+
+            if (activeOrder) {
+                const number = activeOrder.order.orderNumber ?? activeOrder.order._id;
+                throw new Error(
+                    `S?n ph?m da c� ??n (${number}) ? trang th�i ${activeOrder.order.status}. Vui l�ng kh�ng t?o th�m.`,
+                );
+            }
+        }
 
         // Calculate total
         const totalAmount = items.reduce((sum, item) => sum + item.price, 0);
@@ -204,6 +271,40 @@ export const checkDuplicatePurchase = query({
             .first();
 
         return { hasPurchased: !!purchase };
+    },
+});
+
+// Ki?m tra nhanh: d� mua ho?c c� ??n dang x? ly
+export const getProductLockStatus = query({
+    args: {
+        customerId: v.id("customers"),
+        productType: v.union(v.literal("course"), v.literal("resource"), v.literal("vfx")),
+        productId: v.string(),
+    },
+    handler: async (ctx, { customerId, productType, productId }) => {
+        const purchase = await ctx.db
+            .query("customer_purchases")
+            .withIndex("by_customer_product", (q) =>
+                q.eq("customerId", customerId)
+                    .eq("productType", productType)
+                    .eq("productId", productId),
+            )
+            .first();
+
+        const activeOrder = await findActiveOrderForProduct(
+            ctx,
+            customerId,
+            productType,
+            productId,
+        );
+
+        return {
+            hasPurchased: !!purchase,
+            hasActiveOrder: Boolean(activeOrder),
+            activeOrderId: activeOrder?.order._id ?? null,
+            activeOrderStatus: activeOrder?.order.status ?? null,
+            activeOrderNumber: activeOrder?.order.orderNumber ?? null,
+        };
     },
 });
 
