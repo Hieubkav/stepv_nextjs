@@ -17,6 +17,7 @@ export function CoursePrice({
   courseSlug,
   courseId,
   hasFullAccess,
+  thumbnailUrl,
 }: {
   priceText: string;
   comparePriceText: string | null;
@@ -27,6 +28,7 @@ export function CoursePrice({
   courseSlug?: string;
   courseId: string;
   hasFullAccess: boolean;
+  thumbnailUrl?: string | null;
 }) {
   const router = useRouter();
   const { addItem, hasDuplicate } = useCart();
@@ -43,6 +45,7 @@ export function CoursePrice({
         productType: "course",
         title: courseTitle,
         price: priceAmount,
+        thumbnail: thumbnailUrl ?? undefined,
       });
     }
     router.push("/checkout");

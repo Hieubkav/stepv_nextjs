@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Info } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/format';
 
@@ -11,78 +12,67 @@ type OrderSuccessProps = {
   itemCount: number;
 };
 
+const TRANSFER_NOTE = 'CK DOHY STUDIO';
+
 export default function OrderSuccess({ orderNumber, amount, itemCount }: OrderSuccessProps) {
   return (
-    <div className="mx-auto w-full max-w-md space-y-6 text-center">
-      <div className="flex justify-center">
-        <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-green-100 animate-pulse" />
-          <CheckCircle className="relative h-20 w-20 text-green-600" />
+    <div className="space-y-5 text-slate-100">
+      <div className="flex items-center gap-3">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300">
+          <CheckCircle className="h-6 w-6" />
+        </div>
+        <div>
+          <h2 className="text-xl font-semibold">Đã tạo đơn hàng thành công!</h2>
+          <p className="text-sm text-slate-400">Cảm ơn bạn đã tin tưởng DOHY.</p>
         </div>
       </div>
 
-      <div>
-        <h1 className="mb-2 text-3xl font-bold text-foreground">Đã tạo đơn hàng thành công!</h1>
-        <p className="text-muted-foreground">Cảm ơn bạn đã đặt mua tại DOHY.</p>
-      </div>
-
-      <div className="space-y-3 rounded-lg bg-muted p-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Mã đơn hàng:</span>
-          <code className="font-mono text-lg font-bold text-primary">{orderNumber}</code>
+      <div className="space-y-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4">
+        <div className="flex items-center justify-between text-sm text-slate-200">
+          <span>Mã đơn hàng</span>
+          <code className="rounded bg-black/30 px-2 py-1 font-mono text-emerald-200">
+            {orderNumber}
+          </code>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Số sản phẩm:</span>
-          <span className="font-bold">{itemCount}</span>
+        <div className="flex items-center justify-between text-sm text-slate-200">
+          <span>Số sản phẩm</span>
+          <span className="font-semibold">{itemCount}</span>
         </div>
-        <div className="flex items-center justify-between border-t pt-3">
-          <span className="text-sm font-semibold text-foreground">Tổng tiền:</span>
-          <span className="text-2xl font-bold text-primary">{formatPrice(amount)}</span>
+        <div className="flex items-center justify-between border-t border-emerald-500/30 pt-3">
+          <span className="text-sm font-semibold">Tổng tiền</span>
+          <span className="text-2xl font-bold text-emerald-300">{formatPrice(amount)}</span>
         </div>
       </div>
 
-      <div className="space-y-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-left">
-        <h3 className="font-bold text-blue-900">Hướng dẫn thanh toán:</h3>
-        <ol className="space-y-2 text-sm text-blue-900">
+      <div className="rounded-xl border border-slate-700 bg-[#0b1224] p-4 space-y-2 text-sm text-slate-300">
+        <div className="flex items-center gap-2 font-semibold text-amber-300">
+          <Info className="w-4 h-4" />
+          Hướng dẫn thanh toán nhanh
+        </div>
+        <ul className="space-y-1 list-disc list-inside">
+          <li>Mở ứng dụng ngân hàng và quét mã QR ở khung bên cạnh.</li>
           <li>
-            <strong>1.</strong> Mở ứng dụng ngân hàng của bạn.
+            Nội dung chuyển khoản: <strong>{orderNumber}</strong> hoặc {TRANSFER_NOTE}.
           </li>
-          <li>
-            <strong>2.</strong> Quét mã QR / chuyển khoản tới tài khoản ở khung bên cạnh.
-          </li>
-          <li>
-            <strong>3.</strong> Nội dung chuyển khoản: <code className="font-mono font-bold">{orderNumber}</code>
-          </li>
-          <li>
-            <strong>4.</strong> Đơn sẽ được kích hoạt ngay sau khi đối soát thành công.
-          </li>
-        </ol>
+          <li>Đơn sẽ tự động kích hoạt sau khi đối soát thành công.</li>
+        </ul>
       </div>
 
-      <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-        <p className="text-xs text-red-800">
-          ⚠️ <strong>Lưu ý:</strong> Nếu nội dung chuyển khoản không đúng mã đơn hàng, hệ thống sẽ
-          không tự động xác nhận. Vui lòng kiểm tra trước khi gửi.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Button size="lg" className="w-full" asChild>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Button size="lg" className="w-full font-semibold" asChild>
           <Link href="/my-library">Xem thư viện của tôi</Link>
         </Button>
-        <Button size="lg" variant="outline" className="w-full" asChild>
+        <Button size="lg" variant="outline" className="w-full font-semibold text-black" asChild>
           <Link href="/khoa-hoc">Tiếp tục mua sắm</Link>
         </Button>
       </div>
 
-      <div className="text-center">
-        <p className="text-xs text-muted-foreground">
-          Cần hỗ trợ? Liên hệ{' '}
-          <Link href="mailto:support@dohy.dev" className="text-primary hover:underline">
-            support@dohy.dev
-          </Link>
-        </p>
-      </div>
+      <p className="text-center text-xs text-slate-500">
+        Cần hỗ trợ? Liên hệ{' '}
+        <Link href="mailto:support@dohy.dev" className="text-amber-300 hover:underline">
+          support@dohy.dev
+        </Link>
+      </p>
     </div>
   );
 }

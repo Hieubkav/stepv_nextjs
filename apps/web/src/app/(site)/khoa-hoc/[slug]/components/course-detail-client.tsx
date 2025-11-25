@@ -169,6 +169,7 @@ export function CourseDetailClient({
           courseSlug={course.slug}
           courseId={courseId}
           hasFullAccess={hasFullAccess}
+          thumbnailUrl={thumbnail?.url}
         />
         <CourseCurriculum
           chapters={chapters}
