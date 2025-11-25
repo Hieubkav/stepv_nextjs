@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from 'convex/react';
 import { api } from '@dohy/backend/convex/_generated/api';
@@ -8,14 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import {
-  UserCircle2,
-  Shield,
-  KeyRound,
-  Smartphone,
-  Mail,
-  User,
-} from 'lucide-react';
+import { UserCircle2, Shield, KeyRound, Smartphone, Mail, User } from 'lucide-react';
 import { useCustomerAuth } from '@/features/auth';
 
 type ProfileFormState = {
@@ -115,7 +108,7 @@ export default function ProfilePage() {
 
   const isHydrating = useMemo(() => status === 'loading' && !customer, [status, customer]);
 
-  const handleProfileSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleProfileSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!customer) return;
     setProfileMessage(null);
@@ -131,7 +124,7 @@ export default function ProfilePage() {
     finishProfile('Đã cập nhật thông tin.');
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handlePasswordSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!customer) return;
     setPasswordMessage(null);
@@ -149,8 +142,12 @@ export default function ProfilePage() {
 
   if (isHydrating) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Đang tải thông tin khách hàng...</p>
+      <div className="min-h-screen bg-gradient-to-b from-[#050915] via-[#071026] to-[#02050d] text-slate-100">
+        <div className="flex h-full items-center justify-center px-6">
+          <div className="rounded-xl border border-white/5 bg-white/[0.04] px-4 py-3 text-sm text-slate-300 shadow-[0_20px_60px_rgba(0,0,0,0.45)]">
+            Đang tải thông tin khách hàng...
+          </div>
+        </div>
       </div>
     );
   }
@@ -160,168 +157,179 @@ export default function ProfilePage() {
   const customerName = profileForm.fullName || profileForm.account || 'Khách hàng';
 
   return (
-    <div className="min-h-screen bg-black text-white px-4 pt-28 pb-12">
-      <div className="mx-auto w-full max-w-6xl space-y-6">
-        {/* Header */}
-        <header className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-yellow-500/60 bg-yellow-500/10">
-              <UserCircle2 className="h-4 w-4 text-yellow-300" />
-            </div>
-            <div className="space-y-0.5">
-              <h1 className="text-xl font-semibold text-yellow-100">Hồ sơ</h1>
-              <p className="text-sm text-neutral-400">{customerName}</p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-b from-[#050915] via-[#071026] to-[#02050d] text-slate-100">
+      <div className="relative mx-auto max-w-5xl px-3 pb-16 pt-24 sm:px-6 sm:pb-24 sm:pt-32 md:pt-36">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(circle_at_center,#fbbf2426,transparent_60%)] opacity-60 blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-8 top-20 h-64 bg-[radial-gradient(circle_at_center,#22d3ee1a,transparent_65%)] blur-3xl" />
 
-          <div className="text-[11px] text-right text-neutral-500 space-y-0.5">
-            <p className="flex items-center justify-end gap-1">
-              <Mail className="h-3 w-3 text-yellow-400" />
-              <span>{profileForm.email || '—'}</span>
-            </p>
-            <p className="flex items-center justify-end gap-1">
-              <Smartphone className="h-3 w-3 text-yellow-400" />
-              <span>{profileForm.phone || '—'}</span>
-            </p>
-          </div>
-        </header>
-
-        <main className="grid grid-cols-1 gap-5 lg:grid-cols-3">
-          {/* Thông tin cá nhân */}
-          <Card className="bg-neutral-950/90 border border-yellow-500/40 text-neutral-100 lg:col-span-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-yellow-100">Thông tin</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {profileMessage && (
-                <div className="mb-3 rounded-md border border-yellow-500/60 bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-100">
-                  {profileMessage}
-                </div>
-              )}
-              <form onSubmit={handleProfileSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="fullName" className="text-[11px] flex items-center gap-1">
-                    <User className="h-3 w-3 text-yellow-400" /> Họ tên
-                  </Label>
-                  <Input
-                    id="fullName"
-                    value={profileForm.fullName}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, fullName: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="account" className="text-[11px]">
-                    Tài khoản
-                  </Label>
-                  <Input
-                    id="account"
-                    value={profileForm.account}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, account: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-[11px] flex items-center gap-1">
-                    <Mail className="h-3 w-3 text-yellow-400" /> Email
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={profileForm.email}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone" className="text-[11px] flex items-center gap-1">
-                    <Smartphone className="h-3 w-3 text-yellow-400" /> Số điện thoại
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={profileForm.phone}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
-                    placeholder="09xx xxx xxx"
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="md:col-span-2 flex justify-end pt-2">
-                  <Button
-                    type="submit"
-                    disabled={profileLoading}
-                    className="h-8 bg-yellow-500 text-black hover:bg-yellow-400 border border-yellow-300 text-xs px-4"
-                  >
-                    {profileLoading ? 'Đang lưu...' : 'Lưu'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Đổi mật khẩu */}
-          <Card className="bg-neutral-950/90 border border-neutral-800 text-neutral-100">
-            <CardHeader className="pb-3 flex flex-row items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-900 border border-neutral-700">
-                <Shield className="h-4 w-4 text-yellow-300" />
+        <div className="relative z-10 space-y-6">
+          <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-200/40 bg-amber-400/15 text-amber-100 shadow-inner">
+                <UserCircle2 className="h-5 w-5" />
               </div>
-              <CardTitle className="text-sm font-medium text-yellow-100">Mật khẩu</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              {passwordMessage && (
-                <div className="mb-3 rounded-md border border-yellow-500/60 bg-yellow-500/10 px-3 py-1.5 text-[11px] text-yellow-100">
-                  {passwordMessage}
+              <div className="space-y-1">
+                <p className="text-[11px] uppercase tracking-[0.2em] text-amber-200/80">Dohy Studio</p>
+                <h1 className="text-2xl font-semibold text-white">Hồ sơ khách hàng</h1>
+                <p className="text-sm text-slate-400">Quản lý thông tin truy cập và liên hệ.</p>
+              </div>
+            </div>
+            <div className="rounded-xl border border-white/5 bg-white/[0.04] px-4 py-3 text-xs text-slate-300 shadow-[0_15px_45px_rgba(0,0,0,0.35)]">
+              <div className="flex items-center gap-2">
+                <Mail className="h-3.5 w-3.5 text-amber-200" />
+                <span>{profileForm.email || 'Email chưa cập nhật'}</span>
+              </div>
+              <div className="mt-1 flex items-center gap-2">
+                <Smartphone className="h-3.5 w-3.5 text-amber-200" />
+                <span>{profileForm.phone || 'Số điện thoại chưa có'}</span>
+              </div>
+            </div>
+          </header>
+
+          <main className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr] lg:gap-5">
+            <Card className="border border-white/5 bg-white/[0.04] text-slate-100 shadow-[0_25px_70px_rgba(0,0,0,0.45)] backdrop-blur">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-semibold text-white">Thông tin tài khoản</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {profileMessage ? (
+                  <div className="mb-3 rounded-lg border border-amber-300/50 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-50">
+                    {profileMessage}
+                  </div>
+                ) : null}
+
+                <form onSubmit={handleProfileSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="fullName" className="text-[11px] uppercase tracking-[0.15em] text-slate-300">
+                      Họ tên
+                    </Label>
+                    <Input
+                      id="fullName"
+                      value={profileForm.fullName}
+                      onChange={(e) => setProfileForm((p) => ({ ...p, fullName: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="account" className="text-[11px] uppercase tracking-[0.15em] text-slate-300">
+                      Tài khoản
+                    </Label>
+                    <Input
+                      id="account"
+                      value={profileForm.account}
+                      onChange={(e) => setProfileForm((p) => ({ ...p, account: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-[11px] uppercase tracking-[0.15em] text-slate-300">
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profileForm.email}
+                      onChange={(e) => setProfileForm((p) => ({ ...p, email: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-[11px] uppercase tracking-[0.15em] text-slate-300">
+                      Số điện thoại
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={profileForm.phone}
+                      onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))}
+                      placeholder="09xx xxx xxx"
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex justify-end pt-2">
+                    <Button
+                      type="submit"
+                      disabled={profileLoading}
+                      className="h-9 rounded-full border border-amber-200/60 bg-amber-400 text-slate-950 shadow-[0_12px_35px_rgba(251,191,36,0.35)] transition hover:brightness-110"
+                    >
+                      {profileLoading ? 'Đang lưu...' : 'Lưu thông tin'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card className="border border-white/5 bg-[#0b1224]/80 text-slate-100 shadow-[0_25px_70px_rgba(0,0,0,0.45)] backdrop-blur">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200/50 bg-amber-400/10 text-amber-100">
+                    <Shield className="h-4 w-4" />
+                  </div>
+                  <CardTitle className="text-sm font-semibold text-white">Mật khẩu</CardTitle>
                 </div>
-              )}
-              <form onSubmit={handlePasswordSubmit} className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="currentPassword" className="text-[11px] flex items-center gap-1">
-                    <KeyRound className="h-3 w-3 text-yellow-400" /> Hiện tại
-                  </Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={passwordForm.currentPassword}
-                    onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="newPassword" className="text-[11px]">
-                    Mới
-                  </Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={passwordForm.newPassword}
-                    onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="text-[11px]">
-                    Nhập lại
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={passwordForm.confirmPassword}
-                    onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                    className="bg-black/60 border-neutral-700 focus:border-yellow-500 focus-visible:ring-yellow-500/40 text-xs text-white placeholder:text-neutral-500"
-                  />
-                </div>
-                <div className="flex justify-end pt-2">
-                  <Button
-                    type="submit"
-                    disabled={passwordLoading}
-                    className="h-8 bg-yellow-500 text-black hover:bg-yellow-400 border border-yellow-300 text-xs px-4"
-                  >
-                    {passwordLoading ? 'Đang đổi...' : 'Đổi'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </main>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {passwordMessage ? (
+                  <div className="mb-3 rounded-lg border border-amber-300/50 bg-amber-500/10 px-3 py-2 text-[12px] text-amber-50">
+                    {passwordMessage}
+                  </div>
+                ) : null}
+                <form onSubmit={handlePasswordSubmit} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="currentPassword"
+                      className="text-[11px] uppercase tracking-[0.15em] text-slate-300"
+                    >
+                      Hiện tại
+                    </Label>
+                    <Input
+                      id="currentPassword"
+                      type="password"
+                      value={passwordForm.currentPassword}
+                      onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="newPassword" className="text-[11px] uppercase tracking-[0.15em] text-slate-300">
+                      Mới
+                    </Label>
+                    <Input
+                      id="newPassword"
+                      type="password"
+                      value={passwordForm.newPassword}
+                      onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label
+                      htmlFor="confirmPassword"
+                      className="text-[11px] uppercase tracking-[0.15em] text-slate-300"
+                    >
+                      Nhập lại
+                    </Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))}
+                      className="border-white/10 bg-white/[0.02] text-sm text-white placeholder:text-slate-500 focus:border-amber-300/60 focus-visible:ring-amber-200/40"
+                    />
+                  </div>
+                  <div className="flex justify-end pt-2">
+                    <Button
+                      type="submit"
+                      disabled={passwordLoading}
+                      className="h-9 rounded-full border border-amber-200/60 bg-amber-400 text-slate-950 shadow-[0_12px_35px_rgba(251,191,36,0.35)] transition hover:brightness-110"
+                    >
+                      {passwordLoading ? 'Đang đổi...' : 'Cập nhật mật khẩu'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </main>
+        </div>
       </div>
     </div>
   );
