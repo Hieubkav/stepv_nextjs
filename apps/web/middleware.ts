@@ -7,8 +7,13 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith("/dashboard")) {
     const adminSession = request.cookies.get("admin_session");
 
-    if (!adminSession) {
-      return NextResponse.redirect(new URL("/login", request.url));
+    if (adminSession?.value !== "authenticated") {
+      const loginUrl = new URL("/admin-login", request.url);
+      const next = `${pathname}${request.nextUrl.search}`;
+      if (next.startsWith("/")) {
+        loginUrl.searchParams.set("next", next);
+      }
+      return NextResponse.redirect(loginUrl);
     }
   }
 
