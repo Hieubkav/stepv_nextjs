@@ -5,9 +5,12 @@ import { useParams, useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
+import { CheckCircle2, ChevronDown, Circle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 
 import { CustomerForm } from "../../_components/customer-form";
@@ -39,6 +42,30 @@ type PurchaseWithMeta = {
 };
 
 type ProductOption = { id: string; label: string; type: "course" | "resource" | "vfx" };
+
+type LessonProgress = {
+  lessonId: Id<"course_lessons">;
+  title: string;
+  chapterTitle: string;
+  isCompleted: boolean;
+  watchedSeconds: number;
+  durationSeconds: number;
+};
+
+type CourseProgressEntry = {
+  purchaseId: Id<"customer_purchases">;
+  courseId: Id<"courses">;
+  courseTitle: string;
+  progressPercent: number;
+  status: string;
+  totalWatchSeconds: number;
+  bestScore: number | null;
+  lessons: LessonProgress[];
+  completedLessonIds: Id<"course_lessons">[];
+  pendingLessonIds: Id<"course_lessons">[];
+  enrolledAt: number;
+  updatedAt?: number;
+};
 
 const buildInitial = (customer: CustomerDetail): CustomerFormValues => ({
   account: customer.account,
@@ -76,6 +103,9 @@ export default function CustomerEditPage() {
   const vfxList = useQuery(api.vfx.listVfxProducts, { activeOnly: false }) as any[] | undefined;
   const grantProduct = useMutation(api.orders.grantProductToCustomer);
   const revokePurchase = useMutation(api.purchases.revokePurchase);
+  const courseProgress = useQuery(api.progress.getCustomerCourseProgress, { customerId }) as
+    | CourseProgressEntry[]
+    | undefined;
 
   const [submitting, setSubmitting] = useState(false);
   const [granting, setGranting] = useState(false);
@@ -368,6 +398,15 @@ export default function CustomerEditPage() {
 
       <Card>
         <CardHeader>
+          <CardTitle>Tiến trình học tập (khóa học)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CourseProgressSection progresses={courseProgress} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle>Thông tin hệ thống</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -391,4 +430,170 @@ export default function CustomerEditPage() {
       </Card>
     </div>
   );
+}
+
+function CourseProgressSection({
+  progresses,
+}: {
+  progresses: CourseProgressEntry[] | undefined;
+}) {
+  if (progresses === undefined) {
+    return <div className="text-sm text-muted-foreground">Đang tải tiến trình...</div>;
+  }
+
+  if (!progresses.length) {
+    return <div className="text-sm text-muted-foreground">Khách chưa đăng ký khóa học nào.</div>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {progresses.map((entry) => (
+        <CourseProgressItem key={String(entry.purchaseId)} entry={entry} />
+      ))}
+    </div>
+  );
+}
+
+function CourseProgressItem({ entry }: { entry: CourseProgressEntry }) {
+  const [open, setOpen] = useState(false);
+  const totalLessons = entry.lessons.length || Math.max(entry.completedLessonIds.length, entry.pendingLessonIds.length);
+  const completedCount = entry.completedLessonIds.length;
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="rounded-md border p-3"
+    >
+      <CourseProgressSummary
+        entry={entry}
+        open={open}
+        totalLessons={totalLessons}
+        completedCount={completedCount}
+        onToggle={() => setOpen(!open)}
+      />
+      <CollapsibleContent className="mt-3 border-t pt-3">
+        <CourseProgressLessons entry={entry} />
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function CourseProgressSummary({
+  entry,
+  open,
+  totalLessons,
+  completedCount,
+  onToggle,
+}: {
+  entry: CourseProgressEntry;
+  open: boolean;
+  totalLessons: number;
+  completedCount: number;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="space-y-1">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="font-semibold">{entry.courseTitle}</span>
+          <Badge variant={getStatusVariant(entry.status)}>{getStatusLabel(entry.status)}</Badge>
+          <Badge variant="outline">
+            {completedCount}/{totalLessons || 0} bài
+          </Badge>
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+          <span>Tiến độ {entry.progressPercent}%</span>
+          <span>Thời gian học {formatDuration(entry.totalWatchSeconds)}</span>
+          <span>Điểm {entry.bestScore === null ? "chưa có" : `${entry.bestScore}/100`}</span>
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="hidden h-2 w-32 rounded-full bg-muted sm:block">
+          <div
+            className="h-2 rounded-full bg-primary"
+            style={{ width: `${Math.min(entry.progressPercent, 100)}%` }}
+          />
+        </div>
+        <Button variant="ghost" size="sm" type="button" onClick={onToggle} className="gap-2">
+          {open ? "Ẩn chi tiết" : "Xem chi tiết"}
+          <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function CourseProgressLessons({ entry }: { entry: CourseProgressEntry }) {
+  const completedLessons = entry.lessons.filter((lesson) => lesson.isCompleted);
+  const pendingLessons = entry.lessons.filter((lesson) => !lesson.isCompleted);
+
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <LessonColumn title={`Bài đã hoàn thành (${completedLessons.length})`} lessons={completedLessons} completed />
+      <LessonColumn title={`Bài chưa hoàn thành (${pendingLessons.length})`} lessons={pendingLessons} />
+    </div>
+  );
+}
+
+function LessonColumn({
+  title,
+  lessons,
+  completed = false,
+}: {
+  title: string;
+  lessons: LessonProgress[];
+  completed?: boolean;
+}) {
+  const Icon = completed ? CheckCircle2 : Circle;
+  return (
+    <div className="space-y-2">
+      <div className="text-sm font-medium">{title}</div>
+      {lessons.length === 0 ? (
+        <div className="text-xs text-muted-foreground">Chưa có dữ liệu.</div>
+      ) : (
+        <ul className="space-y-2">
+          {lessons.map((lesson) => (
+            <li
+              key={String(lesson.lessonId)}
+              className="flex items-start gap-2 rounded-md border px-3 py-2"
+            >
+              <Icon
+                className={`mt-1 h-4 w-4 ${completed ? "text-emerald-500" : "text-muted-foreground"}`}
+              />
+              <div className="space-y-1">
+                <div className="text-sm font-medium">{lesson.title}</div>
+                <div className="text-xs text-muted-foreground">
+                  {lesson.chapterTitle} • {formatDuration(lesson.watchedSeconds)} / {formatDuration(lesson.durationSeconds)}
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function formatDuration(seconds: number) {
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const secs = total % 60;
+  if (hours) return `${hours}h ${minutes}m`;
+  if (minutes) return `${minutes}m ${secs ? `${secs}s` : ""}`.trim();
+  return `${secs}s`;
+}
+
+function getStatusLabel(status: string) {
+  if (status === "completed") return "Hoàn thành";
+  if (status === "active") return "Đang học";
+  if (status === "pending") return "Chờ kích hoạt";
+  return status;
+}
+
+function getStatusVariant(status: string): "default" | "outline" {
+  if (status === "completed") return "default";
+  if (status === "active") return "default";
+  return "outline";
 }

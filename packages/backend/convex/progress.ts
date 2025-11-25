@@ -422,6 +422,185 @@ export const getLearnerStats = query({
   },
 });
 
+type LessonProgress = {
+  lessonId: Id<"course_lessons">;
+  title: string;
+  chapterTitle: string;
+  isCompleted: boolean;
+  watchedSeconds: number;
+  durationSeconds: number;
+};
+
+type CourseProgressEntry = {
+  purchaseId: Id<"customer_purchases">;
+  courseId: Id<"courses">;
+  courseTitle: string;
+  progressPercent: number;
+  status: string;
+  totalWatchSeconds: number;
+  bestScore: number | null;
+  lessons: LessonProgress[];
+  completedLessonIds: Id<"course_lessons">[];
+  pendingLessonIds: Id<"course_lessons">[];
+  enrolledAt: number;
+  updatedAt?: number;
+};
+
+export const getCustomerCourseProgress = query({
+  args: { customerId: v.id("customers") },
+  returns: v.array(
+    v.object({
+      purchaseId: v.id("customer_purchases"),
+      courseId: v.id("courses"),
+      courseTitle: v.string(),
+      progressPercent: v.number(),
+      status: v.string(),
+      totalWatchSeconds: v.number(),
+      bestScore: v.union(v.number(), v.null()),
+      lessons: v.array(
+        v.object({
+          lessonId: v.id("course_lessons"),
+          title: v.string(),
+          chapterTitle: v.string(),
+          isCompleted: v.boolean(),
+          watchedSeconds: v.number(),
+          durationSeconds: v.number(),
+        })
+      ),
+      completedLessonIds: v.array(v.id("course_lessons")),
+      pendingLessonIds: v.array(v.id("course_lessons")),
+      enrolledAt: v.number(),
+      updatedAt: v.optional(v.number()),
+    })
+  ),
+  handler: async (ctx, { customerId }) => {
+    const purchases = await ctx.db
+      .query("customer_purchases")
+      .withIndex("by_customer", (q) => q.eq("customerId", customerId))
+      .collect();
+
+    const coursePurchases = purchases.filter((p) => p.productType === "course");
+    const studentId = String(customerId);
+
+    return Promise.all(
+      coursePurchases.map((purchase) =>
+        buildCourseProgress(ctx, purchase, studentId)
+      )
+    );
+  },
+});
+
+async function buildCourseProgress(
+  ctx: any,
+  purchase: any,
+  studentId: string
+): Promise<CourseProgressEntry> {
+  const courseId = purchase.productId as Id<"courses">;
+  const data = await loadCourseCollections(ctx, courseId, studentId);
+  const lessons = mapLessonsProgress(
+    data.chapters,
+    data.lessons,
+    data.completions
+  );
+  const completed = lessons.filter((l) => l.isCompleted).map((l) => l.lessonId);
+  const pending = lessons.filter((l) => !l.isCompleted).map((l) => l.lessonId);
+  const totalWatchSeconds = data.completions.reduce(
+    (sum: number, c: any) => sum + (c.watchTimeSeconds || 0),
+    0
+  );
+  const progressPercent =
+    data.enrollment?.completionPercentage ?? purchase.progressPercent ?? 0;
+
+  return {
+    purchaseId: purchase._id,
+    courseId,
+    courseTitle: data.course?.title ?? "Khoa hoc",
+    progressPercent: Math.round(progressPercent || 0),
+    status: data.enrollment?.status ?? (progressPercent === 100 ? "completed" : "active"),
+    totalWatchSeconds,
+    bestScore: pickBestScore(data.attempts, studentId),
+    lessons,
+    completedLessonIds: completed,
+    pendingLessonIds: pending,
+    enrolledAt: data.enrollment?.enrolledAt ?? purchase.createdAt,
+    updatedAt: purchase.updatedAt,
+  };
+}
+
+async function loadCourseCollections(
+  ctx: any,
+  courseId: Id<"courses">,
+  studentId: string
+) {
+  const [course, enrollment, chapters, lessons, completions, attempts] =
+    await Promise.all([
+      ctx.db.get(courseId),
+      ctx.db
+        .query("course_enrollments")
+        .withIndex("by_course_user", (q: any) =>
+          q.eq("courseId", courseId).eq("userId", studentId)
+        )
+        .first(),
+      ctx.db
+        .query("course_chapters")
+        .withIndex("by_course_order", (q: any) => q.eq("courseId", courseId))
+        .collect(),
+      ctx.db
+        .query("course_lessons")
+        .withIndex("by_course_order", (q: any) => q.eq("courseId", courseId))
+        .collect(),
+      ctx.db
+        .query("lesson_completions")
+        .withIndex("by_student_course", (q: any) =>
+          q.eq("studentId", studentId).eq("courseId", courseId)
+        )
+        .collect(),
+      ctx.db
+        .query("quiz_attempts")
+        .withIndex("by_course", (q: any) => q.eq("courseId", courseId))
+        .collect(),
+    ]);
+
+  return { course, enrollment, chapters, lessons, completions, attempts };
+}
+
+function mapLessonsProgress(
+  chapters: any[],
+  lessons: any[],
+  completions: any[]
+): LessonProgress[] {
+  const withChapter = lessons.map((lesson: any) => ({
+    lessonId: lesson._id as Id<"course_lessons">,
+    title: lesson.title as string,
+    chapterTitle:
+      chapters.find((c) => c._id === lesson.chapterId)?.title ?? "Chuong",
+    isCompleted: false,
+    watchedSeconds: 0,
+    durationSeconds: lesson.durationSeconds || 0,
+  }));
+
+  return withChapter.map((lesson) => {
+    const completion = completions.find(
+      (c) => String(c.lessonId) === String(lesson.lessonId)
+    );
+    return {
+      ...lesson,
+      isCompleted: completion?.isCompleted ?? false,
+      watchedSeconds: completion?.watchTimeSeconds ?? 0,
+    };
+  });
+}
+
+function pickBestScore(attempts: any[], studentId: string): number | null {
+  const mine = attempts.filter((a) => String(a.studentId) === studentId);
+  if (mine.length === 0) return null;
+  return mine.reduce(
+    (max: number | null, attempt: any) =>
+      max === null || attempt.score > max ? attempt.score : max,
+    null
+  );
+}
+
 /**
  * Generate certificate code: DOHY-2024-XXXXX
  */
