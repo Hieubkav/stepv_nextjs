@@ -14,6 +14,7 @@ export type SiteHeaderAuth = {
   registerUrl?: string;
   profileUrl?: string;
   ordersUrl?: string;
+  libraryUrl?: string;
   badgeLabel?: string;
   dropdownTitle?: string;
   showCart?: boolean;

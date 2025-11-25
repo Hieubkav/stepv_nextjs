@@ -51,6 +51,45 @@ export const getCustomerOrders = query({
     },
 });
 
+const getProductByType = async (ctx: QueryCtx, productType: string, productId: string) => {
+    if (productType === "course") return ctx.db.get(productId as Id<"courses">);
+    if (productType === "resource") return ctx.db.get(productId as Id<"library_resources">);
+    return ctx.db.get(productId as Id<"vfx_products">);
+};
+
+const getOrderItemsWithProduct = async (ctx: QueryCtx, orderId: Id<"orders">) => {
+    const items = await ctx.db
+        .query("order_items")
+        .withIndex("by_order", (q) => q.eq("orderId", orderId))
+        .collect();
+
+    return Promise.all(
+        items.map(async (item) => ({
+            ...item,
+            product: await getProductByType(ctx, item.productType, item.productId),
+        })),
+    );
+};
+
+export const getCustomerOrdersWithItems = query({
+    args: { customerId: v.id("customers") },
+    handler: async (ctx, { customerId }) => {
+        const orders = await ctx.db
+            .query("orders")
+            .withIndex("by_customer", (q) => q.eq("customerId", customerId))
+            .collect();
+
+        orders.sort((a, b) => b.createdAt - a.createdAt);
+
+        return Promise.all(
+            orders.map(async (order) => ({
+                ...order,
+                items: await getOrderItemsWithProduct(ctx, order._id),
+            })),
+        );
+    },
+});
+
 // Get order with items
 export const getOrderWithItems = query({
     args: { orderId: v.id("orders") },

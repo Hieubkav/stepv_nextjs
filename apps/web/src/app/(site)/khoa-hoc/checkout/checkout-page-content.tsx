@@ -394,7 +394,7 @@ export function CheckoutPageContent({
                 Mã đơn: {orderNumber}
               </p>
               <Button
-                onClick={() => router.push('/khoa-hoc/don-dat')}
+                onClick={() => router.push('/don-dat')}
                 variant="outline"
                 size="sm"
                 className="w-full"

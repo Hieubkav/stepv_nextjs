@@ -29,6 +29,7 @@ type ResolvedAuth = {
   registerUrl: string;
   profileUrl?: string;
   ordersUrl?: string;
+  libraryUrl?: string;
   badgeLabel: string;
   dropdownTitle: string;
   showCart: boolean;
@@ -40,7 +41,8 @@ const DEFAULT_AUTH: ResolvedAuth = {
   loginUrl: '/login',
   registerUrl: '/register',
   profileUrl: '/profile',
-  ordersUrl: '/my-library',
+  ordersUrl: '/don-dat',
+  libraryUrl: '/my-library',
   badgeLabel: 'Khách hàng',
   dropdownTitle: 'Không gian khách hàng',
   showCart: true,
@@ -166,6 +168,7 @@ const SiteHeaderSection = ({
 
   const resolvedAuth = useMemo<ResolvedAuth>(() => ({
     ...DEFAULT_AUTH,
+    ...auth,
     enabled: auth?.enabled ?? DEFAULT_AUTH.enabled,
   }), [auth]);
 
@@ -559,7 +562,14 @@ function CustomerDropdown({ auth, customer, onLogout }: CustomerDropdownProps) {
         {auth.ordersUrl && (
           <DropdownMenuItem asChild>
             <a href={auth.ordersUrl} className="flex w-full items-center justify-between cursor-pointer">
-              <span>Lịch sử mua</span>
+              <span>Đơn hàng của tôi</span>
+            </a>
+          </DropdownMenuItem>
+        )}
+        {auth.libraryUrl && (
+          <DropdownMenuItem asChild>
+            <a href={auth.libraryUrl} className="flex w-full items-center justify-between cursor-pointer">
+              <span>Thư viện & khóa học</span>
             </a>
           </DropdownMenuItem>
         )}
@@ -649,7 +659,19 @@ function CustomerMobileLogged({ auth, customer, onLogout, onNavigate }: Customer
               onNavigate(auth.ordersUrl!);
             }}
           >
-            <span>Lịch sử mua</span>
+            <span>Đơn hàng của tôi</span>
+          </a>
+        )}
+        {auth.libraryUrl && (
+          <a
+            href={auth.libraryUrl}
+            className="flex items-center justify-between rounded-md bg-white/10 px-4 py-3 text-white hover:bg-white/20"
+            onClick={(event) => {
+              event.preventDefault();
+              onNavigate(auth.libraryUrl!);
+            }}
+          >
+            <span>Thư viện & khóa học</span>
           </a>
         )}
       </div>

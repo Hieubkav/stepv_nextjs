@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation';
+import OrdersPageClient from '../khoa-hoc/don-dat/orders-page-client';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export default async function StudentOrdersPage({
+export default async function OrdersPage({
   searchParams,
 }: {
   searchParams?: SearchParams;
@@ -11,9 +11,9 @@ export default async function StudentOrdersPage({
   const orderIdParam = resolved?.orderId;
   const highlightOrderId = Array.isArray(orderIdParam) ? orderIdParam[0] : orderIdParam;
 
-  const target = highlightOrderId
-    ? `/don-dat?orderId=${encodeURIComponent(highlightOrderId)}`
-    : '/don-dat';
-
-  redirect(target);
+  return (
+    <OrdersPageClient
+      highlightOrderId={typeof highlightOrderId === 'string' ? highlightOrderId : undefined}
+    />
+  );
 }

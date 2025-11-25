@@ -60,7 +60,7 @@ export default function OrderSuccess({ orderNumber, amount, itemCount }: OrderSu
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <Button size="lg" className="w-full font-semibold" asChild>
-          <Link href="/my-library">Xem thư viện của tôi</Link>
+          <Link href="/don-dat">Xem đơn đã đặt</Link>
         </Button>
         <Button size="lg" variant="outline" className="w-full font-semibold text-black" asChild>
           <Link href="/khoa-hoc">Tiếp tục mua sắm</Link>

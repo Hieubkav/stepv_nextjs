@@ -104,7 +104,7 @@ export default function CheckoutForm({
             </div>
             <p className="font-mono text-xs bg-white/60 rounded px-2 py-1 w-fit">Mã đơn: {orderId}</p>
             <Button
-              onClick={() => router.push(`/khoa-hoc/don-dat?orderId=${encodeURIComponent(String(orderId))}`)}
+              onClick={() => router.push(`/don-dat?orderId=${encodeURIComponent(String(orderId))}`)}
               variant="outline"
               size="sm"
               className="w-full"
