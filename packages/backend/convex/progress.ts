@@ -8,7 +8,7 @@ import type { Id } from "./_generated/dataModel";
  */
 export const recordLessonView = mutation({
   args: {
-    studentId: v.id("students"),
+    studentId: v.string(),
     lessonId: v.id("course_lessons"),
     courseId: v.id("courses"),
     watchTimeSeconds: v.optional(v.number()),
@@ -54,7 +54,7 @@ export const recordLessonView = mutation({
  */
 export const completeLessonIfDone = mutation({
   args: {
-    studentId: v.id("students"),
+    studentId: v.string(),
     lessonId: v.id("course_lessons"),
   },
   handler: async (ctx, { studentId, lessonId }) => {
@@ -107,7 +107,7 @@ export const completeLessonIfDone = mutation({
  */
 export const markLessonComplete = mutation({
   args: {
-    studentId: v.id("students"),
+    studentId: v.string(),
     lessonId: v.id("course_lessons"),
     courseId: v.id("courses"),
   },
@@ -154,7 +154,7 @@ export const markLessonComplete = mutation({
  */
 export const unmarkLessonComplete = mutation({
   args: {
-    studentId: v.id("students"),
+    studentId: v.string(),
     lessonId: v.id("course_lessons"),
     courseId: v.id("courses"),
   },
@@ -209,6 +209,25 @@ async function updateEnrollmentProgress(
   const completedCount = completions.filter((c: any) => c.isCompleted).length;
   const completionPercentage = Math.round((completedCount / lessons.length) * 100);
 
+  // Sync progress sang customer_purchases (neu la khach hang)
+  try {
+    const purchase = (await ctx.db
+      .query("customer_purchases")
+      .withIndex("by_product", (q: any) =>
+        q.eq("productType", "course").eq("productId", courseId)
+      )
+      .collect()).find((p: any) => String(p.customerId) === userId);
+
+    if (purchase) {
+      await ctx.db.patch(purchase._id, {
+        progressPercent: completionPercentage,
+        updatedAt: Date.now(),
+      });
+    }
+  } catch (error) {
+    console.warn("Sync progress purchase failed", error);
+  }
+
   // Update enrollment
   const enrollment = await ctx.db
     .query("course_enrollments")
@@ -229,15 +248,29 @@ async function updateEnrollmentProgress(
       completedAt: newStatus === "completed" ? now : enrollment.completedAt,
     });
 
-    // Auto-issue certificate if completed
+    // Auto-issue certificate if completed (chi tao neu dung studentId hop le)
     if (completionPercentage === 100) {
-      await ctx.db.insert("certificates", {
-        studentId: userId as Id<"students">,
-        courseId,
-        certificateCode: generateCertificateCode(),
-        issuedAt: now,
-        createdAt: now,
-      });
+      try {
+        const studentId = userId as Id<"students">;
+        const hasCertificate = await ctx.db
+          .query("certificates")
+          .withIndex("by_student_course", (q: any) =>
+            q.eq("studentId", studentId).eq("courseId", courseId)
+          )
+          .first();
+
+        if (!hasCertificate) {
+          await ctx.db.insert("certificates", {
+            studentId,
+            courseId,
+            certificateCode: generateCertificateCode(),
+            issuedAt: now,
+            createdAt: now,
+          });
+        }
+      } catch (error) {
+        console.warn("Bo qua tao certificate vi studentId khong hop le", error);
+      }
     }
   }
 }
@@ -248,7 +281,7 @@ async function updateEnrollmentProgress(
 export const getEnrollmentProgress = query({
   args: {
     courseId: v.id("courses"),
-    studentId: v.id("students"),
+    studentId: v.string(),
   },
   handler: async (ctx, { courseId, studentId }) => {
     const userId = studentId as string;
@@ -333,7 +366,7 @@ export const getEnrollmentProgress = query({
  */
 export const getLearnerStats = query({
   args: {
-    studentId: v.id("students"),
+    studentId: v.string(),
   },
   handler: async (ctx, { studentId }) => {
     const userId = studentId as string;
@@ -369,7 +402,7 @@ export const getLearnerStats = query({
     // Get certificates
     const certificates = await ctx.db
       .query("certificates")
-      .withIndex("by_student", (q) => q.eq("studentId", studentId))
+      .withIndex("by_student", (q: any) => q.eq("studentId", studentId as any))
       .collect();
 
     return {

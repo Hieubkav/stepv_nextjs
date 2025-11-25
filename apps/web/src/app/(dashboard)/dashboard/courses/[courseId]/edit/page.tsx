@@ -84,8 +84,8 @@ type EnrollmentDoc = {
 };
 
 
-type StudentSummary = {
-  _id: Id<"students">;
+type CustomerSummary = {
+  _id: Id<"customers">;
   account: string;
   fullName: string;
   email?: string;
@@ -160,7 +160,7 @@ export default function CourseEditPage() {
     includeInactive: true,
   }) as EnrollmentDoc[] | undefined;
 
-  const students = useQuery(api.students.listStudents, { activeOnly: true }) as StudentSummary[] | undefined;
+  const students = useQuery(api.customers.listCustomers, { activeOnly: true }) as CustomerSummary[] | undefined;
 
   const updateCourse = useMutation(api.courses.updateCourse);
   const setCourseActive = useMutation(api.courses.setCourseActive);
@@ -223,7 +223,7 @@ export default function CourseEditPage() {
   }, [chapters]);
 
   const studentMap = useMemo(() => {
-    const map = new Map<string, StudentSummary>();
+    const map = new Map<string, CustomerSummary>();
     (students ?? []).forEach((student) => {
       map.set(String(student._id), student);
     });

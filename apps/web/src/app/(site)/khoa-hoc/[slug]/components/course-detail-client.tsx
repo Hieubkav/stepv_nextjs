@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useQuery } from "convex/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 import { useCustomerAuth } from "@/features/auth";
@@ -10,6 +10,8 @@ import { CourseDetails } from "./course-details";
 import { CourseCurriculum } from "./course-curriculum";
 import { CourseHighlights } from "./course-highlights";
 import { CoursePrice } from "./course-price";
+import { useToast } from "@/hooks/use-toast";
+import type { ChapterProgress } from "./course-curriculum";
 
 export type CourseLesson = {
   id: string;
@@ -87,6 +89,13 @@ export function CourseDetailClient({
 }) {
   const [selectedLesson, setSelectedLesson] = useState<CourseLesson | null>(null);
   const { customer } = useCustomerAuth();
+  const { toast } = useToast();
+  const [optimisticProgress, setOptimisticProgress] = useState<ChapterProgress[] | undefined>(undefined);
+  const hasEnsuredEnrollment = useRef(false);
+
+  const ensureEnrollment = useMutation(api.courses.upsertEnrollment);
+  const markLessonComplete = useMutation(api.progress.markLessonComplete);
+  const unmarkLessonComplete = useMutation(api.progress.unmarkLessonComplete);
 
   const purchase = useQuery(
     api.purchases.getPurchase,
@@ -115,6 +124,46 @@ export function CourseDetailClient({
   const hasActiveOrder = Boolean(productLock?.hasActiveOrder);
 
   useEffect(() => {
+    if (!hasFullAccess) {
+      setOptimisticProgress(undefined);
+      hasEnsuredEnrollment.current = false;
+    }
+  }, [hasFullAccess]);
+
+  useEffect(() => {
+    if (!hasFullAccess || !customer || hasEnsuredEnrollment.current) return;
+    hasEnsuredEnrollment.current = true;
+    ensureEnrollment({
+      courseId: course.id as Id<"courses">,
+      userId: customer._id as string,
+      active: true,
+    }).catch((error) => {
+      console.error("Khong the khoi tao enrollment", error);
+      hasEnsuredEnrollment.current = false;
+    });
+  }, [hasFullAccess, customer, course.id, ensureEnrollment]);
+
+  const enrollmentProgress = useQuery(
+    api.progress.getEnrollmentProgress,
+    hasFullAccess && customer
+      ? ({ courseId: course.id as Id<"courses">, studentId: customer._id as string } as const)
+      : "skip",
+  ) as
+    | {
+        exists: boolean;
+        completionPercentage: number;
+        chaptersProgress: ChapterProgress[];
+      }
+    | null
+    | undefined;
+
+  useEffect(() => {
+    if (enrollmentProgress?.chaptersProgress) {
+      setOptimisticProgress(enrollmentProgress.chaptersProgress);
+    }
+  }, [enrollmentProgress?.chaptersProgress]);
+
+  useEffect(() => {
     if (selectedLesson && !hasFullAccess && !selectedLesson.isPreview) {
       setSelectedLesson(null);
     }
@@ -129,6 +178,65 @@ export function CourseDetailClient({
   const handleClearSelection = () => {
     setSelectedLesson(null);
   };
+
+  const updateLocalProgress = (lessonId: Id<"course_lessons">, isCompleted: boolean) => {
+    setOptimisticProgress((prev) => {
+      const source = prev ?? enrollmentProgress?.chaptersProgress;
+      if (!source) return source;
+      return source.map((chapter) => {
+        const lessons = chapter.lessons.map((lesson) =>
+          lesson.lessonId === lessonId ? { ...lesson, isCompleted } : lesson,
+        );
+        const completedLessons = lessons.filter((lesson) => lesson.isCompleted).length;
+        return {
+          ...chapter,
+          lessons,
+          completedLessons,
+          percentage: lessons.length > 0 ? Math.round((completedLessons / lessons.length) * 100) : 0,
+        };
+      });
+    });
+  };
+
+  const handleToggleLessonComplete = async (lessonId: Id<"course_lessons">, isCompleted: boolean) => {
+    if (!hasFullAccess || !customer) {
+      toast({ title: "C\u1ea7n \u0111\u0103ng nh\u1eadp", description: "H\u00e3y \u0111\u0103ng nh\u1eadp ho\u1eb7c mua kh\u00f3a h\u1ecdc \u0111\u1ec3 \u0111\u00e1nh d\u1ea5u ti\u1ebfn \u0111\u1ed9.", variant: "destructive" });
+      return;
+    }
+    updateLocalProgress(lessonId, isCompleted);
+    const payload = { studentId: customer._id as string, lessonId, courseId: course.id as Id<"courses"> };
+    try {
+      const mutation = isCompleted ? markLessonComplete : unmarkLessonComplete;
+      await mutation(payload);
+    } catch (error) {
+      console.error("Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt ti\u1ebfn \u0111\u1ed9 b\u00e0i h\u1ecdc", error);
+      toast({ title: "Kh\u00f4ng th\u1ec3 c\u1eadp nh\u1eadt", description: error instanceof Error ? error.message : "Vui l\u00f2ng th\u1eed l\u1ea1i sau.", variant: "destructive" });
+      setOptimisticProgress(enrollmentProgress?.chaptersProgress);
+    }
+  };
+
+  const curriculumProgress = optimisticProgress ?? enrollmentProgress?.chaptersProgress;
+
+  const completionPercentage = useMemo(() => {
+    if (curriculumProgress && curriculumProgress.length > 0) {
+      const totals = curriculumProgress.reduce(
+        (acc, chapter) => {
+          acc.completed += chapter.completedLessons;
+          acc.total += chapter.totalLessons;
+          return acc;
+        },
+        { completed: 0, total: 0 },
+      );
+      if (totals.total > 0) {
+        return Math.round((totals.completed / totals.total) * 100);
+      }
+      return 0;
+    }
+    if (enrollmentProgress?.completionPercentage !== undefined) {
+      return enrollmentProgress.completionPercentage;
+    }
+    return purchase?.progressPercent;
+  }, [curriculumProgress, enrollmentProgress?.completionPercentage, purchase?.progressPercent]);
 
   return (
     <>
@@ -202,7 +310,9 @@ export function CourseDetailClient({
           badges={badges}
           onLessonSelect={handleLessonSelect}
           hasFullAccess={hasFullAccess}
-          completionPercentage={purchase?.progressPercent}
+          completionPercentage={completionPercentage}
+          chaptersProgress={curriculumProgress}
+          onToggleLessonComplete={handleToggleLessonComplete}
         />
       </div>
     </>

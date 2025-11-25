@@ -500,7 +500,8 @@ export default defineSchema({
 
   // Lesson completions (ghi nhan tien do chi tiet tung bai hoc)
   lesson_completions: defineTable({
-    studentId: v.id("students"),
+    // NOTE: dung string de luu id cua hoc vien (customers hoac students) cho de migrate
+    studentId: v.string(),
     lessonId: v.id("course_lessons"),
     courseId: v.id("courses"),
     completedAt: v.optional(v.number()),
