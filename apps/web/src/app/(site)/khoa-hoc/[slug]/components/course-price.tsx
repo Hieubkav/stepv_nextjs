@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/cart-context";
+import { useCustomerAuth } from "@/features/auth";
 import { toast } from "sonner";
 
 type CoursePriceProps = {
@@ -38,10 +39,17 @@ export function CoursePrice({
 }: CoursePriceProps) {
   const router = useRouter();
   const { addItem, hasDuplicate } = useCart();
+  const { customer } = useCustomerAuth();
 
   const handleAddToCart = () => {
     if (hasFullAccess) {
       router.push(courseSlug ? `/khoa-hoc/${courseSlug}` : "/khoa-hoc");
+      return;
+    }
+
+    if (!customer) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      router.push("/login");
       return;
     }
 

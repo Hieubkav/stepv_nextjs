@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
+import { useCustomerAuth } from '@/features/auth';
 
 export type CartProductType = 'course' | 'resource' | 'vfx';
 
@@ -30,9 +32,19 @@ const CART_STORAGE_KEY = 'cart_items';
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isHydrated, setIsHydrated] = useState(false);
+  const { isAuthenticated, status } = useCustomerAuth();
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (status === 'loading') return;
+
+    if (!isAuthenticated) {
+      setItems([]);
+      window.localStorage.removeItem(CART_STORAGE_KEY);
+      setIsHydrated(true);
+      return;
+    }
+
     const stored = window.localStorage.getItem(CART_STORAGE_KEY);
     if (!stored) {
       setIsHydrated(true);
@@ -46,21 +58,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsHydrated(true);
     }
-  }, []);
+  }, [isAuthenticated, status]);
 
   useEffect(() => {
-    if (!isHydrated) return;
+    if (!isHydrated || !isAuthenticated) return;
     window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [items, isHydrated]);
+  }, [items, isHydrated, isAuthenticated]);
 
   const addItem = useCallback((newItem: CartItem) => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.');
+      return;
+    }
     setItems((prev) => {
       const exists = prev.some(
         (item) => item.productType === newItem.productType && item.id === newItem.id,
       );
       return exists ? prev : [...prev, newItem];
     });
-  }, []);
+  }, [isAuthenticated]);
 
   const removeItem = useCallback((id: string, productType?: CartProductType) => {
     setItems((prev) =>

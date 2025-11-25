@@ -264,6 +264,11 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
   function handleAddToCart() {
     if (resource.pricingType !== "paid") return;
+    if (!customer) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      router.push("/login");
+      return;
+    }
     if (hasPurchase) {
       toast.message("Bạn đã mua tài nguyên này.", {
         description: "Kiểm tra thư viện hoặc đơn hàng của bạn.",

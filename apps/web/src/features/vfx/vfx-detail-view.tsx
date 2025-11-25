@@ -288,9 +288,14 @@ export default function VfxDetailView({ slug, initialProduct }: VfxDetailViewPro
     }
   }
 
-    function handleAddToCart() {
+  function handleAddToCart() {
     if (!product) return;
     if (product.pricingType !== "paid") return;
+    if (!customer) {
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      router.push("/login");
+      return;
+    }
     if (isOwned) {
       toast.message("Bạn đã sở hữu VFX này.");
       return;
