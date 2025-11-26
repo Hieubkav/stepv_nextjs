@@ -27,8 +27,31 @@ async function getCourses(): Promise<Array<{ slug: string; updatedAt: number }>>
   }
 }
 
+async function getProjects(): Promise<Array<{ slug: string; updatedAt: number }>> {
+  try {
+    const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) return [];
+
+    const client = new ConvexHttpClient(convexUrl);
+    const projects = (await client.query(api.projects.listProjects, {
+      includeInactive: false,
+    })) as Doc<'projects'>[];
+
+    return projects
+      .filter((p) => p.active && p.slug)
+      .map((p) => ({
+        slug: p.slug || '',
+        updatedAt: p.updatedAt || Date.now(),
+      }));
+  } catch (error) {
+    console.error('Error fetching projects for sitemap:', error);
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const courses = await getCourses();
+  const projects = await getProjects();
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -50,6 +73,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${baseUrl}/project`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/docs`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -64,5 +93,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...courseRoutes];
+  const projectRoutes: MetadataRoute.Sitemap = projects.map((project) => ({
+    url: `${baseUrl}/project/${project.slug}`,
+    lastModified: new Date(project.updatedAt),
+    changeFrequency: 'weekly' as const,
+    priority: 0.75,
+  }));
+
+  return [...staticRoutes, ...courseRoutes, ...projectRoutes];
 }

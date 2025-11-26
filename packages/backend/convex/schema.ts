@@ -125,6 +125,52 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
+  // Project categories
+  project_categories: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Projects
+  projects: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    summary: v.optional(v.string()),
+    content: v.optional(v.string()),
+    thumbnailId: v.optional(v.id("media")),
+    videoMediaId: v.optional(v.id("media")),
+    videoUrl: v.optional(v.string()),
+    categoryId: v.optional(v.id("project_categories")),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_category_order", ["categoryId", "order"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Project gallery images
+  project_images: defineTable({
+    projectId: v.id("projects"),
+    mediaId: v.id("media"),
+    caption: v.optional(v.string()),
+    altText: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project_order", ["projectId", "order"])
+    .index("by_media", ["mediaId"]),
+
   // VFX Products (hiệu ứng video 1-5s)
   vfx_products: defineTable({
     // Basic info

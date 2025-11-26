@@ -54,6 +54,14 @@ export const sidebarData: SidebarData = {
         { title: 'Khách hàng', url: '/dashboard/customers', icon: UserCog },
         { title: 'Đơn hàng', url: '/dashboard/orders', icon: ShoppingCart },
         {
+          title: 'Dự án',
+          icon: Construction,
+          items: [
+            { title: 'Danh sách', url: '/dashboard/project', icon: Construction },
+            { title: 'Danh mục', url: '/dashboard/project-category', icon: ListTodo },
+          ],
+        },
+        {
           title: 'Thư viện',
           icon: Package,
           items: [

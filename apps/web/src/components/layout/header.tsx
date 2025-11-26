@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ className = '' }) => {
   const menuItems: MenuItem[] = [
     { label: 'TRANG CHỦ', href: '/', isActive: pathname === '/' },
     { label: 'KHÓA HỌC', href: '/khoa-hoc' },
-    { label: 'DỰ ÁN', href: '/du-an' },
+    { label: 'DỰ ÁN', href: '/project' },
     { label: 'VỀ CHÚNG TÔI', href: '#about' },
     { label: 'THƯ VIỆN', href: '/thu-vien' },
     { label: 'THÊM', href: '#more' }

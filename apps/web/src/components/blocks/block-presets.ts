@@ -635,7 +635,7 @@ export const BLOCK_PRESETS: BlockPreset[] = [
       menuItems: {
         "ui:options": { addButtonLabel: "Thêm menu" },
         items: {
-          url: { "ui:placeholder": "https://... hoặc /du-an" }
+          url: { "ui:placeholder": "https://... hoặc /project" }
         }
       },
       socials: {
