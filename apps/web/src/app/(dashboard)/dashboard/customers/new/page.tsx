@@ -46,7 +46,7 @@ export default function CustomerCreatePage() {
 
     setSubmitting(true);
     try {
-      await createCustomer({
+      const result = (await createCustomer({
         account,
         email,
         password,
@@ -55,11 +55,17 @@ export default function CustomerCreatePage() {
         notes: values.notes.trim() || undefined,
         order: nextOrder,
         active: values.active,
-      });
-      toast.success("Đã tạo khách hàng");
+      })) as { ok: boolean; error?: string };
+
+      if (!result?.ok) {
+        toast.error(result?.error ?? "Kh�ng th? t?o kh�ch h�ng");
+        return;
+      }
+
+      toast.success("Da t?o kh�ch h�ng");
       router.push("/dashboard/customers");
     } catch (error: any) {
-      toast.error(error?.message ?? "Không thể tạo khách hàng");
+      toast.error(error?.message ?? "Kh�ng th? t?o kh�ch h�ng");
     } finally {
       setSubmitting(false);
     }

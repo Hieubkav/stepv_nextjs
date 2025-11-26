@@ -175,24 +175,49 @@ export const createCustomer = mutation({
         order: v.number(),
         active: v.boolean(),
     },
+    returns: v.object({
+        ok: v.boolean(),
+        error: v.optional(v.string()),
+        customer: v.optional(
+            v.object({
+                _id: v.id("customers"),
+                account: v.string(),
+                email: v.string(),
+                fullName: v.string(),
+                phone: v.optional(v.string()),
+                notes: v.optional(v.string()),
+                order: v.number(),
+                active: v.boolean(),
+                createdAt: v.number(),
+                updatedAt: v.number(),
+            })
+        ),
+    }),
     handler: async (ctx, args) => {
         const account = args.account.trim();
-        if (!account) throw new ConvexError("Yêu cầu nhập tài khoản");
-        
+        if (!account) return { ok: false, error: "Yêu cầu nhập tài khoản" };
+
         const email = args.email.trim().toLowerCase();
-        if (!email) throw new ConvexError("Yêu cầu nhập email");
-        
+        if (!email) return { ok: false, error: "Yêu cầu nhập email" };
+
         const password = args.password.trim();
-        if (!password) throw new ConvexError("Yêu cầu nhập mật khẩu");
-        
+        if (!password) return { ok: false, error: "Yêu cầu nhập mật khẩu" };
+
         const fullName = args.fullName.trim();
-        if (!fullName) throw new ConvexError("Yêu cầu nhập họ tên");
-        
+        if (!fullName) return { ok: false, error: "Yêu cầu nhập họ tên" };
+
         const now = Date.now();
-        
-        await requireUniqueAccount(ctx, account);
-        await requireUniqueEmail(ctx, email);
-        
+
+        try {
+            await requireUniqueAccount(ctx, account);
+            await requireUniqueEmail(ctx, email);
+        } catch (err) {
+            if (err instanceof ConvexError) {
+                return { ok: false, error: err.message };
+            }
+            throw err;
+        }
+
         const id = await ctx.db.insert("customers", {
             account,
             email,
@@ -206,7 +231,8 @@ export const createCustomer = mutation({
             updatedAt: now,
         });
 
-        return await ctx.db.get(id);
+        const doc = (await ctx.db.get(id)) as CustomerDoc;
+        return { ok: true, customer: toPublicCustomer(doc) };
     },
 });
 

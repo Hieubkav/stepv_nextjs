@@ -274,26 +274,27 @@ export function CustomerAuthProvider({ children }: { children: React.ReactNode }
                     phone: phone?.trim(),
                     order: 0,
                     active: true,
-                })) as CustomerAccount | null;
+                })) as { ok: boolean; error?: string; customer?: CustomerAccount | null };
 
-                if (!result) {
-                    const error = 'Không thể tạo tài khoản';
+                if (!result?.ok || !result.customer) {
+                    const error = result?.error ?? 'Kh�ng th? t?o t�i kho?n';
                     setState((prev) => ({ ...prev, status: 'idle', error, customer: null }));
                     return { ok: false, error };
                 }
 
-                const session: CustomerSession = { customer: result, issuedAt: Date.now() };
+                const customer = result.customer as CustomerAccount;
+                const session: CustomerSession = { customer, issuedAt: Date.now() };
                 writeStoredSession(session);
                 setState({
-                    customer: result,
+                    customer,
                     status: 'authenticated',
                     error: undefined,
                     hydrated: true,
                 });
-                return { ok: true, customerId: result._id };
+                return { ok: true, customerId: customer._id };
             } catch (error) {
                 const message =
-                    error instanceof Error ? error.message : 'Không thể tạo tài khoản tại thời điểm này';
+                    error instanceof Error ? error.message : 'Kh�ng th? t?o t�i kho?n t?i th?i di?m n�y';
                 setState((prev) => ({ ...prev, status: 'idle', error: message, customer: null }));
                 return { ok: false, error: message };
             }
