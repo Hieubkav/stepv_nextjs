@@ -139,6 +139,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 className="text-[11px] font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
+                onClick={() => router.push('/forgot-password')}
               >
                 Quên mật khẩu?
               </button>
@@ -166,6 +167,7 @@ export default function LoginPage() {
             <button
               type="button"
               className="font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+              onClick={() => router.push('/register')}
             >
               Đăng ký ngay
             </button>
