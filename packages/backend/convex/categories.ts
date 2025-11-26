@@ -227,7 +227,7 @@ export const deleteCategory = mutation({
 
     if (coursesInCategory.length > 0) {
       throw new Error(
-        `Kh�ng th? x�a danh m?c n�y v� c� ${coursesInCategory.length} kh�a h?c thu?c danh m?c n�y`
+        `Không thể xóa danh mục này vì có ${coursesInCategory.length} khóa học thuộc danh mục này`
       );
     }
 
