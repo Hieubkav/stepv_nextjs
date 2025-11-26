@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 
@@ -159,25 +159,25 @@ export const createReview = mutation({
   async handler(ctx, args) {
     // Validate rating
     if (args.rating < 1 || args.rating > 5) {
-      throw new Error("Đánh giá phải từ 1-5 sao");
+      throw new ConvexError("Đánh giá phải từ 1-5 sao");
     }
 
     // Validate title
     if (!args.title || args.title.trim().length === 0) {
-      throw new Error("Tiêu đề đánh giá không được trống");
+      throw new ConvexError("Tiêu đề đánh giá không được trống");
     }
 
     if (args.title.length > 200) {
-      throw new Error("Tiêu đề quá dài (tối đa 200 ký tự)");
+      throw new ConvexError("Tiêu đề quá dài (tối đa 200 ký tự)");
     }
 
     // Validate content
     if (!args.content || args.content.trim().length === 0) {
-      throw new Error("Nội dung đánh giá không được trống");
+      throw new ConvexError("Nội dung đánh giá không được trống");
     }
 
     if (args.content.length > 5000) {
-      throw new Error("Nội dung quá dài (tối đa 5000 ký tự)");
+      throw new ConvexError("Nội dung quá dài (tối đa 5000 ký tự)");
     }
 
     // Kiểm tra đã đánh giá chưa
@@ -189,7 +189,7 @@ export const createReview = mutation({
     ).find((doc) => doc.courseId === args.courseId && !doc.deletedAt);
 
     if (existing) {
-      throw new Error("Bạn đã đánh giá khóa này rồi. Vui lòng cập nhật đánh giá cũ.");
+      throw new ConvexError("Bạn đã đánh giá khóa này rồi. Vui lòng cập nhật đánh giá cũ.");
     }
 
     // Kiểm tra học viên đã hoàn thành khóa này (optional)
@@ -201,7 +201,7 @@ export const createReview = mutation({
       .first();
 
     if (!enrollment) {
-      throw new Error("Bạn phải tham gia khóa này mới được đánh giá");
+      throw new ConvexError("Bạn phải tham gia khóa này mới được đánh giá");
     }
 
     const reviewId = await ctx.db.insert("course_reviews", {
@@ -234,35 +234,35 @@ export const updateReview = mutation({
   async handler(ctx, args) {
     const review = await ctx.db.get(args.reviewId);
     if (!review) {
-      throw new Error("Đánh giá không tồn tại");
+      throw new ConvexError("Đánh giá không tồn tại");
     }
 
     // Kiểm tra quyền
     if (review.studentId !== args.studentId) {
-      throw new Error("Bạn không có quyền sửa đánh giá này");
+      throw new ConvexError("Bạn không có quyền sửa đánh giá này");
     }
 
     // Validate rating
     if (args.rating < 1 || args.rating > 5) {
-      throw new Error("Đánh giá phải từ 1-5 sao");
+      throw new ConvexError("Đánh giá phải từ 1-5 sao");
     }
 
     // Validate title
     if (!args.title || args.title.trim().length === 0) {
-      throw new Error("Tiêu đề đánh giá không được trống");
+      throw new ConvexError("Tiêu đề đánh giá không được trống");
     }
 
     if (args.title.length > 200) {
-      throw new Error("Tiêu đề quá dài (tối đa 200 ký tự)");
+      throw new ConvexError("Tiêu đề quá dài (tối đa 200 ký tự)");
     }
 
     // Validate content
     if (!args.content || args.content.trim().length === 0) {
-      throw new Error("Nội dung đánh giá không được trống");
+      throw new ConvexError("Nội dung đánh giá không được trống");
     }
 
     if (args.content.length > 5000) {
-      throw new Error("Nội dung quá dài (tối đa 5000 ký tự)");
+      throw new ConvexError("Nội dung quá dài (tối đa 5000 ký tự)");
     }
 
     await ctx.db.patch(args.reviewId, {
@@ -287,12 +287,12 @@ export const deleteReview = mutation({
   async handler(ctx, args) {
     const review = await ctx.db.get(args.reviewId);
     if (!review) {
-      throw new Error("Đánh giá không tồn tại");
+      throw new ConvexError("Đánh giá không tồn tại");
     }
 
     // Kiểm tra quyền
     if (review.studentId !== args.studentId) {
-      throw new Error("Bạn không có quyền xóa đánh giá này");
+      throw new ConvexError("Bạn không có quyền xóa đánh giá này");
     }
 
     await ctx.db.patch(args.reviewId, {
@@ -315,7 +315,7 @@ export const markReviewHelpful = mutation({
   async handler(ctx, args) {
     const review = await ctx.db.get(args.reviewId);
     if (!review) {
-      throw new Error("Đánh giá không tồn tại");
+      throw new ConvexError("Đánh giá không tồn tại");
     }
 
     // Kiểm tra đã vote chưa

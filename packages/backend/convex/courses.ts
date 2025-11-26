@@ -1,7 +1,7 @@
 // KISS: Convex functions cho module khoa hoc
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 type AnyCtx = MutationCtx | QueryCtx;
@@ -134,7 +134,7 @@ const assertCourseSlugUnique = async (
       .withIndex("by_slug", (q) => q.eq("slug", candidate))
       .first();
     if (existed && (!excludeId || existed._id !== excludeId)) {
-      throw new Error("Course slug already exists");
+      throw new ConvexError("Course slug already exists");
     }
   }
   const normalizedTarget = normalizeCourseSlug(slug);
@@ -144,7 +144,7 @@ const assertCourseSlugUnique = async (
       const course = item as CourseDoc;
       if (excludeId && course._id === excludeId) continue;
       if (normalizeCourseSlug(course.slug) === normalizedTarget) {
-        throw new Error("Course slug already exists");
+        throw new ConvexError("Course slug already exists");
       }
     }
   }
@@ -153,7 +153,7 @@ const assertCourseSlugUnique = async (
 const ensureCourse = async (ctx: AnyCtx, id: CourseId) => {
   const course = await ctx.db.get(id);
   if (!course) {
-    throw new Error("Course not found");
+    throw new ConvexError("Course not found");
   }
   return course as CourseDoc;
 };
@@ -165,10 +165,10 @@ const ensureChapterInCourse = async (
 ) => {
   const chapter = await ctx.db.get(chapterId);
   if (!chapter) {
-    throw new Error("Chapter not found");
+    throw new ConvexError("Chapter not found");
   }
   if ((chapter as ChapterDoc).courseId !== courseId) {
-    throw new Error("Chapter does not belong to course");
+    throw new ConvexError("Chapter does not belong to course");
   }
   return chapter as ChapterDoc;
 };
@@ -180,10 +180,10 @@ const ensureLessonInCourse = async (
 ) => {
   const lesson = await ctx.db.get(lessonId);
   if (!lesson) {
-    throw new Error("Lesson not found");
+    throw new ConvexError("Lesson not found");
   }
   if ((lesson as LessonDoc).courseId !== courseId) {
-    throw new Error("Lesson does not belong to course");
+    throw new ConvexError("Lesson does not belong to course");
   }
   return lesson as LessonDoc;
 };
@@ -339,7 +339,7 @@ export const getCourseDetail = query({
   },
   handler: async (ctx, { id, slug, includeInactive = false }) => {
     if (!id && !slug) {
-      throw new Error("Provide id or slug");
+      throw new ConvexError("Provide id or slug");
     }
 
     let course = null as CourseDoc | null;
@@ -492,13 +492,13 @@ export const recordLessonProgress = mutation({
       userId,
     )) as EnrollmentDoc | null;
     if (!enrollment) {
-      throw new Error("Enrollment not found");
+      throw new ConvexError("Enrollment not found");
     }
 
     const course = await ensureCourse(ctx, courseId);
     const lesson = await ensureLessonInCourse(ctx, lessonId, courseId);
     if (!lesson.active) {
-      throw new Error("Lesson is inactive");
+      throw new ConvexError("Lesson is inactive");
     }
 
     const structure = await collectCourseStructure(ctx, course, false);
@@ -523,7 +523,7 @@ export const recordLessonProgress = mutation({
 
     const index = lessons.findIndex((item) => item._id === lessonId);
     if (index === -1) {
-      throw new Error("Lesson not accessible");
+      throw new ConvexError("Lesson not accessible");
     }
 
     const completedLessons = index + 1;
@@ -572,7 +572,7 @@ export const createCourse = mutation({
   handler: async (ctx, args) => {
     const normalizedSlug = normalizeCourseSlug(args.slug);
     if (!normalizedSlug) {
-      throw new Error("Slug is invalid");
+      throw new ConvexError("Slug is invalid");
     }
     await assertCourseSlugUnique(ctx, normalizedSlug);
     const now = Date.now();
@@ -617,11 +617,11 @@ export const updateCourse = mutation({
   handler: async (ctx, args) => {
     const { id, slug, subtitle, description, thumbnailMediaId, introVideoUrl, pricingType, priceAmount, comparePriceAmount, priceNote, isPriceVisible, ...rest } = args;
     const existing = await ctx.db.get(id);
-    if (!existing) throw new Error("Course not found");
+    if (!existing) throw new ConvexError("Course not found");
     const normalizedSlug =
       slug !== undefined ? normalizeCourseSlug(slug) : undefined;
     if (slug !== undefined && !normalizedSlug) {
-      throw new Error("Slug is invalid");
+      throw new ConvexError("Slug is invalid");
     }
     if (normalizedSlug && normalizedSlug !== (existing as CourseDoc).slug) {
       await assertCourseSlugUnique(ctx, normalizedSlug, id);
@@ -757,7 +757,7 @@ export const updateChapter = mutation({
   },
   handler: async (ctx, { id, summary, ...rest }) => {
     const existing = await ctx.db.get(id);
-    if (!existing) throw new Error("Chapter not found");
+    if (!existing) throw new ConvexError("Chapter not found");
     const patch: Record<string, unknown> = { ...rest };
     if (summary !== undefined) {
       patch.summary = summary ?? undefined;
@@ -785,7 +785,7 @@ export const reorderChapters = mutation({
       const chapter = await ctx.db.get(orderedIds[i]);
       if (!chapter) continue;
       if ((chapter as ChapterDoc).courseId !== courseId) {
-        throw new Error("Chapter does not belong to course");
+        throw new ConvexError("Chapter does not belong to course");
       }
       await ctx.db.patch(orderedIds[i], { order: i, updatedAt: now });
     }
@@ -825,7 +825,7 @@ export const listChapterLessons = query({
   },
   handler: async (ctx, { chapterId, includeInactive = false }) => {
     const chapter = await ctx.db.get(chapterId);
-    if (!chapter) throw new Error("Chapter not found");
+    if (!chapter) throw new ConvexError("Chapter not found");
     const lessons = (await ctx.db
       .query("course_lessons")
       .withIndex("by_chapter_order", (q) => q.eq("chapterId", chapterId))
@@ -899,12 +899,12 @@ export const updateLesson = mutation({
   },
   handler: async (ctx, { id, chapterId, description, videoUrl, youtubeUrl, exerciseLink, ...rest }) => {
     const existing = await ctx.db.get(id);
-    if (!existing) throw new Error("Lesson not found");
+    if (!existing) throw new ConvexError("Lesson not found");
     const patch: Record<string, unknown> = { ...rest };
 
     if (chapterId !== undefined) {
       const chapter = await ctx.db.get(chapterId);
-      if (!chapter) throw new Error("Chapter not found");
+      if (!chapter) throw new ConvexError("Chapter not found");
       patch.chapterId = chapterId;
       patch.courseId = (chapter as ChapterDoc).courseId;
     }
@@ -943,13 +943,13 @@ export const reorderLessons = mutation({
   },
   handler: async (ctx, { chapterId, orderedIds }) => {
     const chapter = await ctx.db.get(chapterId);
-    if (!chapter) throw new Error("Chapter not found");
+    if (!chapter) throw new ConvexError("Chapter not found");
     const now = Date.now();
     for (let i = 0; i < orderedIds.length; i++) {
       const lesson = await ctx.db.get(orderedIds[i]);
       if (!lesson) continue;
       if ((lesson as LessonDoc).chapterId !== chapterId) {
-        throw new Error("Lesson does not belong to chapter");
+        throw new ConvexError("Lesson does not belong to chapter");
       }
       await ctx.db.patch(orderedIds[i], { order: i, updatedAt: now });
     }
@@ -1083,7 +1083,7 @@ export const updateEnrollmentProgress = mutation({
       args.userId,
     );
     if (!enrollment) {
-      throw new Error("Enrollment not found");
+      throw new ConvexError("Enrollment not found");
     }
 
     let lastViewedLessonId = args.lastViewedLessonId ?? undefined;
@@ -1119,7 +1119,7 @@ export const setEnrollmentActive = mutation({
   handler: async (ctx, { courseId, userId, active }) => {
     const enrollment = await getEnrollmentByCourseAndUser(ctx, courseId, userId);
     if (!enrollment) {
-      throw new Error("Enrollment not found");
+      throw new ConvexError("Enrollment not found");
     }
     await ctx.db.patch(enrollment._id, { active });
     return { ok: true } as const;

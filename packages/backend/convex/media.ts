@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { action, mutation, query } from "./_generated/server";
 
 // Generate an upload URL for client/server to POST a file buffer
@@ -157,7 +157,7 @@ export const replaceImage = mutation({
   handler: async (ctx, { id, storageId, width, height, format, sizeBytes }) => {
     const doc = await ctx.db.get(id);
     if (!doc) return null;
-    if (doc.kind !== "image") throw new Error("Not an image");
+    if (doc.kind !== "image") throw new ConvexError("Not an image");
     if (doc.storageId && doc.storageId !== storageId) {
       try {
         await ctx.storage.delete(doc.storageId);

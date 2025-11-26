@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 
@@ -141,18 +141,18 @@ export const createComment = mutation({
   async handler(ctx, args) {
     // Validate content
     if (!args.content || args.content.trim().length === 0) {
-      throw new Error("Nội dung bình luận không được trống");
+      throw new ConvexError("Nội dung bình luận không được trống");
     }
 
     if (args.content.length > 5000) {
-      throw new Error("Nội dung bình luận quá dài (tối đa 5000 ký tự)");
+      throw new ConvexError("Nội dung bình luận quá dài (tối đa 5000 ký tự)");
     }
 
     // Validate parent comment exists nếu là reply
     if (args.parentCommentId) {
       const parentComment = await ctx.db.get(args.parentCommentId);
       if (!parentComment) {
-        throw new Error("Bình luận gốc không tồn tại");
+        throw new ConvexError("Bình luận gốc không tồn tại");
       }
     }
 
@@ -206,21 +206,21 @@ export const updateComment = mutation({
     // Lấy bình luận
     const comment = await ctx.db.get(args.commentId);
     if (!comment) {
-      throw new Error("Bình luận không tồn tại");
+      throw new ConvexError("Bình luận không tồn tại");
     }
 
     // Kiểm tra quyền (chỉ chủ sở hữu mới được sửa)
     if (comment.studentId !== args.studentId) {
-      throw new Error("Bạn không có quyền sửa bình luận này");
+      throw new ConvexError("Bạn không có quyền sửa bình luận này");
     }
 
     // Validate content
     if (!args.content || args.content.trim().length === 0) {
-      throw new Error("Nội dung bình luận không được trống");
+      throw new ConvexError("Nội dung bình luận không được trống");
     }
 
     if (args.content.length > 5000) {
-      throw new Error("Nội dung bình luận quá dài (tối đa 5000 ký tự)");
+      throw new ConvexError("Nội dung bình luận quá dài (tối đa 5000 ký tự)");
     }
 
     await ctx.db.patch(args.commentId, {
@@ -244,12 +244,12 @@ export const deleteComment = mutation({
     // Lấy bình luận
     const comment = await ctx.db.get(args.commentId);
     if (!comment) {
-      throw new Error("Bình luận không tồn tại");
+      throw new ConvexError("Bình luận không tồn tại");
     }
 
     // Kiểm tra quyền
     if (comment.studentId !== args.studentId) {
-      throw new Error("Bạn không có quyền xóa bình luận này");
+      throw new ConvexError("Bạn không có quyền xóa bình luận này");
     }
 
     // Soft delete

@@ -1,7 +1,7 @@
 // Payment functions for course purchases (KISS implementation)
 import { mutation, query, action } from "./_generated/server";
 import type { MutationCtx, QueryCtx, ActionCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
@@ -39,12 +39,12 @@ export const createOrder = mutation({
 
     const student = await ctx.db.get(studentId);
     if (!student) {
-      throw new Error("Student not found");
+      throw new ConvexError("Student not found");
     }
 
     const course = await ctx.db.get(courseId);
     if (!course) {
-      throw new Error("Course not found");
+      throw new ConvexError("Course not found");
     }
 
     const existingEnrollment = await ctx.db
@@ -277,13 +277,13 @@ export const recordPayment = mutation({
     // Verify order exists
     const order = await ctx.db.get(orderId);
     if (!order) {
-      throw new Error("Order not found");
+      throw new ConvexError("Order not found");
     }
 
     // Verify student
     const student = await ctx.db.get(studentId);
     if (!student) {
-      throw new Error("Student not found");
+      throw new ConvexError("Student not found");
     }
 
     // Check if payment already exists for this order
@@ -294,7 +294,7 @@ export const recordPayment = mutation({
       .first();
 
     if (existingPayment) {
-      throw new Error("Payment already recorded for this order");
+      throw new ConvexError("Payment already recorded for this order");
     }
 
     // Create payment record
@@ -364,23 +364,23 @@ export const adminConfirmPayment = mutation({
     // Verify admin is a student (we're using students table for all users)
     const admin = await ctx.db.get(adminStudentId);
     if (!admin) {
-      throw new Error("Admin not found");
+      throw new ConvexError("Admin not found");
     }
 
     // Get payment
     const payment = await ctx.db.get(paymentId);
     if (!payment) {
-      throw new Error("Payment not found");
+      throw new ConvexError("Payment not found");
     }
 
     if (payment.status !== "pending") {
-      throw new Error(`Payment status is ${payment.status}, cannot confirm`);
+      throw new ConvexError(`Payment status is ${payment.status}, cannot confirm`);
     }
 
     // Get order
     const order = await ctx.db.get(payment.orderId);
     if (!order) {
-      throw new Error("Order not found");
+      throw new ConvexError("Order not found");
     }
 
     // Update payment
@@ -400,7 +400,7 @@ export const adminConfirmPayment = mutation({
     // Get courseId from order_items
     const courseId = await getCourseIdFromOrder(ctx, payment.orderId);
     if (!courseId) {
-      throw new Error("Course not found in order");
+      throw new ConvexError("Course not found in order");
     }
 
     // Get student for enrollment
@@ -472,17 +472,17 @@ export const adminRejectPayment = mutation({
     // Verify admin
     const admin = await ctx.db.get(adminStudentId);
     if (!admin) {
-      throw new Error("Admin not found");
+      throw new ConvexError("Admin not found");
     }
 
     // Get payment
     const payment = await ctx.db.get(paymentId);
     if (!payment) {
-      throw new Error("Payment not found");
+      throw new ConvexError("Payment not found");
     }
 
     if (payment.status !== "pending") {
-      throw new Error(`Payment status is ${payment.status}, cannot reject`);
+      throw new ConvexError(`Payment status is ${payment.status}, cannot reject`);
     }
 
     // Update payment

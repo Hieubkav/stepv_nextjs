@@ -1,6 +1,6 @@
 // Enrollment progress tracking
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 /**
@@ -64,11 +64,11 @@ export const updateEnrollmentProgress = mutation({
       .first();
 
     if (!enrollment) {
-      throw new Error("Enrollment not found for this course");
+      throw new ConvexError("Enrollment not found for this course");
     }
 
     if (!enrollment.active) {
-      throw new Error("Enrollment is not active");
+      throw new ConvexError("Enrollment is not active");
     }
 
     const patch: Record<string, any> = {};
@@ -142,7 +142,7 @@ export const markCourseCompleted = mutation({
       .first();
 
     if (!enrollment) {
-      throw new Error("Enrollment not found");
+      throw new ConvexError("Enrollment not found");
     }
 
     await ctx.db.patch(enrollment._id, {

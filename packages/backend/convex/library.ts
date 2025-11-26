@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 const pricingType = v.union(v.literal("free"), v.literal("paid"));
@@ -29,7 +29,7 @@ const assertResourceSlugUnique = async (
     .withIndex("by_slug", (q) => q.eq("slug", slug))
     .first();
   if (existed && (!excludeId || existed._id !== excludeId)) {
-    throw new Error("Resource slug already exists");
+    throw new ConvexError("Resource slug already exists");
   }
 };
 
@@ -43,7 +43,7 @@ const assertSoftwareSlugUnique = async (
     .withIndex("by_slug", (q) => q.eq("slug", slug))
     .first();
   if (existed && (!excludeId || existed._id !== excludeId)) {
-    throw new Error("Software slug already exists");
+    throw new ConvexError("Software slug already exists");
   }
 };
 
@@ -59,7 +59,7 @@ const normalizePricing = (
   const nextPrice =
     typeof price === "number" && Number.isFinite(price) ? price : null;
   if (!nextPrice || nextPrice <= 0) {
-    throw new Error("Gia ban phai lon hon 0 voi tai nguyen tra phi");
+    throw new ConvexError("Gia ban phai lon hon 0 voi tai nguyen tra phi");
   }
 
   const compare =
@@ -130,7 +130,7 @@ export const getResourceDetail = query({
   },
   handler: async (ctx, { id, slug, includeInactive = false }) => {
     if (!id && !slug) {
-      throw new Error("Provide id or slug");
+      throw new ConvexError("Provide id or slug");
     }
 
     let resource = null;
@@ -249,7 +249,7 @@ export const updateResource = mutation({
     const { id, slug, features, price, originalPrice, pricingType, ...rest } =
       args;
     const existing = await ctx.db.get(id);
-    if (!existing) throw new Error("Resource not found");
+    if (!existing) throw new ConvexError("Resource not found");
     if (slug && slug !== existing.slug) {
       await assertResourceSlugUnique(ctx, slug, id);
     }
@@ -376,7 +376,7 @@ export const updateSoftware = mutation({
   handler: async (ctx, args) => {
     const { id, slug, ...rest } = args;
     const existing = await ctx.db.get(id);
-    if (!existing) throw new Error("Software not found");
+    if (!existing) throw new ConvexError("Software not found");
     if (slug && slug !== existing.slug) {
       await assertSoftwareSlugUnique(ctx, slug, id);
     }
@@ -438,7 +438,7 @@ export const createResourceImage = mutation({
   },
   handler: async (ctx, args) => {
     const resource = await ctx.db.get(args.resourceId);
-    if (!resource) throw new Error("Resource not found");
+    if (!resource) throw new ConvexError("Resource not found");
 
     const order =
       args.order ?? (await nextImageOrder(ctx, args.resourceId));
@@ -532,9 +532,9 @@ export const assignSoftwareToResource = mutation({
   },
   handler: async (ctx, args) => {
     const resource = await ctx.db.get(args.resourceId);
-    if (!resource) throw new Error("Resource not found");
+    if (!resource) throw new ConvexError("Resource not found");
     const software = await ctx.db.get(args.softwareId);
-    if (!software) throw new Error("Software not found");
+    if (!software) throw new ConvexError("Software not found");
 
     const existed = await ctx.db
       .query("library_resource_softwares")

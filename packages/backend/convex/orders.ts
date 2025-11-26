@@ -1,7 +1,7 @@
 // Order management - supports multi-item orders
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id, Doc } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
@@ -144,7 +144,7 @@ const createManualOrder = async (
         updatedAt: now,
     });
     const order = await ctx.db.get(orderId);
-    if (!order) throw new Error("Không tạo được đơn hàng");
+    if (!order) throw new ConvexError("Không tạo được đơn hàng");
     return order as Doc<"orders">;
 };
 
@@ -169,14 +169,14 @@ type OrderItemSummary = {
 };
 
 const createPurchasesForOrder = async (ctx: MutationCtx, order: Doc<"orders">) => {
-    if (!order.customerId) throw new Error("Order customer not found");
+    if (!order.customerId) throw new ConvexError("Order customer not found");
 
     const items = await ctx.db
         .query("order_items")
         .withIndex("by_order", (q) => q.eq("orderId", order._id))
         .collect();
 
-    if (!items.length) throw new Error("Order has no items");
+    if (!items.length) throw new ConvexError("Order has no items");
 
     const now = Date.now();
     for (const item of items) {
@@ -340,7 +340,7 @@ export const createOrderWithItems = mutation({
         ),
     },
     handler: async (ctx, { customerId, items }) => {
-        if (!items.length) throw new Error("At least one item is required");
+        if (!items.length) throw new ConvexError("At least one item is required");
 
         // Ki?m tra tr�ng mua (purchase) ho?c ??n dang x? ly cho t?ng s?n ph?m
         for (const item of items) {
@@ -354,7 +354,7 @@ export const createOrderWithItems = mutation({
                 .first();
 
             if (purchase) {
-                throw new Error("S?n ph?m da du?c m?a, kh�ng th? t?o don m?i.");
+                throw new ConvexError("S?n ph?m da du?c m?a, kh�ng th? t?o don m?i.");
             }
 
             const activeOrder = await findActiveOrderForProduct(
@@ -366,7 +366,7 @@ export const createOrderWithItems = mutation({
 
             if (activeOrder) {
                 const number = activeOrder.order.orderNumber ?? activeOrder.order._id;
-                throw new Error(
+                throw new ConvexError(
                     `S?n ph?m da c� ??n (${number}) ? trang th�i ${activeOrder.order.status}. Vui l�ng kh�ng t?o th�m.`,
                 );
             }
@@ -442,7 +442,7 @@ export const grantProductToCustomer = mutation({
     },
     handler: async (ctx, { customerId, productType, productId, price, notes }) => {
         const product = await getProductByType(ctx, productType, productId);
-        if (!product) throw new Error("Sản phẩm không tồn tại");
+        if (!product) throw new ConvexError("Sản phẩm không tồn tại");
 
         const existing = await findExistingPurchase(ctx, customerId, productType, productId);
         if (existing) {
@@ -540,10 +540,10 @@ export const markOrderAsPaid = mutation({
     },
     handler: async (ctx, { orderId, notes }) => {
         const order = await ctx.db.get(orderId);
-        if (!order) throw new Error("Order not found");
+        if (!order) throw new ConvexError("Order not found");
 
         if (order.status === "cancelled") {
-            throw new Error("Cannot mark a cancelled order as paid");
+            throw new ConvexError("Cannot mark a cancelled order as paid");
         }
 
         const items = await createPurchasesForOrder(ctx, order);
@@ -565,14 +565,14 @@ export const activateOrder = mutation({
     args: { orderId: v.id("orders") },
     handler: async (ctx, { orderId }) => {
         const order = await ctx.db.get(orderId);
-        if (!order) throw new Error("Order not found");
+        if (!order) throw new ConvexError("Order not found");
 
         if (order.status !== "paid") {
-            throw new Error("Order must be paid before activation");
+            throw new ConvexError("Order must be paid before activation");
         }
 
         if (!order.customerId) {
-            throw new Error("Order customer not found");
+            throw new ConvexError("Order customer not found");
         }
 
         const customerId = order.customerId;
@@ -628,10 +628,10 @@ export const cancelOrder = mutation({
     },
     handler: async (ctx, { orderId, reason }) => {
         const order = await ctx.db.get(orderId);
-        if (!order) throw new Error("Order not found");
+        if (!order) throw new ConvexError("Order not found");
 
         if (order.status === "activated") {
-            throw new Error("Cannot cancel an order that has been fulfilled");
+            throw new ConvexError("Cannot cancel an order that has been fulfilled");
         }
 
         const notes = reason ? `Cancelled: ${reason}` : "Cancelled by admin";
@@ -691,7 +691,7 @@ export const updateOrder = mutation({
     },
     handler: async (ctx, { orderId, notes, status }) => {
         const order = await ctx.db.get(orderId);
-        if (!order) throw new Error("Order not found");
+        if (!order) throw new ConvexError("Order not found");
 
         const updates: any = { updatedAt: Date.now() };
         if (notes !== undefined) updates.notes = notes;
@@ -707,7 +707,7 @@ export const deleteOrder = mutation({
     args: { orderId: v.id("orders") },
     handler: async (ctx, { orderId }) => {
         const order = await ctx.db.get(orderId);
-        if (!order) throw new Error("Order not found");
+        if (!order) throw new ConvexError("Order not found");
 
         // Delete order items first
         const items = await ctx.db

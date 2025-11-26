@@ -1,7 +1,7 @@
 // KISS: Convex functions cho học viên
 import { mutation, query, action } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 import { internal } from "./_generated/api";
 
@@ -65,7 +65,7 @@ const requireUniqueAccount = async (
         .withIndex("by_account", (q) => q.eq("account", account))
         .first();
     if (existing && (!excludeId || existing._id !== excludeId)) {
-        throw new Error("Account already exists");
+        throw new ConvexError("Account already exists");
     }
 };
 
@@ -181,7 +181,7 @@ const requireUniqueEmail = async (
         .withIndex("by_email", (q) => q.eq("email", email))
         .first();
     if (existing && (!excludeId || existing._id !== excludeId)) {
-        throw new Error("Email already exists");
+        throw new ConvexError("Email already exists");
     }
 };
 
@@ -199,11 +199,11 @@ export const createStudent = mutation({
     },
     handler: async (ctx, args) => {
         const account = args.account.trim();
-        if (!account) throw new Error("Account is required");
+        if (!account) throw new ConvexError("Account is required");
         const password = args.password.trim();
-        if (!password) throw new Error("Password is required");
+        if (!password) throw new ConvexError("Password is required");
         const email = args.email.trim();
-        if (!email) throw new Error("Email is required");
+        if (!email) throw new ConvexError("Email is required");
         const now = Date.now();
         const tags = normalizeTags(args.tags);
         await requireUniqueAccount(ctx, account);
@@ -256,13 +256,13 @@ export const updateStudent = mutation({
     handler: async (ctx, args) => {
         const { id, account, password, tags, ...rest } = args;
         const existing = await ctx.db.get(id);
-        if (!existing) throw new Error("Student not found");
+        if (!existing) throw new ConvexError("Student not found");
 
         const patch: Record<string, unknown> = { ...rest };
 
         if (account !== undefined) {
             const trimmed = account.trim();
-            if (!trimmed) throw new Error("Account is required");
+            if (!trimmed) throw new ConvexError("Account is required");
             if (trimmed !== (existing as StudentDoc).account) {
                 await requireUniqueAccount(ctx, trimmed, id);
             }
@@ -271,7 +271,7 @@ export const updateStudent = mutation({
 
         if (password !== undefined) {
             const trimmedPassword = password.trim();
-            if (!trimmedPassword) throw new Error("Password is required");
+            if (!trimmedPassword) throw new ConvexError("Password is required");
             patch.password = trimmedPassword;
         }
 
@@ -430,7 +430,7 @@ export const resetPassword = mutation({
     args: { token: v.string(), newPassword: v.string() },
     handler: async (ctx, { token, newPassword }) => {
         const normalizedPassword = newPassword.trim();
-        if (!normalizedPassword) throw new Error("Password is required");
+        if (!normalizedPassword) throw new ConvexError("Password is required");
 
         const student = await ctx.db
             .query("students")
@@ -486,7 +486,7 @@ export const updateRememberToken = mutation({
     args: { studentId: v.id("students"), shouldRemember: v.boolean() },
     handler: async (ctx, { studentId, shouldRemember }) => {
         const student = await ctx.db.get(studentId);
-        if (!student) throw new Error("Student not found");
+        if (!student) throw new ConvexError("Student not found");
 
         if (shouldRemember) {
             const rememberToken = generateToken();

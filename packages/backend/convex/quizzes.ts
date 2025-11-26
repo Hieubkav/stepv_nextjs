@@ -1,6 +1,6 @@
 // Hệ thống trắc nghiệm
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 /**
@@ -13,7 +13,7 @@ export const getQuizDetail = query({
   handler: async (ctx, { quizId }) => {
     const quiz = await ctx.db.get(quizId);
     if (!quiz || !quiz.active) {
-      throw new Error("Quiz không tồn tại");
+      throw new ConvexError("Quiz không tồn tại");
     }
 
     // Get questions
@@ -63,7 +63,7 @@ export const submitQuizAnswers = mutation({
   },
   handler: async (ctx, { studentId, quizId, courseId, answers }) => {
     const quiz = await ctx.db.get(quizId);
-    if (!quiz) throw new Error("Quiz not found");
+    if (!quiz) throw new ConvexError("Quiz not found");
 
     // Grade the quiz
     const { score, passedCount, totalCount } = await gradeQuizAnswers(
@@ -152,11 +152,11 @@ export const getQuizResult = query({
   },
   handler: async (ctx, { attemptId }) => {
     const attempt = await ctx.db.get(attemptId);
-    if (!attempt) throw new Error("Attempt not found");
+    if (!attempt) throw new ConvexError("Attempt not found");
 
     // Get quiz info
     const quiz = await ctx.db.get(attempt.quizId);
-    if (!quiz) throw new Error("Quiz not found");
+    if (!quiz) throw new ConvexError("Quiz not found");
 
     // Get questions with correct answers
     const questions = await ctx.db
@@ -287,7 +287,7 @@ export const canRetakeQuiz = query({
   },
   handler: async (ctx, { studentId, quizId }) => {
     const quiz = await ctx.db.get(quizId);
-    if (!quiz) throw new Error("Quiz not found");
+    if (!quiz) throw new ConvexError("Quiz not found");
 
     if (!quiz.allowRetake) {
       return { canRetake: false, message: "Quiz này không được phép làm lại" };

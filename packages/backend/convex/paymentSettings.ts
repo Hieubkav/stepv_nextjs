@@ -1,6 +1,6 @@
 // Payment settings for bank account and VietQR configuration
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 
 /**
  * Query: Get payment settings
@@ -57,7 +57,7 @@ export const updatePaymentSettings = mutation({
   ) => {
     // Validate inputs
     if (!bankAccountNumber || !bankAccountName || !bankCode || !adminEmail) {
-      throw new Error("Thông tin tài khoản ngân hàng không hợp lệ");
+      throw new ConvexError("Thông tin tài khoản ngân hàng không hợp lệ");
     }
 
     // Check if settings exist

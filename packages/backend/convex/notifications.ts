@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
 const notificationTypeValidator = v.union(
@@ -135,11 +135,11 @@ export const createNotification = mutation({
   async handler(ctx, args) {
     // Validate
     if (!args.title || args.title.trim().length === 0) {
-      throw new Error("Tiêu đề thông báo không được trống");
+      throw new ConvexError("Tiêu đề thông báo không được trống");
     }
 
     if (!args.message || args.message.trim().length === 0) {
-      throw new Error("Nội dung thông báo không được trống");
+      throw new ConvexError("Nội dung thông báo không được trống");
     }
 
     const notificationId = await ctx.db.insert("notifications", {
@@ -199,7 +199,7 @@ export const markAsRead = mutation({
   async handler(ctx, args) {
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
-      throw new Error("Thông báo không tồn tại");
+      throw new ConvexError("Thông báo không tồn tại");
     }
 
     await ctx.db.patch(args.notificationId, {
@@ -243,7 +243,7 @@ export const deleteNotification = mutation({
   async handler(ctx, args) {
     const notification = await ctx.db.get(args.notificationId);
     if (!notification) {
-      throw new Error("Thông báo không tồn tại");
+      throw new ConvexError("Thông báo không tồn tại");
     }
 
     await ctx.db.delete(args.notificationId);

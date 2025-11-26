@@ -1,7 +1,7 @@
 // Purchase management - lifetime access after buying
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 type AnyCtx = QueryCtx | MutationCtx;
@@ -112,7 +112,7 @@ export const incrementDownloadCount = mutation({
     },
     handler: async (ctx, { purchaseId }) => {
         const purchase = await ctx.db.get(purchaseId);
-        if (!purchase) throw new Error("Purchase not found");
+        if (!purchase) throw new ConvexError("Purchase not found");
 
         await ctx.db.patch(purchaseId, {
             downloadCount: (purchase.downloadCount ?? 0) + 1,
@@ -131,11 +131,11 @@ export const updateCourseProgress = mutation({
     },
     handler: async (ctx, { purchaseId, progressPercent }) => {
         if (progressPercent < 0 || progressPercent > 100) {
-            throw new Error("Progress must be between 0 and 100");
+            throw new ConvexError("Progress must be between 0 and 100");
         }
 
         const purchase = await ctx.db.get(purchaseId);
-        if (!purchase) throw new Error("Purchase not found");
+        if (!purchase) throw new ConvexError("Purchase not found");
 
         await ctx.db.patch(purchaseId, {
             progressPercent,
@@ -154,7 +154,7 @@ export const completeCourse = mutation({
     },
     handler: async (ctx, { purchaseId, certificateId }) => {
         const purchase = await ctx.db.get(purchaseId);
-        if (!purchase) throw new Error("Purchase not found");
+        if (!purchase) throw new ConvexError("Purchase not found");
 
         await ctx.db.patch(purchaseId, {
             progressPercent: 100,

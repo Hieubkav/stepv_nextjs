@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
 /**
@@ -102,11 +102,11 @@ export const createCategory = mutation({
   async handler(ctx, args) {
     // Validate
     if (!args.name || args.name.trim().length === 0) {
-      throw new Error("Tên danh mục không được trống");
+      throw new ConvexError("Tên danh mục không được trống");
     }
 
     if (!args.slug || args.slug.trim().length === 0) {
-      throw new Error("Slug không được trống");
+      throw new ConvexError("Slug không được trống");
     }
 
     // Kiểm tra slug unique
@@ -116,7 +116,7 @@ export const createCategory = mutation({
       .first();
 
     if (existing) {
-      throw new Error("Slug này đã tồn tại");
+      throw new ConvexError("Slug này đã tồn tại");
     }
 
     const categoryId = await ctx.db.insert("course_categories", {
@@ -152,14 +152,14 @@ export const updateCategory = mutation({
   async handler(ctx, args) {
     const category = await ctx.db.get(args.categoryId);
     if (!category) {
-      throw new Error("Danh mục không tồn tại");
+      throw new ConvexError("Danh mục không tồn tại");
     }
 
     const updates: any = {};
 
     if (args.name !== undefined) {
       if (args.name.trim().length === 0) {
-        throw new Error("Tên danh mục không được trống");
+        throw new ConvexError("Tên danh mục không được trống");
       }
       updates.name = args.name.trim();
     }
@@ -173,7 +173,7 @@ export const updateCategory = mutation({
           .first();
 
         if (existing) {
-          throw new Error("Slug này đã tồn tại");
+          throw new ConvexError("Slug này đã tồn tại");
         }
       }
       updates.slug = newSlug;
@@ -216,7 +216,7 @@ export const deleteCategory = mutation({
   async handler(ctx, args) {
     const category = await ctx.db.get(args.categoryId);
     if (!category) {
-      throw new Error("Danh mục không tồn tại");
+      throw new ConvexError("Danh mục không tồn tại");
     }
 
     // Kiểm tra có khóa học nào thuộc danh mục này không
@@ -226,7 +226,7 @@ export const deleteCategory = mutation({
       .collect();
 
     if (coursesInCategory.length > 0) {
-      throw new Error(
+      throw new ConvexError(
         `Không thể xóa danh mục này vì có ${coursesInCategory.length} khóa học thuộc danh mục này`
       );
     }

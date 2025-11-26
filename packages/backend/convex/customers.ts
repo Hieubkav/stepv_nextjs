@@ -1,7 +1,7 @@
 // Unified customer management for all product types (courses, resources, vfx)
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 type AnyCtx = MutationCtx | QueryCtx;
@@ -63,7 +63,7 @@ const requireUniqueAccount = async (
         .withIndex("by_account", (q) => q.eq("account", account))
         .first();
     if (existing && (!excludeId || existing._id !== excludeId)) {
-        throw new Error("Account already exists");
+        throw new ConvexError("Tài khoản đã tồn tại");
     }
 };
 
@@ -77,7 +77,7 @@ const requireUniqueEmail = async (
         .withIndex("by_email", (q) => q.eq("email", email))
         .first();
     if (existing && (!excludeId || existing._id !== excludeId)) {
-        throw new Error("Email already exists");
+        throw new ConvexError("Email đã tồn tại");
     }
 };
 
@@ -177,16 +177,16 @@ export const createCustomer = mutation({
     },
     handler: async (ctx, args) => {
         const account = args.account.trim();
-        if (!account) throw new Error("Account is required");
+        if (!account) throw new ConvexError("Yêu cầu nhập tài khoản");
         
         const email = args.email.trim().toLowerCase();
-        if (!email) throw new Error("Email is required");
+        if (!email) throw new ConvexError("Yêu cầu nhập email");
         
         const password = args.password.trim();
-        if (!password) throw new Error("Password is required");
+        if (!password) throw new ConvexError("Yêu cầu nhập mật khẩu");
         
         const fullName = args.fullName.trim();
-        if (!fullName) throw new Error("Full name is required");
+        if (!fullName) throw new ConvexError("Yêu cầu nhập họ tên");
         
         const now = Date.now();
         
@@ -226,13 +226,13 @@ export const updateCustomer = mutation({
     handler: async (ctx, args) => {
         const { id, account, email, password, ...rest } = args;
         const existing = await ctx.db.get(id);
-        if (!existing) throw new Error("Customer not found");
+        if (!existing) throw new ConvexError("Không tìm thấy khách hàng");
 
         const patch: Record<string, unknown> = { ...rest };
 
         if (account !== undefined) {
             const trimmed = account.trim();
-            if (!trimmed) throw new Error("Account is required");
+            if (!trimmed) throw new ConvexError("Yêu cầu nhập tài khoản");
             if (trimmed !== (existing as CustomerDoc).account) {
                 await requireUniqueAccount(ctx, trimmed, id);
             }
@@ -241,7 +241,7 @@ export const updateCustomer = mutation({
 
         if (email !== undefined) {
             const trimmedEmail = email.trim().toLowerCase();
-            if (!trimmedEmail) throw new Error("Email is required");
+            if (!trimmedEmail) throw new ConvexError("Yêu cầu nhập email");
             if (trimmedEmail !== (existing as CustomerDoc).email) {
                 await requireUniqueEmail(ctx, trimmedEmail, id);
             }
@@ -250,7 +250,7 @@ export const updateCustomer = mutation({
 
         if (password !== undefined) {
             const trimmedPassword = password.trim();
-            if (!trimmedPassword) throw new Error("Password is required");
+            if (!trimmedPassword) throw new ConvexError("Yêu cầu nhập mật khẩu");
             patch.password = trimmedPassword;
         }
 
@@ -338,7 +338,7 @@ export const resetPassword = mutation({
     args: { token: v.string(), newPassword: v.string() },
     handler: async (ctx, { token, newPassword }) => {
         const normalizedPassword = newPassword.trim();
-        if (!normalizedPassword) throw new Error("Password is required");
+        if (!normalizedPassword) throw new ConvexError("Password is required");
 
         const customer = await ctx.db
             .query("customers")
@@ -394,7 +394,7 @@ export const updateRememberToken = mutation({
     args: { customerId: v.id("customers"), shouldRemember: v.boolean() },
     handler: async (ctx, { customerId, shouldRemember }) => {
         const customer = await ctx.db.get(customerId);
-        if (!customer) throw new Error("Customer not found");
+        if (!customer) throw new ConvexError("Customer not found");
 
         if (shouldRemember) {
             const rememberToken = generateToken();

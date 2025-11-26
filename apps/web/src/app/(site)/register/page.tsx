@@ -277,7 +277,7 @@ export default function RegisterPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setStep(1)}
-                  className="border-neutral-700 text-neutral-200 hover:bg-neutral-900/70 hover:text-white text-xs px-4"
+                  className="border-neutral-700 text-black hover:bg-neutral-900/70 hover:text-white text-xs px-4"
                 >
                   Quay lại
                 </Button>

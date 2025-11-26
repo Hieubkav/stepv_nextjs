@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
@@ -179,7 +179,7 @@ export const getCouponStats = query({
   async handler(ctx, args) {
     const coupon = await ctx.db.get(args.couponId);
     if (!coupon) {
-      throw new Error("Mã giảm giá không tồn tại");
+      throw new ConvexError("Mã giảm giá không tồn tại");
     }
 
     // Lấy tất cả usages
@@ -222,7 +222,7 @@ export const createCoupon = mutation({
   async handler(ctx, args) {
     // Validate code
     if (!args.code || args.code.trim().length === 0) {
-      throw new Error("Mã giảm giá không được trống");
+      throw new ConvexError("Mã giảm giá không được trống");
     }
 
     const upperCode = args.code.toUpperCase();
@@ -234,25 +234,25 @@ export const createCoupon = mutation({
       .first();
 
     if (existing) {
-      throw new Error("Mã giảm giá này đã tồn tại");
+      throw new ConvexError("Mã giảm giá này đã tồn tại");
     }
 
     // Validate discount
     if (!args.discountPercent && !args.discountFixed) {
-      throw new Error("Cần có discount % hoặc discount fixed amount");
+      throw new ConvexError("Cần có discount % hoặc discount fixed amount");
     }
 
     if (args.discountPercent && (args.discountPercent < 1 || args.discountPercent > 100)) {
-      throw new Error("Discount % phải từ 1-100");
+      throw new ConvexError("Discount % phải từ 1-100");
     }
 
     if (args.discountFixed && args.discountFixed < 1000) {
-      throw new Error("Discount fixed amount tối thiểu 1000 VND");
+      throw new ConvexError("Discount fixed amount tối thiểu 1000 VND");
     }
 
     // Validate appliesTo
     if (args.appliesTo === "specific_courses" && !args.specificCourseIds?.length) {
-      throw new Error("Vui lòng chọn khóa học áp dụng");
+      throw new ConvexError("Vui lòng chọn khóa học áp dụng");
     }
 
     const couponId = await ctx.db.insert("coupons", {
@@ -293,7 +293,7 @@ export const updateCoupon = mutation({
   async handler(ctx, args) {
     const coupon = await ctx.db.get(args.couponId);
     if (!coupon) {
-      throw new Error("Mã giảm giá không tồn tại");
+      throw new ConvexError("Mã giảm giá không tồn tại");
     }
 
     const updates: any = {};
@@ -308,7 +308,7 @@ export const updateCoupon = mutation({
           .first();
 
         if (existing) {
-          throw new Error("Mã giảm giá này đã tồn tại");
+          throw new ConvexError("Mã giảm giá này đã tồn tại");
         }
       }
       updates.code = upperCode;
@@ -316,14 +316,14 @@ export const updateCoupon = mutation({
 
     if (args.discountPercent !== undefined) {
       if (args.discountPercent < 1 || args.discountPercent > 100) {
-        throw new Error("Discount % phải từ 1-100");
+        throw new ConvexError("Discount % phải từ 1-100");
       }
       updates.discountPercent = args.discountPercent;
     }
 
     if (args.discountFixed !== undefined) {
       if (args.discountFixed < 1000) {
-        throw new Error("Discount fixed amount tối thiểu 1000 VND");
+        throw new ConvexError("Discount fixed amount tối thiểu 1000 VND");
       }
       updates.discountFixed = args.discountFixed;
     }
@@ -368,13 +368,13 @@ export const applyCoupon = mutation({
     // Lấy coupon
     const coupon = await ctx.db.get(args.couponId);
     if (!coupon) {
-      throw new Error("Mã giảm giá không tồn tại");
+      throw new ConvexError("Mã giảm giá không tồn tại");
     }
 
     // Lấy order
     const order = await ctx.db.get(args.orderId);
     if (!order) {
-      throw new Error("Đơn hàng không tồn tại");
+      throw new ConvexError("Đơn hàng không tồn tại");
     }
 
     // Kiểm tra student ownership
@@ -385,7 +385,7 @@ export const applyCoupon = mutation({
       .first();
 
     if (!orderItems) {
-      throw new Error("Không tìm thấy sản phẩm trong đơn hàng");
+      throw new ConvexError("Không tìm thấy sản phẩm trong đơn hàng");
     }
 
     // Validate coupon
@@ -397,7 +397,7 @@ export const applyCoupon = mutation({
     })) as ValidateCouponResult;
 
     if (!validation.valid) {
-      throw new Error(validation.error);
+      throw new ConvexError(validation.error);
     }
 
     const discountAmount = validation.coupon.discountAmount;
@@ -434,7 +434,7 @@ export const deleteCoupon = mutation({
   async handler(ctx, args) {
     const coupon = await ctx.db.get(args.couponId);
     if (!coupon) {
-      throw new Error("Mã giảm giá không tồn tại");
+      throw new ConvexError("Mã giảm giá không tồn tại");
     }
 
     await ctx.db.delete(args.couponId);

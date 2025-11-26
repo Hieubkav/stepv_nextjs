@@ -1,7 +1,7 @@
 // VFX products management (video effects 1-5 seconds)
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 type AnyCtx = MutationCtx | QueryCtx;
@@ -228,23 +228,23 @@ export const createVfxProduct = mutation({
     },
     handler: async (ctx, args) => {
         const slug = args.slug.trim().toLowerCase();
-        if (!slug) throw new Error("Slug is required");
+        if (!slug) throw new ConvexError("Slug is required");
 
         const existing = await ctx.db
             .query("vfx_products")
             .withIndex("by_slug", (q) => q.eq("slug", slug))
             .first();
-        if (existing) throw new Error("VFX with this slug already exists");
+        if (existing) throw new ConvexError("VFX with this slug already exists");
 
         const title = args.title.trim();
-        if (!title) throw new Error("Title is required");
+        if (!title) throw new ConvexError("Title is required");
 
         const assets = normalizeAssets(args.assets ?? []);
         const primaryPreview = args.previewVideoId ?? pickPrimaryMediaId(assets, "preview");
         const primaryDownload = args.downloadFileId ?? pickPrimaryMediaId(assets, "download");
 
-        if (!primaryPreview) throw new Error("Thiếu preview video");
-        if (!primaryDownload) throw new Error("Thiếu file download");
+        if (!primaryPreview) throw new ConvexError("Thiếu preview video");
+        if (!primaryDownload) throw new ConvexError("Thiếu file download");
 
         const now = Date.now();
 
@@ -322,19 +322,19 @@ export const updateVfxProduct = mutation({
     handler: async (ctx, args) => {
         const { id, slug, priceAmount, comparePriceAmount, assets = undefined, ...rest } = args;
         const existing = await ctx.db.get(id);
-        if (!existing) throw new Error("VFX product not found");
+        if (!existing) throw new ConvexError("VFX product not found");
 
         const patch: Record<string, unknown> = { ...rest };
 
         if (slug !== undefined) {
             const trimmedSlug = slug.trim().toLowerCase();
-            if (!trimmedSlug) throw new Error("Slug is required");
+            if (!trimmedSlug) throw new ConvexError("Slug is required");
             if (trimmedSlug !== existing.slug) {
                 const existing2 = await ctx.db
                     .query("vfx_products")
                     .withIndex("by_slug", (q) => q.eq("slug", trimmedSlug))
                     .first();
-                if (existing2) throw new Error("VFX with this slug already exists");
+                if (existing2) throw new ConvexError("VFX with this slug already exists");
             }
             patch.slug = trimmedSlug;
         }
@@ -364,8 +364,8 @@ export const updateVfxProduct = mutation({
             normalizedAssets = normalizeAssets(assets);
             const primaryPreview = rest.previewVideoId ?? pickPrimaryMediaId(normalizedAssets, "preview");
             const primaryDownload = rest.downloadFileId ?? pickPrimaryMediaId(normalizedAssets, "download");
-            if (!primaryPreview) throw new Error("Thiếu preview video");
-            if (!primaryDownload) throw new Error("Thiếu file download");
+            if (!primaryPreview) throw new ConvexError("Thiếu preview video");
+            if (!primaryDownload) throw new ConvexError("Thiếu file download");
             patch.previewVideoId = primaryPreview;
             patch.downloadFileId = primaryDownload;
         }
@@ -386,7 +386,7 @@ export const incrementVfxDownloadCount = mutation({
     args: { id: v.id("vfx_products") },
     handler: async (ctx, { id }) => {
         const vfx = await ctx.db.get(id);
-        if (!vfx) throw new Error("VFX product not found");
+        if (!vfx) throw new ConvexError("VFX product not found");
 
         await ctx.db.patch(id, {
             downloadCount: (vfx.downloadCount ?? 0) + 1,

@@ -1,6 +1,6 @@
 // Tracking học tập: tiến độ, xem video, hoàn thành bài
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 /**
@@ -60,7 +60,7 @@ export const completeLessonIfDone = mutation({
   handler: async (ctx, { studentId, lessonId }) => {
     // Get lesson duration
     const lesson = await ctx.db.get(lessonId);
-    if (!lesson) throw new Error("Lesson not found");
+    if (!lesson) throw new ConvexError("Lesson not found");
 
     const durationSeconds = lesson.durationSeconds || 0;
     const watchThreshold = Math.floor(durationSeconds * 0.8); // 80%

@@ -2,7 +2,7 @@
 'use node';
 
 import { internalAction, action } from './_generated/server';
-import { v } from 'convex/values';
+import { ConvexError, v } from "convex/values";
 import nodemailer from 'nodemailer';
 
 const BASE_URL = process.env.BASE_URL || 'https://www.dohystudio.com';
@@ -21,7 +21,7 @@ interface EmailParams {
 
 const getTransporter = () => {
     if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
-        throw new Error('SMTP configuration not set. Please configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD');
+        throw new ConvexError('SMTP configuration not set. Please configure SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASSWORD');
     }
 
     return nodemailer.createTransport({

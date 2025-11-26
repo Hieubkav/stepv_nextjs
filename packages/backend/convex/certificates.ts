@@ -1,6 +1,6 @@
 // Chứng chỉ hoàn thành khóa học
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
 /**
@@ -121,7 +121,7 @@ export const downloadCertificate = query({
   handler: async (ctx, { certificateId }) => {
     const certificate = await ctx.db.get(certificateId);
     if (!certificate) {
-      throw new Error("Certificate not found");
+      throw new ConvexError("Certificate not found");
     }
 
     const student = await ctx.db.get(certificate.studentId);
@@ -136,7 +136,7 @@ export const downloadCertificate = query({
       .first();
 
     if (!student || !course) {
-      throw new Error("Student or course not found");
+      throw new ConvexError("Student or course not found");
     }
 
     return {
