@@ -100,6 +100,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     initialDetail,
   );
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
+  const [isMainImageLoading, setIsMainImageLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [headerOffset, setHeaderOffset] = useState(110);
 
@@ -208,6 +209,12 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
   useEffect(() => {
     setActiveImageUrl(preferredImage);
   }, [preferredImage]);
+
+  useEffect(() => {
+    if (activeImageUrl) {
+      setIsMainImageLoading(true);
+    }
+  }, [activeImageUrl]);
 
   const pricing = detailPricingConfig[resource.pricingType];
   const releaseDate = new Date(resource.createdAt).toLocaleDateString("vi-VN");
@@ -366,9 +373,29 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
               {/* Preview gallery */}
               <div className="rounded-2xl border border-slate-800/70 bg-gradient-to-b from-slate-900/70 to-slate-950 shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden">
                 {activeImageUrl ? (
-                  <img src={activeImageUrl} alt={resource.title} className="w-full h-full object-cover max-h-[520px]" />
+                  <div className="relative w-full bg-slate-950/60">
+                    <div className="relative aspect-[16/9] w-full max-h-[70vh] bg-gradient-to-b from-slate-950/80 to-slate-950">
+                      <img
+                        key={activeImageUrl}
+                        src={activeImageUrl}
+                        alt={resource.title}
+                        onLoad={() => setIsMainImageLoading(false)}
+                        onError={() => setIsMainImageLoading(false)}
+                        className={cn(
+                          "absolute inset-0 h-full w-full object-contain transition-opacity duration-200",
+                          isMainImageLoading ? "opacity-0" : "opacity-100",
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "absolute inset-0 bg-slate-900/60 transition-opacity duration-200",
+                          isMainImageLoading ? "opacity-100" : "opacity-0",
+                        )}
+                      />
+                    </div>
+                  </div>
                 ) : (
-                  <div className="h-[320px] flex items-center justify-center text-sm uppercase tracking-[0.2em] text-slate-500">
+                  <div className="aspect-[16/9] flex items-center justify-center text-sm uppercase tracking-[0.2em] text-slate-500 bg-slate-950/60">
                     Chưa có ảnh đại diện
                   </div>
                 )}
