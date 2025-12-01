@@ -20,50 +20,50 @@ interface ServicesSectionProps {
 }
 
 const ServicesSection = ({
-  title = 'GIỚI THIỆU VỀ DỊCH VỤ LÀM PHIM 3D',
-  subtitle = 'Tại DOHY MEDIA, Dù bạn cần làm phim hoạt hình, mô phỏng 3D cho sản phẩm, hoặc những hiệu ứng hình ảnh (VFX) tuyệt vời, chúng tôi luôn sẵn sàng hỗ trợ để hiện thực hóa ý tưởng của bạn.',
+  title = 'DỊCH VỤ DỰNG HÌNH 3D CHUYÊN NGHIỆP - RENDER SIÊU THỰC',
+  subtitle = 'DOHY MEDIA chuyên cung cấp dịch vụ dựng hình 3D chuyên nghiệp và render kiến trúc siêu thực. Từ studio làm hoạt hình 3D đến dựng mô phỏng sản phẩm 3D quảng cáo, chúng tôi hiện thực hóa mọi ý tưởng của bạn với chất lượng vượt trội.',
   services = [
     {
       image: 'https://stepv.studio/wp-content/uploads/2025/03/jomalonewithouttext-min-819x1024.png',
-      title: 'SẢN XUẤT PHIM HOẠT HÌNH 2D/3D',
-      desc: 'Chúng tôi chuyên làm phim hoạt hình 3D từ khâu lên ý tưởng, kịch bản, thiết kế đến những cảnh chuyển sáng tạo và hấp dẫn qua từng thước hình. Với kỹ thuật animation tinh xảo, chúng tôi giúp bạn kể những câu chuyện đặc biệt theo cách sinh động và độc đáo nhất.',
+      title: 'LÀM PHIM HOẠT HÌNH 3D CHUYÊN NGHIỆP',
+      desc: 'Studio làm hoạt hình 3D chuyên nghiệp với đội ngũ chuyên gia giàu kinh nghiệm. Chúng tôi cung cấp dịch vụ dựng phim hoạt hình 3D từ lên ý tưởng, kịch bản đến sản xuất hoàn chỉnh. Với kỹ thuật animation tiên tiến, tạo ra những bộ phim hoạt hình 3D ấn tượng, hấp dẫn và độc đáo.',
       icon: 'Film',
       linkUrl: '/projects'
     },
     {
       image: 'https://stepv.studio/wp-content/uploads/2025/03/BOIS-1-1024x576.png',
-      title: 'MÔ PHỎNG 3D VÀ ANIMATION',
-      desc: 'Dịch vụ mô phỏng 3D cho phép bạn tạo ra những hình ảnh sống động và chân thực, thể hiện mô phỏng cơ khí, nội thất, hoặc các vật thể phức tạp. Đặc biệt hữu ích đối với doanh nghiệp muốn giới thiệu sản phẩm cuối cùng. Chúng tôi cung cấp animation 3D cho các dự án quảng cáo hoặc giới thiệu sản phẩm.',
+      title: 'DỰNG MÔ HÌNH 3D THEO YÊU CẦU',
+      desc: 'Chuyên dựng mô phỏng sản phẩm 3D quảng cáo và làm mô hình 3D theo yêu cầu. Dịch vụ render nhanh 3D của chúng tôi giúp bạn tạo ra hình ảnh sống động, chân thực nhất. Đặc biệt hữu ích cho dựng nhà chung cư bằng 3D và các dự án kiến trúc phức tạp.',
       icon: 'Cube',
       linkUrl: '/projects'
     },
     {
       image: 'https://stepv.studio/wp-content/uploads/2025/03/BOIS-VFX-2-576x1024.png',
-      title: 'HIỆU ỨNG HÌNH ẢNH VFX',
-      desc: 'Chúng tôi cung cấp các hiệu ứng hình ảnh (VFX) cao cấp cho các bộ phim hoặc quảng cáo, giúp nâng cao chất lượng hình ảnh và tạo ra những cảnh quay ấn tượng. Đội lá chuyên nghiệp, biến hóa hay cảnh quay siêu thực, đội ngũ VFX của chúng tôi luôn mang đến kết quả tuyệt vời.',
+      title: 'THƯ VIỆN VFX - RENDER KIẾN TRÚC SIÊU THỰC',
+      desc: 'Cung cấp Thư viện VFX chuyên nghiệp và dịch vụ render kiến trúc siêu thực với công nghệ photorealistic đỉnh cao. Đội ngũ VFX chuyên nghiệp biến mọi cảnh quay trở nên siêu thực. Hiện thực hóa dựng 3D siêu thực – photorealistic với chất lượng hình ảnh tuyệt vời.',
       icon: 'Sparkles',
       linkUrl: '/projects'
     },
     {
       image: 'https://stepv.studio/wp-content/uploads/2025/01/2321-680x1024.png',
-      title: 'MARKETING 3D SÁNG TẠO: MÔ HÌNH 3D SỰ KIỆN',
-      desc: 'Dịch vụ Marketing 3D sáng tạo kết hợp mô hình 3D với các chiến lược quảng cáo, phương pháp tiếp cận hoàn toàn mới mẻ và hấp dẫn cho các chiến dịch marketing. Thay vì chỉ sử dụng hình ảnh thông thường, bạn có thể sử dụng mô hình 3D để mô phỏng sức mạnh và sự tương tác với khách hàng, giúp bạn tạo ra tính thú vị quan và cảm giác sống động cho người xem.',
+      title: 'LÀM 3D MARKETING CHO DOANH NGHIỆP',
+      desc: 'Chuyên làm video 3D quảng cáo và thiết kế 3D sản phẩm mỹ phẩm chuyên nghiệp. Dịch vụ làm 3D marketing cho doanh nghiệp giúp nâng cao hiệu quả chiến dịch quảng cáo. Tạo ra hình ảnh 3D sản phẩm mỹ phẩm độc đáo, thu hút khách hàng tối đa.',
       icon: 'Megaphone',
       linkUrl: '/projects'
     },
     {
       image: 'https://stepv.studio/wp-content/uploads/2024/08/vlcsnap-2024-08-24-20h27m01s097-576x1024.png',
-      title: 'THIẾT KẾ WEB 2D/3D',
-      desc: 'Dịch vụ thiết kế web 2D/3D giúp bạn có một website độc đáo và sáng tạo, mang lại trải nghiệm người dùng tuyệt vời. Chúng tôi tạo ra các website trong tác, với thiết kế 2D hoặc 3D theo yêu cầu, tùy chỉnh và tối ưu hóa SEO. Đảm bảo website của bạn không chỉ đẹp mà còn dễ dàng sử dụng, giúp khách hàng dễ dàng tiếp cận và chuyển đổi.',
+      title: 'THIẾT KẾ KIẾN TRÚC 3D & NỘI THẤT',
+      desc: 'Chuyên thiết kế kiến trúc 3D, dựng nội thất 3D giá rẻ và thiết kế 3D ngoại thất chuyên nghiệp. Dịch vụ dựng phối cảnh kiến trúc giúp bạn hình dung không gian sống một cách chân thực nhất. Làm hình ảnh 3D chuyên nghiệp cho mọi dự án kiến trúc.',
       icon: 'Code',
       linkUrl: '/projects'
     },
     {
       image: 'https://stepv.studio/wp-content/uploads/2025/01/pexels-pixabay-164938-1024x620.jpg',
-      title: 'VIDEO MARKETING AI',
-      desc: 'Chúng tôi cung cấp dịch vụ video marketing AI, giúp tạo ra các video quảng cáo tự động với nội dung được cá nhân hóa trên dữ liệu về phân tích thị trường. Sử dụng công nghệ AI, chúng tôi có thể tối ưu hóa video của bạn để phù hợp với từng đối tượng khách hàng, tạo ra các video quảng cáo hiệu quả hơn và dễ dàng thu hút người xem.',
+      title: 'KHÓA HỌC ĐỒ HỌA 3D CHUYÊN NGHIỆP',
+      desc: 'Cung cấp khóa học đồ họa 3D từ cơ bản đến nâng cao. đào tạo chuyên sâu về dựng hình 3D, render, và animation. Học cách làm hình ảnh 3D chuyên nghiệp từ đội ngũ chuyên gia kinh nghiệm. Đào tạo thực chiến cho ngành 3D marketing và quảng cáo.',
       icon: 'Bot',
-      linkUrl: '/projects'
+      linkUrl: '/khoa-hoc'
     }
   ],
   backgroundColor = 'bg-black'

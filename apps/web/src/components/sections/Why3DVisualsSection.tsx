@@ -44,19 +44,19 @@ const DEFAULT_TOP_CARDS: Why3DCard[] = [
   },
   {
     icon: 'Video',
-    title: 'CHAT LUONG STUDIO',
+    title: 'CHẤT LƯỢNG STUDIO 3D',
     items: [
       {
-        title: 'Do chi tiet cao',
-        content: 'Cong nghe render hien dai tao ra hinh anh sieu thuc tu moi goc nhin.',
+        title: 'Độ chi tiết cao',
+        content: 'Công nghệ render kiến trúc siêu thực hiện đại tạo ra hình ảnh dựng 3D siêu thực – photorealistic từ mọi góc nhìn.',
       },
       {
-        title: 'Tu do sang tao',
-        content: 'Khong bi gioi han boi vat ly, de dang tao khong gian va hien ung doc dao.',
+        title: 'Tự do sáng tạo',
+        content: 'Không bị giới hạn bởi vật lý, dễ dàng tạo dựng nhà chung cư bằng 3D và không gian độc đáo.',
       },
       {
-        title: 'Xu ly da nen tang',
-        content: 'Toi uu cho web, social, in an va video tu cung mot bo tai san 3D.',
+        title: 'Xử lý đa nền tảng',
+        content: 'Tối ưu cho web, social, in ấn và làm video 3D quảng cáo từ cùng một bộ tài sản 3D.',
       },
     ],
   },
@@ -93,24 +93,24 @@ const DEFAULT_BOTTOM_CARDS: Why3DCard[] = [
   },
   {
     icon: 'Lightbulb',
-    title: 'GIAI PHAP TUONG LAI',
+    title: 'GIẢI PHÁP 3D MARKETING TƯƠNG LAI',
     items: [
       {
-        title: 'Mo rong de dang',
-        content: 'Tai san 3D co the cap nhat lien tuc khi ban ra mat san pham moi.',
+        title: 'Mở rộng dễ dàng',
+        content: 'Tài sản 3D có thể cập nhật liên tục khi bạn ra mắt thiết kế 3D sản phẩm mỹ phẩm và sản phẩm mới.',
       },
       {
-        title: 'Cong nghe moi nhat',
-        content: 'Theo sat xu huong cong nghe de du an luon noi bat.',
+        title: 'Công nghệ mới nhất',
+        content: 'Theo sát xu hướng công nghệ cho dự án làm 3D marketing cho doanh nghiệp luôn nổi bật.',
       },
     ],
   },
 ];
 
 const Why3DVisualsSection = ({
-  title = 'TAI SAO HINH ANH 3D LA LUA CHON THONG MINH CHO THUONG HIEU CUA BAN',
-  subtitle = '',
-  buttonText = 'LIEN HE CHUNG TOI',
+  title = 'LÀM HÌNH ẢNH 3D CHUYÊN NGHIỆP - RENDER KIẾN TRÚC SIÊU THỰC',
+  subtitle = 'DOHY Media chuyên dịch vụ dựng hình 3D và render kiến trúc siêu thực. Studio làm hoạt hình 3D, dựng mô phỏng sản phẩm 3D quảng cáo với chất lượng vượt trội.',
+  buttonText = 'LIÊN HỆ CHÚNG TÔI',
   buttonLink = '#contact',
   topCards,
   bottomCards,

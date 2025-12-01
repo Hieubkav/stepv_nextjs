@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 const SITE_NAME = 'DOHY Media';
-const SITE_DESCRIPTION = 'Chuyên gia hình ảnh 3D cho thương hiệu nước hoa & làm đẹp. Khóa học trực tuyến, tài nguyên và hướng dẫn chuyên nghiệp.';
+const SITE_DESCRIPTION = 'Dịch vụ dựng hình 3D chuyên nghiệp và render kiến trúc siêu thực. Studio làm hoạt hình 3D, dựng mô phỏng sản phẩm 3D quảng cáo, và khóa học đồ họa 3D. Làm hình ảnh 3D chuyên nghiệp cho doanh nghiệp.';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dohymedia.com';
 
 export function createMetadata(options: {
@@ -88,13 +88,26 @@ export const baseMetadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   keywords: [
-    '3D imaging',
-    'hình ảnh 3D',
-    'nước hoa',
-    'làm đẹp',
-    'khóa học trực tuyến',
-    'design',
-    'product photography',
+    'dịch vụ dựng hình 3D',
+    'làm hình ảnh 3D chuyên nghiệp',
+    'thiết kế kiến trúc 3D',
+    'dựng nội thất 3D giá rẻ',
+    'render kiến trúc siêu thực',
+    'studio làm hoạt hình 3D',
+    'dựng sản phẩm 3D quảng cáo',
+    'thiết kế 3D sản phẩm mỹ phẩm',
+    'làm video 3D quảng cáo',
+    'dựng nhà chung cư bằng 3D',
+    'dịch vụ render nhanh 3D',
+    'thiết kế 3D ngoại thất',
+    'làm mô hình 3D theo yêu cầu',
+    'dựng phim hoạt hình 3D',
+    'dựng phối cảnh kiến trúc',
+    'dựng mô phỏng sản phẩm 3D',
+    'khóa học đồ họa 3D',
+    'làm 3D marketing cho doanh nghiệp',
+    'Thư viện VFX',
+    'dựng 3D siêu thực – photorealistic',
   ],
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
