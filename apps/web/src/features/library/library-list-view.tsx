@@ -11,6 +11,12 @@ import { Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { cn, stripHtml } from "@/lib/utils";
 import { formatPrice } from "@/lib/format";
 import type {
@@ -358,6 +364,8 @@ export default function LibraryListView() {
 
   const isLoading = resources === undefined || softwares === undefined;
 
+  const selectedSoftwareBadge = softwareBadges.find((s) => s.slug === state.selectedSoftware);
+
   return (
     <main
       className="relative min-h-screen overflow-hidden bg-[#030712] pb-12 text-slate-50 selection:bg-amber-500/25 selection:text-amber-100"
@@ -420,25 +428,55 @@ export default function LibraryListView() {
                 </select>
               </label>
 
-              <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+              <div className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
                 <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Phần mềm</span>
-                <select
+                <Select
                   value={state.selectedSoftware}
-                  onChange={(event) =>
-                    setState((prev) => ({ ...prev, selectedSoftware: event.target.value as string }))
-                  }
-                  className="bg-transparent text-sm text-white outline-none"
+                  onValueChange={(value) => setState((prev) => ({ ...prev, selectedSoftware: value }))}
                 >
-                  <option value="all" className="bg-[#050914] text-white">
-                    Tất cả phần mềm
-                  </option>
-                  {softwareBadges.map((software) => (
-                    <option key={software.slug} value={software.slug} className="bg-[#050914] text-white">
-                      {software.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                  <SelectTrigger className="h-auto min-w-[140px] border-0 bg-transparent p-0 text-sm text-white shadow-none outline-none ring-0 focus:ring-0 [&>svg]:text-white">
+                    {state.selectedSoftware === "all" ? (
+                      <span>Tất cả phần mềm</span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        {selectedSoftwareBadge?.iconUrl && (
+                          <img
+                            src={selectedSoftwareBadge.iconUrl}
+                            alt=""
+                            className="size-5 rounded object-cover"
+                          />
+                        )}
+                        {selectedSoftwareBadge?.name}
+                      </span>
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="border-slate-800 bg-[#050914]">
+                    <SelectItem value="all" className="text-white focus:bg-slate-800 focus:text-white">
+                      Tất cả phần mềm
+                    </SelectItem>
+                    {softwareBadges.map((software) => (
+                      <SelectItem
+                        key={software.slug}
+                        value={software.slug}
+                        className="text-white focus:bg-slate-800 focus:text-white"
+                      >
+                        <span className="flex items-center gap-2">
+                          {software.iconUrl ? (
+                            <img
+                              src={software.iconUrl}
+                              alt={software.name}
+                              className="size-5 rounded object-cover"
+                            />
+                          ) : (
+                            <span className="size-5 rounded bg-slate-700" />
+                          )}
+                          {software.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </section>
         </div>
@@ -449,7 +487,7 @@ export default function LibraryListView() {
               <div className="text-5xl">🤔</div>
               <p className="text-lg font-semibold text-white">Không tìm thấy tài nguyên</p>
               <p className="text-sm text-amber-100/80">
-                Hãy thử thay đổi bộ lọc, tìm kiếm hoặc chọn lại “Tất cả” để xem toàn bộ thư viện.
+                Hãy thử thay đổi bộ lọc, tìm kiếm hoặc chọn lại "Tất cả" để xem toàn bộ thư viện.
               </p>
               <div className="mt-4 flex justify-center">
                 <Button

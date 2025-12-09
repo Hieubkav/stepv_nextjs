@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ResourceForm } from "../../_components/resource-form";
 import type { ResourceFormValues } from "../../_components/resource-form";
 import { ResourceImagesManager } from "../../_components/resource-images-manager";
+import { ResourceSoftwaresManager } from "../../_components/resource-softwares-manager";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -38,11 +39,12 @@ type PurchaseWithCustomer = {
   customer: CustomerMini | null;
 };
 
-type LibraryTab = "info" | "images" | "customers";
+type LibraryTab = "info" | "images" | "softwares" | "customers";
 
 const LIBRARY_TABS: { key: LibraryTab; label: string }[] = [
   { key: "info", label: "Thông tin" },
   { key: "images", label: "Ảnh mô tả" },
+  { key: "softwares", label: "Phần mềm" },
   { key: "customers", label: "Khách hàng" },
 ];
 
@@ -255,6 +257,8 @@ export default function LibraryEditPage({ params }: PageProps) {
 
       {activeTab === "images" && <ResourceImagesManager resourceId={String(resource._id)} />}
 
+      {activeTab === "softwares" && <ResourceSoftwaresManager resourceId={String(resource._id)} />}
+
       {activeTab === "customers" && (
         <Card>
           <CardHeader>
@@ -342,11 +346,3 @@ export default function LibraryEditPage({ params }: PageProps) {
     </div>
   );
 }
-
-
-
-
-
-
-
-
