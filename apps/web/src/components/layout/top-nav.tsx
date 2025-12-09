@@ -21,7 +21,7 @@ type TopNavProps = React.HTMLAttributes<HTMLElement> & {
 }
 
 export function TopNav({ className, links, ...props }: TopNavProps) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
   const withActive = links.map((l) => ({
     ...l,
     isActive: typeof l.isActive === 'boolean' ? l.isActive : pathname === l.href || pathname.startsWith(l.href),

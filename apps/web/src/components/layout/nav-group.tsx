@@ -19,7 +19,7 @@ import { type NavCollapsible, type NavItem, type NavLink, type NavGroup as NavGr
 
 export function NavGroup({ title, items }: NavGroupProps) {
   const { state, isMobile } = useSidebar()
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ""
   return (
     <SidebarGroup>
       <SidebarGroupLabel>{title}</SidebarGroupLabel>

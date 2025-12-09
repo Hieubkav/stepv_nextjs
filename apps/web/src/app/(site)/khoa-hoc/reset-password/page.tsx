@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const token = searchParams?.get("token") || "";
   const resetPassword = useMutation(api.customers.resetPassword);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");

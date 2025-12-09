@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -16,5 +17,5 @@ export default async function KhoaHocRegisterRedirect({
         ? nextParam[0]
         : "/khoa-hoc";
 
-  redirect(`/register?next=${encodeURIComponent(next)}`);
+  redirect(`/register?next=${encodeURIComponent(next)}` as Route);
 }

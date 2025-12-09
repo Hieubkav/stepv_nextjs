@@ -148,7 +148,7 @@ const buildLessonInitial = (lesson?: LessonDoc): LessonFormValues => {
 export default function CourseEditPage() {
   const params = useParams<{ courseId: string }>();
   const router = useRouter();
-  const courseId = params.courseId as Id<"courses">;
+  const courseId = params?.courseId as Id<"courses">;
 
   const detail = useQuery(api.courses.getCourseDetail, {
     id: courseId,

@@ -90,7 +90,7 @@ const emptyInitial: CustomerFormValues = {
 export default function CustomerEditPage() {
   const params = useParams<{ customerId: string }>();
   const router = useRouter();
-  const customerId = params.customerId as Id<"customers">;
+  const customerId = params?.customerId as Id<"customers">;
 
   const customer = useQuery(api.customers.getCustomer, { id: customerId }) as CustomerDetail | null | undefined;
   const updateCustomer = useMutation(api.customers.updateCustomer);

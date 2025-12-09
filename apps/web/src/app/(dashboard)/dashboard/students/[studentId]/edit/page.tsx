@@ -70,7 +70,7 @@ const emptyInitial: StudentFormValues = {
 export default function StudentEditPage() {
   const params = useParams<{ studentId: string }>();
   const router = useRouter();
-  const studentId = params.studentId as Id<"students">;
+  const studentId = params?.studentId as Id<"students">;
 
   const student = useQuery(api.students.getStudent, { id: studentId }) as StudentDetail | null | undefined;
   const enrollments = useQuery(api.courses.listEnrollmentsByUser, {

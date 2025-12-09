@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import { redirect } from 'next/navigation';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -16,6 +17,6 @@ export default async function KhoaHocLoginRedirect({
       ? nextParam[0]
       : '/khoa-hoc';
 
-  const target = `/login?next=${encodeURIComponent(next)}`;
+  const target = `/login?next=${encodeURIComponent(next)}` as Route;
   redirect(target);
 }
