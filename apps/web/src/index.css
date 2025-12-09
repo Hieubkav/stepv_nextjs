@@ -282,7 +282,9 @@ body {
 	img.loaded {
 		opacity: 1;
 	}
+
 }
+
 
 @layer utilities {
 	/* Text shadows */
@@ -503,6 +505,31 @@ body {
 	
 	img.loaded {
 		opacity: 1;
+	}
+
+	/* Invert prose colors de noi dung rich text doc ro tren nen toi (utilities override) */
+	.prose.prose-invert {
+		--tw-prose-body: #e2e8f0;
+		--tw-prose-headings: #f8fafc;
+		--tw-prose-lead: #e2e8f0;
+		--tw-prose-links: #bfdbfe;
+		--tw-prose-bold: #f8fafc;
+		--tw-prose-counters: #cbd5e1;
+		--tw-prose-bullets: #cbd5e1;
+		--tw-prose-hr: #334155;
+		--tw-prose-quotes: #e2e8f0;
+		--tw-prose-quote-borders: #475569;
+		--tw-prose-captions: #cbd5e1;
+		--tw-prose-code: #e5e7eb;
+		--tw-prose-pre-bg: rgba(255, 255, 255, 0.06);
+		--tw-prose-th-borders: #64748b;
+		--tw-prose-td-borders: #334155;
+		--tw-prose-kbd: #e2e8f0;
+		--tw-prose-kbd-shadows: rgba(148, 163, 184, 0.35);
+	}
+
+	.prose.prose-invert :where(code, pre code):not(:where([class~="not-prose"], [class~="not-prose"] *)) {
+		color: inherit;
 	}
 	
 	/* Loading skeleton */
