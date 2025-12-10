@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FullRichEditor } from "@/components/ui/full-rich-editor";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
-import { Badge } from "@/components/ui/badge";
 import { MoveUp, MoveDown, Trash2, Image as ImageIcon, Video } from "lucide-react";
 
 export type ProjectImageForm = {
@@ -185,57 +184,115 @@ export function ProjectForm({
           />
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-3">
             <label className="text-sm font-medium">Thumbnail</label>
-            <div className="flex items-center gap-3">
-              <Button type="button" variant="outline" onClick={() => setThumbPickerOpen(true)}>
-                Chọn từ media
-              </Button>
-              {selectedThumb ? (
-                <Badge variant="outline" className="gap-2">
-                  <ImageIcon className="h-4 w-4" />
-                  {selectedThumb.title || selectedThumb._id}
-                </Badge>
-              ) : values.thumbnailId ? (
-                <span className="text-xs text-muted-foreground">{values.thumbnailId}</span>
-              ) : null}
-            </div>
-            <Input
-              value={values.thumbnailId}
-              onChange={(e) => update("thumbnailId", e.target.value)}
-              placeholder="media id..."
-            />
+            {selectedThumb ? (
+              <div className="space-y-2">
+                <div className="relative aspect-video w-full max-w-xs overflow-hidden rounded-lg border bg-muted/40">
+                  <img
+                    src={selectedThumb.url}
+                    alt={selectedThumb.title || "Thumbnail"}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                    {selectedThumb.title || "Chưa có tên"}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setThumbPickerOpen(true)}
+                  >
+                    Thay đổi
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => update("thumbnailId", "")}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="flex aspect-video w-full max-w-xs cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 transition-colors hover:border-muted-foreground/50 hover:bg-muted/40"
+                onClick={() => setThumbPickerOpen(true)}
+              >
+                <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                <span className="text-sm text-muted-foreground">Nhấn để chọn thumbnail</span>
+              </div>
+            )}
           </div>
-          <div className="space-y-2">
+
+          <div className="space-y-3">
             <label className="text-sm font-medium">Video</label>
-            <div className="flex flex-wrap items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => setVideoPickerOpen(true)}>
-                Chọn video media
-              </Button>
-              {selectedVideo ? (
-                <Badge variant="outline" className="gap-2">
-                  <Video className="h-4 w-4" />
-                  {selectedVideo.title || selectedVideo._id}
-                </Badge>
-              ) : values.videoMediaId ? (
-                <span className="text-xs text-muted-foreground">{values.videoMediaId}</span>
-              ) : null}
+            {selectedVideo ? (
+              <div className="space-y-2">
+                <div className="relative aspect-video w-full max-w-xs overflow-hidden rounded-lg border bg-muted/40">
+                  {selectedVideo.url ? (
+                    <video
+                      src={selectedVideo.url}
+                      className="h-full w-full object-cover"
+                      muted
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Video className="h-8 w-8 text-muted-foreground/50" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground truncate max-w-[200px]">
+                    {selectedVideo.title || "Chưa có tên"}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVideoPickerOpen(true)}
+                  >
+                    Thay đổi
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => update("videoMediaId", "")}
+                  >
+                    Xóa
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div
+                className="flex aspect-video w-full max-w-xs cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/20 transition-colors hover:border-muted-foreground/50 hover:bg-muted/40"
+                onClick={() => setVideoPickerOpen(true)}
+              >
+                <Video className="h-8 w-8 text-muted-foreground/50" />
+                <span className="text-sm text-muted-foreground">Nhấn để chọn video từ media</span>
+              </div>
+            )}
+
+            <div className="space-y-2 pt-2 border-t">
+              <label className="text-xs font-medium text-muted-foreground">
+                Hoặc dùng link video bên ngoài
+              </label>
+              <Input
+                value={values.videoUrl}
+                onChange={(e) => update("videoUrl", e.target.value)}
+                placeholder="https://youtube.com/... hoặc link Drive, Vimeo..."
+              />
+              {values.videoMediaId && values.videoUrl && (
+                <p className="text-xs text-amber-600">
+                  Video từ media sẽ được ưu tiên hiển thị thay vì link ngoài.
+                </p>
+              )}
             </div>
-            <Input
-              value={values.videoMediaId}
-              onChange={(e) => update("videoMediaId", e.target.value)}
-              placeholder="media id video..."
-            />
-            <Input
-              className="mt-2"
-              value={values.videoUrl}
-              onChange={(e) => update("videoUrl", e.target.value)}
-              placeholder="Hoặc link video (YouTube, Vimeo, Drive...)"
-            />
-            <p className="text-xs text-muted-foreground">
-              Ưu tiên video trong media, sau đó đến link ngoài.
-            </p>
           </div>
         </div>
 

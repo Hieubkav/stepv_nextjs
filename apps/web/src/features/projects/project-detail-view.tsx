@@ -173,14 +173,30 @@ export default function ProjectDetailView({ slug, initialDetail }: ProjectDetail
     .map((img) => mediaMap.get(String(img.mediaId))?.url)
     .filter((url): url is string => Boolean(url));
 
-  const videoUrl = project.videoMediaId
-    ? mediaMap.get(String(project.videoMediaId))?.url ||
-      mediaMap.get(String(project.videoMediaId))?.externalUrl
-    : project.videoUrl;
+  const mediaVideo = project.videoMediaId
+    ? mediaMap.get(String(project.videoMediaId))
+    : null;
+  const videoUrl = mediaVideo?.url || mediaVideo?.externalUrl || project.videoUrl;
 
   const isYouTube =
     typeof videoUrl === "string" &&
     (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be"));
+
+  const isGoogleDrive =
+    typeof videoUrl === "string" &&
+    videoUrl.includes("drive.google.com");
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (url.includes("youtu.be/")) {
+      const id = url.split("youtu.be/")[1]?.split(/[?&]/)[0];
+      return `https://www.youtube.com/embed/${id}`;
+    }
+    return url.replace("watch?v=", "embed/");
+  };
+
+  const getDriveEmbedUrl = (url: string) => {
+    return url.replace("/view", "/preview").split("?")[0];
+  };
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#050508] text-slate-200 selection:bg-blue-500/30">
@@ -205,13 +221,22 @@ export default function ProjectDetailView({ slug, initialDetail }: ProjectDetail
             isYouTube ? (
               <div className="relative aspect-video">
                 <iframe
-                  src={videoUrl.replace("watch?v=", "embed/")}
+                  src={getYouTubeEmbedUrl(videoUrl)}
                   title={project.title}
                   className="h-full w-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              </div>
+            ) : isGoogleDrive ? (
+              <div className="relative aspect-video">
+                <iframe
+                  src={getDriveEmbedUrl(videoUrl)}
+                  title={project.title}
+                  className="h-full w-full"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                />
               </div>
             ) : (
               <div className="group relative aspect-video">
