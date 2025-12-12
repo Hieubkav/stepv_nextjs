@@ -3,18 +3,29 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const StatsAbout: React.FC = () => {
-  const stats = [
-    { value: "03", label: "Hệ Sinh Thái" },
-    { value: "5K+", label: "Học Viên" },
-    { value: "100%", label: "Chất Lượng" }
-  ];
+interface StatItem {
+  value: string;
+  label: string;
+}
+
+interface StatsAboutProps {
+  stats?: StatItem[];
+}
+
+const DEFAULT_STATS: StatItem[] = [
+  { value: "03", label: "Hệ Sinh Thái" },
+  { value: "5K+", label: "Học Viên" },
+  { value: "100%", label: "Chất Lượng" }
+];
+
+const StatsAbout: React.FC<StatsAboutProps> = ({ stats }) => {
+  const displayStats = stats && stats.length > 0 ? stats : DEFAULT_STATS;
 
   return (
     <section className="py-2 md:py-4 bg-[#080808] border-b border-[#D4AF37]/10">
       <div className="max-w-6xl mx-auto px-6">
         <div className="grid grid-cols-3 gap-3 md:gap-12 divide-x divide-white/5">
-          {stats.map((stat, index) => (
+          {displayStats.map((stat, index) => (
             <motion.div 
               key={index}
               initial={{ opacity: 0, y: 10 }}

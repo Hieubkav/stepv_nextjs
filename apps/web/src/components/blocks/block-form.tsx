@@ -42,6 +42,23 @@ export function formSupportedKinds() {
   return BLOCK_PRESETS.map((preset) => preset.kind);
 }
 
+// Kinds cho trang Home (không bao gồm about blocks)
+const HOME_KINDS = [
+  "hero", "wordSlider", "gallery", "yourAdvice", "stats", "services",
+  "whyChooseUs", "why3DVisuals", "turning", "weWork", "stayControl",
+  "contactForm", "siteHeader", "siteFooter", "careSection"
+];
+
+// Kinds cho trang About
+const ABOUT_KINDS = ["heroAbout", "statsAbout", "bentoGridAbout", "visionAbout", "ctaAbout"];
+
+export function getKindsForPage(pageType: "home" | "about") {
+  if (pageType === "about") {
+    return BLOCK_PRESETS.filter((preset) => ABOUT_KINDS.includes(preset.kind)).map((p) => p.kind);
+  }
+  return BLOCK_PRESETS.filter((preset) => HOME_KINDS.includes(preset.kind)).map((p) => p.kind);
+}
+
 export function BlockForm({ kind, value, onChange }: BlockFormProps) {
   const preset = BLOCK_REGISTRY.get(kind);
 

@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight, Box, Layers, MonitorPlay } from 'lucide-react';
+import { getLucideIcon } from '@/lib/lucide-icons';
 
-interface Service {
-  id: string;
+interface ServiceItem {
+  id?: string;
+  icon?: string;
   label: string;
   title: string;
   description: string;
@@ -16,42 +18,59 @@ interface Service {
   href: string;
 }
 
-const BentoGridAbout: React.FC = () => {
-  const [activeCard, setActiveCard] = useState<string | null>(null);
-  const services: Service[] = [
-    {
-      id: 'academy',
-      label: 'EDUCATION',
-      title: 'Dohy Academy',
-      description: 'Hệ thống đào tạo tư duy mỹ thuật và kỹ năng 3D/VFX bài bản. Lộ trình từ cơ bản đến chuyên sâu.',
-      features: ['Tư duy hình ảnh', 'Kỹ năng 3D', 'Quy trình Studio'],
-      image: 'https://images.unsplash.com/photo-1521898284481-a5ec348cb555?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      ctaText: 'Xem Lộ Trình',
-      href: '/khoa-hoc'
-    },
-    {
-      id: 'store',
-      label: 'RESOURCES',
-      title: 'Dohy Store',
-      description: 'Hệ sinh thái tài nguyên số tối ưu hóa quy trình: Plugin độc quyền, Model và Texture chất lượng cao.',
-      features: ['Plugins', '3D Assets', 'Textures'],
-      image: 'https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=1964&auto=format&fit=crop',
-      ctaText: 'Kho Tài Nguyên',
-      href: '/thu-vien'
-    },
-    {
-      id: 'production',
-      label: 'PRODUCTION',
-      title: 'Dohy VFX',
-      description: 'Studio sản xuất CGI & VFX. Hiện thực hóa ý tưởng phức tạp cho các chiến dịch quảng cáo toàn cầu.',
-      features: ['CGI/3D', 'Visual Effects', 'Animation'],
-      image: 'https://images.unsplash.com/photo-1616788549597-93571a1058cc?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-      ctaText: 'Xem kho VFX',
-      href: '/vfx'
-    }
-  ];
+interface BentoGridAboutProps {
+  badge?: string;
+  title?: string;
+  titleHighlight?: string;
+  subtitle?: string;
+  services?: ServiceItem[];
+}
 
-  const icons = [MonitorPlay, Box, Layers];
+const DEFAULT_SERVICES: ServiceItem[] = [
+  {
+    id: 'academy',
+    icon: 'MonitorPlay',
+    label: 'EDUCATION',
+    title: 'Dohy Academy',
+    description: 'Hệ thống đào tạo tư duy mỹ thuật và kỹ năng 3D/VFX bài bản. Lộ trình từ cơ bản đến chuyên sâu.',
+    features: ['Tư duy hình ảnh', 'Kỹ năng 3D', 'Quy trình Studio'],
+    image: 'https://images.unsplash.com/photo-1521898284481-a5ec348cb555?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    ctaText: 'Xem Lộ Trình',
+    href: '/khoa-hoc'
+  },
+  {
+    id: 'store',
+    icon: 'Box',
+    label: 'RESOURCES',
+    title: 'Dohy Store',
+    description: 'Hệ sinh thái tài nguyên số tối ưu hóa quy trình: Plugin độc quyền, Model và Texture chất lượng cao.',
+    features: ['Plugins', '3D Assets', 'Textures'],
+    image: 'https://images.unsplash.com/photo-1634152962476-4b8a00e1915c?q=80&w=1964&auto=format&fit=crop',
+    ctaText: 'Kho Tài Nguyên',
+    href: '/thu-vien'
+  },
+  {
+    id: 'production',
+    icon: 'Layers',
+    label: 'PRODUCTION',
+    title: 'Dohy VFX',
+    description: 'Studio sản xuất CGI & VFX. Hiện thực hóa ý tưởng phức tạp cho các chiến dịch quảng cáo toàn cầu.',
+    features: ['CGI/3D', 'Visual Effects', 'Animation'],
+    image: 'https://images.unsplash.com/photo-1616788549597-93571a1058cc?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    ctaText: 'Xem kho VFX',
+    href: '/vfx'
+  }
+];
+
+const BentoGridAbout: React.FC<BentoGridAboutProps> = ({
+  badge,
+  title,
+  titleHighlight,
+  subtitle,
+  services
+}) => {
+  const [activeCard, setActiveCard] = useState<string | null>(null);
+  const displayServices = services && services.length > 0 ? services : DEFAULT_SERVICES;
 
   return (
     <section className="py-12 md:py-16 px-6 bg-[#0A0A0A]">
@@ -59,26 +78,26 @@ const BentoGridAbout: React.FC = () => {
         
         <div className="mb-8 md:text-center max-w-3xl mx-auto">
           <span className="text-[#D4AF37] text-[10px] tracking-[0.3em] uppercase block mb-4 font-bold">
-            Dohy Ecosystem
+            {badge || 'Dohy Ecosystem'}
           </span>
           <h2 style={{ fontFamily: "'Noto Sans', 'Inter', sans-serif" }} className="text-3xl md:text-5xl text-white leading-tight mb-6 font-bold">
-            Giải Pháp <span className="italic text-[#D4AF37]">Toàn Diện</span>
+            {title || 'Giải Pháp'} <span className="italic text-[#D4AF37]">{titleHighlight || 'Toàn Diện'}</span>
           </h2>
           <p className="text-white/50 text-sm md:text-base font-light leading-relaxed text-balance">
-            Ba trụ cột vững chắc kiến tạo nên thành công của một Digital Artist: Tư duy - Công cụ - Thực chiến.
+            {subtitle || 'Ba trụ cột vững chắc kiến tạo nên thành công của một Digital Artist: Tư duy - Công cụ - Thực chiến.'}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-8">
-          {services.map((service, index) => {
-            const Icon = icons[index] || Box;
+          {displayServices.map((service, index) => {
+            const Icon = service.icon ? getLucideIcon(service.icon) || Box : Box;
             const isActive = activeCard === service.id;
             return (
               <motion.div 
                 key={service.id}
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.3 }}
-                onClick={() => setActiveCard(isActive ? null : service.id)}
+                onClick={() => setActiveCard(isActive ? null : (service.id ?? null))}
                 className={`group relative flex flex-col bg-[#0F0F0F] border h-full transition-colors duration-300 cursor-pointer ${
                   isActive ? 'border-[#D4AF37]/40' : 'border-white/5 hover:border-[#D4AF37]/40'
                 }`}

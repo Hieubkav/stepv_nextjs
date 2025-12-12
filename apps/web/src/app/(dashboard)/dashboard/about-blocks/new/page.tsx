@@ -16,17 +16,17 @@ import { ArrowLeft, Lightbulb } from "lucide-react";
 import { BlockForm, getKindsForPage, hasBlockSchema } from "@/components/blocks/block-form";
 import { getTemplate } from "@/components/blocks/block-templates";
 
-const HOME_KINDS = getKindsForPage("home");
+const ABOUT_KINDS = getKindsForPage("about");
 
-export default function HomeBlockCreatePage() {
+export default function AboutBlockCreatePage() {
   const router = useRouter();
 
-  const page = useQuery(api.pages.getBySlug, { slug: "home" });
+  const page = useQuery(api.pages.getBySlug, { slug: "about" });
   const blocks = useQuery(api.pageBlocks.getForPage, page?._id ? { pageId: page._id as any } : "skip");
   const create = useMutation(api.pageBlocks.create);
 
-  const kinds = HOME_KINDS;
-  const [kind, setKind] = useState<string>(kinds[0] || "hero");
+  const kinds = ABOUT_KINDS;
+  const [kind, setKind] = useState<string>(kinds[0] || "heroAbout");
   const [mode, setMode] = useState<"form" | "json">("form");
   const [formData, setFormData] = useState<any>(() => getTemplate(kinds[0] || "") || {});
   const [jsonText, setJsonText] = useState<string>(JSON.stringify(getTemplate(kinds[0] || "") || {}, null, 2));
@@ -43,7 +43,7 @@ export default function HomeBlockCreatePage() {
   const nextOrder = useMemo(() => (blocks?.length ?? 0), [blocks?.length]);
 
   async function onCreate() {
-    if (!page?._id) return toast.error("Chưa có trang 'home'");
+    if (!page?._id) return toast.error("Chưa có trang 'about'");
     try {
       const data = mode === "form" ? (formData ?? {}) : JSON.parse(jsonText || "{}");
       const id = await create({
@@ -56,10 +56,10 @@ export default function HomeBlockCreatePage() {
       } as any);
       if (id?._id) {
         toast.success("Đã tạo block");
-        router.push(`/dashboard/home-blocks/${String(id._id)}`);
+        router.push(`/dashboard/about-blocks/${String(id._id)}`);
       } else {
         toast.success("Đã tạo block");
-        router.push(`/dashboard/home-blocks`);
+        router.push(`/dashboard/about-blocks`);
       }
     } catch (e) {
       toast.error("Không thể tạo. Kiểm tra JSON hoặc dữ liệu.");
@@ -70,7 +70,7 @@ export default function HomeBlockCreatePage() {
     <div className="mx-auto w-full max-w-4xl space-y-6">
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/home-blocks"><ArrowLeft className="size-4" /> Quay lại</Link>
+          <Link href="/dashboard/about-blocks"><ArrowLeft className="size-4" /> Quay lại</Link>
         </Button>
         <h1 className="text-xl font-semibold">Tạo block mới</h1>
         <div className="ms-auto flex items-center gap-1 rounded border p-1">
@@ -149,7 +149,7 @@ export default function HomeBlockCreatePage() {
 
           <div className="flex items-center justify-end gap-2 pt-2">
             <Button variant="ghost" asChild>
-              <Link href="/dashboard/home-blocks">Hủy</Link>
+              <Link href="/dashboard/about-blocks">Hủy</Link>
             </Button>
             <Button onClick={onCreate}>Tạo</Button>
           </div>
@@ -158,4 +158,3 @@ export default function HomeBlockCreatePage() {
     </div>
   );
 }
-

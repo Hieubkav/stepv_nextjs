@@ -825,6 +825,234 @@ export const BLOCK_PRESETS: BlockPreset[] = [
     } satisfies UiSchema,
         template: BLOCK_DEFAULT_DATA["yourAdvice"],
   },
+  // ==================== ABOUT PAGE BLOCKS ====================
+  {
+    kind: "heroAbout",
+    name: "Hero About",
+    schema: {
+      type: "object",
+      properties: {
+        siteName: { type: "string", title: "Tên site" },
+        logoUrl: { type: "string", title: "Logo URL" },
+        badge: { type: "string", title: "Badge text" },
+        titleLine1: { type: "string", title: "Tiêu đề dòng 1" },
+        titleLine2: { type: "string", title: "Tiêu đề dòng 2 (highlight)" },
+        description: { type: "string", title: "Mô tả" },
+        services: {
+          type: "array",
+          title: "Dịch vụ",
+          items: {
+            type: "object",
+            properties: {
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              title: { type: "string", title: "Tiêu đề" },
+              desc: { type: "string", title: "Mô tả" },
+            },
+            required: ["title", "desc"],
+          },
+        },
+      },
+    },
+    uiSchema: {
+      logoUrl: { "ui:widget": "mediaImage" },
+      description: { "ui:widget": "textarea" },
+      services: {
+        "ui:options": { addButtonLabel: "Thêm dịch vụ" },
+        items: {
+          icon: { "ui:widget": "iconPicker" },
+          desc: { "ui:widget": "textarea" },
+        },
+      },
+    } satisfies UiSchema,
+    template: {
+      siteName: "Dohy Studio",
+      badge: "Dohy Studio Official",
+      titleLine1: "Kiến Tạo",
+      titleLine2: "Digital World",
+      description: "Hệ sinh thái sáng tạo toàn diện dành cho Creators chuyên nghiệp: Đào tạo 3D, Kho tài nguyên & Sản xuất VFX.",
+      services: [
+        { icon: "BookOpen", title: "Khóa Học", desc: "Đầy đủ các khóa học về thiết kế và 3D" },
+        { icon: "Package", title: "Tài Nguyên", desc: "Kho plugin và asset premium" },
+        { icon: "Film", title: "VFX", desc: "Kho VFX phong phú" },
+      ],
+    },
+  },
+  {
+    kind: "statsAbout",
+    name: "Stats About",
+    schema: {
+      type: "object",
+      properties: {
+        stats: {
+          type: "array",
+          title: "Thống kê",
+          items: {
+            type: "object",
+            properties: {
+              value: { type: "string", title: "Giá trị" },
+              label: { type: "string", title: "Nhãn" },
+            },
+            required: ["value", "label"],
+          },
+        },
+      },
+    },
+    uiSchema: {
+      stats: {
+        "ui:options": { addButtonLabel: "Thêm thống kê" },
+      },
+    } satisfies UiSchema,
+    template: {
+      stats: [
+        { value: "03", label: "Hệ Sinh Thái" },
+        { value: "5K+", label: "Học Viên" },
+        { value: "100%", label: "Chất Lượng" },
+      ],
+    },
+  },
+  {
+    kind: "bentoGridAbout",
+    name: "Bento Grid About",
+    schema: {
+      type: "object",
+      properties: {
+        badge: { type: "string", title: "Badge" },
+        title: { type: "string", title: "Tiêu đề" },
+        titleHighlight: { type: "string", title: "Tiêu đề highlight" },
+        subtitle: { type: "string", title: "Mô tả" },
+        services: {
+          type: "array",
+          title: "Dịch vụ",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string", title: "ID" },
+              icon: { type: "string", title: "Icon", oneOf: ICON_ONE_OF },
+              label: { type: "string", title: "Label" },
+              title: { type: "string", title: "Tiêu đề" },
+              description: { type: "string", title: "Mô tả" },
+              features: {
+                type: "array",
+                title: "Features",
+                items: { type: "string" },
+              },
+              image: { type: "string", title: "Ảnh" },
+              ctaText: { type: "string", title: "CTA text" },
+              href: { type: "string", title: "Link" },
+            },
+            required: ["label", "title", "description", "image", "ctaText", "href"],
+          },
+        },
+      },
+    },
+    uiSchema: {
+      subtitle: { "ui:widget": "textarea" },
+      services: {
+        "ui:options": { addButtonLabel: "Thêm dịch vụ" },
+        items: {
+          icon: { "ui:widget": "iconPicker" },
+          description: { "ui:widget": "textarea" },
+          image: { "ui:widget": "mediaImage" },
+          features: { "ui:options": { addButtonLabel: "Thêm feature" } },
+        },
+      },
+    } satisfies UiSchema,
+    template: {
+      badge: "Dohy Ecosystem",
+      title: "Giải Pháp",
+      titleHighlight: "Toàn Diện",
+      subtitle: "Ba trụ cột vững chắc kiến tạo nên thành công của một Digital Artist: Tư duy - Công cụ - Thực chiến.",
+      services: [
+        {
+          id: "academy",
+          icon: "MonitorPlay",
+          label: "EDUCATION",
+          title: "Dohy Academy",
+          description: "Hệ thống đào tạo tư duy mỹ thuật và kỹ năng 3D/VFX bài bản.",
+          features: ["Tư duy hình ảnh", "Kỹ năng 3D", "Quy trình Studio"],
+          image: "https://images.unsplash.com/photo-1521898284481-a5ec348cb555?q=80&w=687&auto=format&fit=crop",
+          ctaText: "Xem Lộ Trình",
+          href: "/khoa-hoc",
+        },
+      ],
+    },
+  },
+  {
+    kind: "visionAbout",
+    name: "Vision About",
+    schema: {
+      type: "object",
+      properties: {
+        badge: { type: "string", title: "Badge" },
+        titleLine1: { type: "string", title: "Tiêu đề dòng 1" },
+        titleLine2: { type: "string", title: "Tiêu đề dòng 2 (highlight)" },
+        description: { type: "string", title: "Mô tả" },
+        features: {
+          type: "array",
+          title: "Features",
+          items: {
+            type: "object",
+            properties: {
+              title: { type: "string", title: "Tiêu đề" },
+              description: { type: "string", title: "Mô tả" },
+            },
+            required: ["title", "description"],
+          },
+        },
+        image: { type: "string", title: "Ảnh" },
+        imageAlt: { type: "string", title: "Alt ảnh" },
+        yearEstablished: { type: "string", title: "Năm thành lập" },
+        tagline: { type: "string", title: "Tagline" },
+      },
+    },
+    uiSchema: {
+      description: { "ui:widget": "textarea" },
+      image: { "ui:widget": "mediaImage" },
+      features: {
+        "ui:options": { addButtonLabel: "Thêm feature" },
+        items: {
+          description: { "ui:widget": "textarea" },
+        },
+      },
+    } satisfies UiSchema,
+    template: {
+      badge: "Dohy Vision",
+      titleLine1: "Chất Lượng Là",
+      titleLine2: "Tiêu Chuẩn Duy Nhất",
+      description: "Mỗi sản phẩm: Art Direction + Advanced Tech",
+      features: [
+        { title: "Sáng Tạo", description: "Tư duy thiết kế mới" },
+        { title: "Hiệu Suất", description: "Gấp 2 lần nhanh" },
+      ],
+      image: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?q=80&w=1974&auto=format&fit=crop",
+      yearEstablished: "Est. 2019",
+      tagline: "Premium Standard",
+    },
+  },
+  {
+    kind: "ctaAbout",
+    name: "CTA About",
+    schema: {
+      type: "object",
+      properties: {
+        siteName: { type: "string", title: "Tên site" },
+        contactEmail: { type: "string", title: "Email liên hệ", format: "email" },
+        address: { type: "string", title: "Địa chỉ" },
+        zaloUrl: { type: "string", title: "Zalo URL", format: "uri" },
+        facebookUrl: { type: "string", title: "Facebook URL", format: "uri" },
+        instagramUrl: { type: "string", title: "Instagram URL", format: "uri" },
+        youtubeUrl: { type: "string", title: "YouTube URL", format: "uri" },
+        tiktokUrl: { type: "string", title: "TikTok URL", format: "uri" },
+        bankAccountNumber: { type: "string", title: "Số tài khoản" },
+        bankAccountName: { type: "string", title: "Tên chủ tài khoản" },
+        bankCode: { type: "string", title: "Mã ngân hàng" },
+      },
+    },
+    uiSchema: {
+      address: { "ui:widget": "textarea" },
+    } satisfies UiSchema,
+    template: {},
+  },
 ];
 
 

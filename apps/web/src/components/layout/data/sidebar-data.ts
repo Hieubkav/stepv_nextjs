@@ -75,7 +75,14 @@ export const sidebarData: SidebarData = {
     {
       title: 'CẤU HÌNH',
       items: [
-        { title: 'Khối giao diện', url: '/dashboard/home-blocks', icon: LayoutDashboard },
+        {
+          title: 'Khối giao diện',
+          icon: LayoutDashboard,
+          items: [
+            { title: 'Trang chủ', url: '/dashboard/home-blocks', icon: LayoutDashboard },
+            { title: 'Trang About', url: '/dashboard/about-blocks', icon: LayoutDashboard },
+          ],
+        },
         { title: 'Cài đặt', url: '/dashboard/settings', icon: Cog },
       ],
     },
