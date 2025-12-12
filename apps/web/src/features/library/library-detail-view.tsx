@@ -207,14 +207,11 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
   const preferredImage = useMemo(() => primaryImageUrl, [primaryImageUrl]);
 
   useEffect(() => {
-    setActiveImageUrl(preferredImage);
-  }, [preferredImage]);
-
-  useEffect(() => {
-    if (activeImageUrl) {
+    if (preferredImage && preferredImage !== activeImageUrl) {
       setIsMainImageLoading(true);
+      setActiveImageUrl(preferredImage);
     }
-  }, [activeImageUrl]);
+  }, [preferredImage, activeImageUrl]);
 
   const pricing = detailPricingConfig[resource.pricingType];
   const releaseDate = new Date(resource.createdAt).toLocaleDateString("vi-VN");
@@ -406,7 +403,12 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
                       return (
                         <button
                           key={url}
-                          onClick={() => setActiveImageUrl(url)}
+                          onClick={() => {
+                            if (url !== activeImageUrl) {
+                              setIsMainImageLoading(true);
+                              setActiveImageUrl(url);
+                            }
+                          }}
                           className={cn(
                             "relative aspect-video rounded-lg overflow-hidden border transition-all duration-200",
                             isActive
