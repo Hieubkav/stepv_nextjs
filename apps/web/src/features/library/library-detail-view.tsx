@@ -207,7 +207,7 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
   const preferredImage = useMemo(() => primaryImageUrl, [primaryImageUrl]);
 
   useEffect(() => {
-    if (preferredImage && preferredImage !== activeImageUrl) {
+    if (preferredImage && activeImageUrl === null) {
       setIsMainImageLoading(true);
       setActiveImageUrl(preferredImage);
     }
