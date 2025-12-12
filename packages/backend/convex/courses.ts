@@ -1283,4 +1283,259 @@ export const getStudentEnrollment = query({
   },
 });
 
+// ==================== COURSE - SOFTWARE RELATIONSHIP ====================
+
+type SoftwareId = Id<"library_softwares">;
+
+const nextCourseSoftwareOrder = async (ctx: AnyCtx, courseId: CourseId) => {
+  const siblings = await ctx.db
+    .query("course_softwares")
+    .withIndex("by_course_order", (q) => q.eq("courseId", courseId))
+    .collect();
+  if (!siblings.length) return 0;
+  return Math.max(...siblings.map((item) => item.order)) + 1;
+};
+
+/**
+ * Query: List softwares assigned to a course
+ */
+export const listCourseSoftwares = query({
+  args: {
+    courseId: v.id("courses"),
+    includeInactive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { courseId, includeInactive = false }) => {
+    const mappings = await ctx.db
+      .query("course_softwares")
+      .withIndex("by_course_order", (q) => q.eq("courseId", courseId))
+      .collect();
+    mappings.sort((a, b) => a.order - b.order);
+
+    const softwares = (
+      await Promise.all(
+        mappings.map(async (link) => {
+          const software = await ctx.db.get(link.softwareId);
+          if (!software) return null;
+          if (!includeInactive && (!link.active || !software.active)) {
+            return null;
+          }
+          return { software, link } as const;
+        })
+      )
+    ).filter(Boolean) as { software: any; link: any }[];
+
+    return softwares;
+  },
+});
+
+/**
+ * Query: List courses by software (filter courses by software)
+ */
+export const listCoursesBySoftware = query({
+  args: {
+    softwareId: v.id("library_softwares"),
+    includeInactive: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { softwareId, includeInactive = false }) => {
+    const mappings = await ctx.db
+      .query("course_softwares")
+      .withIndex("by_software", (q) => q.eq("softwareId", softwareId))
+      .collect();
+
+    const courses = (
+      await Promise.all(
+        mappings.map(async (link) => {
+          if (!includeInactive && !link.active) return null;
+          const course = await ctx.db.get(link.courseId);
+          if (!course) return null;
+          if (!includeInactive && !course.active) return null;
+          return course;
+        })
+      )
+    ).filter(Boolean);
+
+    courses.sort((a, b) => (a as CourseDoc).order - (b as CourseDoc).order);
+    return courses;
+  },
+});
+
+/**
+ * Mutation: Assign software to course (upsert)
+ */
+export const assignSoftwareToCourse = mutation({
+  args: {
+    courseId: v.id("courses"),
+    softwareId: v.id("library_softwares"),
+    note: v.optional(v.string()),
+    order: v.optional(v.number()),
+    active: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const course = await ctx.db.get(args.courseId);
+    if (!course) throw new ConvexError("Course not found");
+    const software = await ctx.db.get(args.softwareId);
+    if (!software) throw new ConvexError("Software not found");
+
+    const existed = await ctx.db
+      .query("course_softwares")
+      .withIndex("by_pair", (q) =>
+        q.eq("courseId", args.courseId).eq("softwareId", args.softwareId)
+      )
+      .first();
+
+    if (existed) {
+      const patch: Record<string, unknown> = {};
+      if (args.note !== undefined) patch.note = args.note;
+      if (args.order !== undefined) patch.order = args.order;
+      if (args.active !== undefined) patch.active = args.active;
+      if (Object.keys(patch).length > 0) {
+        await ctx.db.patch(existed._id, patch as any);
+      }
+      return await ctx.db.get(existed._id);
+    }
+
+    const order = args.order ?? (await nextCourseSoftwareOrder(ctx, args.courseId));
+    const id = await ctx.db.insert("course_softwares", {
+      courseId: args.courseId,
+      softwareId: args.softwareId,
+      note: args.note,
+      order,
+      active: args.active ?? true,
+      assignedAt: Date.now(),
+    });
+    return await ctx.db.get(id);
+  },
+});
+
+/**
+ * Mutation: Update course software mapping
+ */
+export const updateCourseSoftware = mutation({
+  args: {
+    id: v.id("course_softwares"),
+    note: v.optional(v.union(v.string(), v.null())),
+    order: v.optional(v.number()),
+    active: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { id, note, ...rest }) => {
+    const patch: Record<string, unknown> = { ...rest };
+    if (note !== undefined) {
+      patch.note = note ?? undefined;
+    }
+    await ctx.db.patch(id, patch as any);
+    return await ctx.db.get(id);
+  },
+});
+
+/**
+ * Mutation: Remove software from course
+ */
+export const removeCourseSoftware = mutation({
+  args: { id: v.id("course_softwares") },
+  handler: async (ctx, { id }) => {
+    await ctx.db.delete(id);
+    return { ok: true } as const;
+  },
+});
+
+/**
+ * Mutation: Bulk assign softwares to course (replace all)
+ */
+export const setCourseSoftwares = mutation({
+  args: {
+    courseId: v.id("courses"),
+    softwareIds: v.array(v.id("library_softwares")),
+  },
+  handler: async (ctx, { courseId, softwareIds }) => {
+    const course = await ctx.db.get(courseId);
+    if (!course) throw new ConvexError("Course not found");
+
+    // Delete all existing mappings
+    const existing = await ctx.db
+      .query("course_softwares")
+      .withIndex("by_course_order", (q) => q.eq("courseId", courseId))
+      .collect();
+    for (const item of existing) {
+      await ctx.db.delete(item._id);
+    }
+
+    // Insert new mappings
+    const now = Date.now();
+    for (let i = 0; i < softwareIds.length; i++) {
+      const software = await ctx.db.get(softwareIds[i]);
+      if (!software) continue;
+      await ctx.db.insert("course_softwares", {
+        courseId,
+        softwareId: softwareIds[i],
+        order: i,
+        active: true,
+        assignedAt: now,
+      });
+    }
+
+    return { ok: true } as const;
+  },
+});
+
+/**
+ * Query: Get courses with their softwares (for listing page)
+ */
+export const listCoursesWithSoftwares = query({
+  args: {
+    includeInactive: v.optional(v.boolean()),
+    softwareId: v.optional(v.id("library_softwares")),
+  },
+  handler: async (ctx, { includeInactive = false, softwareId }) => {
+    let courses = await ctx.db.query("courses").collect();
+    
+    if (!includeInactive) {
+      courses = courses.filter((course) => course.active);
+    }
+
+    // Filter by software if provided
+    if (softwareId) {
+      const links = await ctx.db
+        .query("course_softwares")
+        .withIndex("by_software", (q) => q.eq("softwareId", softwareId))
+        .collect();
+      const allowedCourseIds = new Set(
+        links.filter((link) => link.active).map((link) => String(link.courseId))
+      );
+      courses = courses.filter((course) => allowedCourseIds.has(String(course._id)));
+    }
+
+    courses.sort((a, b) => a.order - b.order);
+
+    // Fetch softwares for each course
+    const result = await Promise.all(
+      courses.map(async (course) => {
+        const mappings = await ctx.db
+          .query("course_softwares")
+          .withIndex("by_course_order", (q) => q.eq("courseId", course._id))
+          .collect();
+        
+        const softwares = (
+          await Promise.all(
+            mappings
+              .filter((link) => includeInactive || link.active)
+              .map(async (link) => {
+                const software = await ctx.db.get(link.softwareId);
+                if (!software) return null;
+                if (!includeInactive && !software.active) return null;
+                return software;
+              })
+          )
+        ).filter(Boolean);
+
+        return {
+          ...course,
+          softwares,
+        };
+      })
+    );
+
+    return result;
+  },
+});
+
 

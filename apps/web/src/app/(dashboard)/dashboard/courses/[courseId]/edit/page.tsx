@@ -102,7 +102,7 @@ const COURSE_TABS: { key: CourseTab; label: string }[] = [
 ];
 
 
-const buildCourseInitial = (course?: CourseDetail["course"]): CourseFormValues => ({
+const buildCourseInitial = (course?: CourseDetail["course"], softwareIds?: string[]): CourseFormValues => ({
   title: course?.title ?? "",
   slug: course?.slug ?? "",
   subtitle: course?.subtitle ?? "",
@@ -116,6 +116,7 @@ const buildCourseInitial = (course?: CourseDetail["course"]): CourseFormValues =
   isPriceVisible: course?.isPriceVisible ?? false,
   order: String(course?.order ?? 0),
   active: course?.active ?? true,
+  softwareIds: softwareIds ?? [],
 });
 
 const buildChapterInitial = (chapter?: ChapterDoc): ChapterFormValues => ({
@@ -155,6 +156,11 @@ export default function CourseEditPage() {
     includeInactive: true,
   }) as CourseDetail | null | undefined;
 
+  const courseSoftwares = useQuery(api.courses.listCourseSoftwares, {
+    courseId,
+    includeInactive: true,
+  }) as { software: { _id: string }; link: any }[] | undefined;
+
   const enrollments = useQuery(api.courses.listEnrollmentsByCourse, {
     courseId,
     includeInactive: true,
@@ -178,6 +184,7 @@ export default function CourseEditPage() {
 
   const upsertEnrollment = useMutation(api.courses.upsertEnrollment);
   const removeEnrollment = useMutation(api.courses.removeEnrollment);
+  const setCourseSoftwares = useMutation(api.courses.setCourseSoftwares);
 
   const [courseSubmitting, setCourseSubmitting] = useState(false);
   const [chapterDialogOpen, setChapterDialogOpen] = useState(false);
@@ -211,6 +218,11 @@ export default function CourseEditPage() {
     if (!detail?.chapters) return [] as ChapterDoc[];
     return [...detail.chapters].sort((a, b) => a.order - b.order);
   }, [detail?.chapters]);
+
+  const courseSoftwareIds = useMemo(() => {
+    if (!courseSoftwares) return [];
+    return courseSoftwares.map((item) => String(item.software._id));
+  }, [courseSoftwares]);
 
   const lessonOptions = useMemo(() => {
     const options: { id: string; label: string }[] = [];
@@ -284,6 +296,13 @@ export default function CourseEditPage() {
         order,
         active: values.active,
       } as any);
+
+      // Update course softwares
+      await setCourseSoftwares({
+        courseId: course._id,
+        softwareIds: values.softwareIds as Id<"library_softwares">[],
+      });
+
       toast.success("Đã cập nhật khóa học");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể cập nhật");
@@ -632,7 +651,7 @@ export default function CourseEditPage() {
           </CardHeader>
           <CardContent>
             <CourseForm
-            initialValues={buildCourseInitial(course)}
+            initialValues={buildCourseInitial(course, courseSoftwareIds)}
             submitting={courseSubmitting}
             submitLabel="Lưu"
             onSubmit={handleCourseSubmit}

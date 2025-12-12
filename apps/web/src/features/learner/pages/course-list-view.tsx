@@ -24,6 +24,7 @@ export type CourseListItem = {
     active: boolean;
     createdAt: number;
     updatedAt: number;
+    softwareIds?: string[];
 };
 
 export type CourseThumbnail = {
@@ -31,16 +32,25 @@ export type CourseThumbnail = {
     title?: string;
 };
 
+export type SoftwareItem = {
+    id: string;
+    name: string;
+    slug: string;
+    iconImageId: string | null;
+};
+
 export type CourseListViewProps = {
     courses: CourseListItem[];
     thumbnails: Record<string, CourseThumbnail>;
+    softwares?: SoftwareItem[];
+    softwareIcons?: Record<string, string>;
     error?: string | null;
 };
 
 const priceFilters = [
     { label: "Tất cả", value: "all" },
     { label: "Miễn phí", value: "free" },
-    { label: "Trả tiền", value: "paid" },
+    { label: "Trả phí", value: "paid" },
 ] as const;
 
 type PriceFilter = (typeof priceFilters)[number]["value"];
@@ -106,9 +116,13 @@ function CourseCardSkeleton() {
 function CourseCard({
     course,
     thumbnail,
+    courseSoftwares,
+    softwareIcons,
 }: {
     course: CourseListItem;
     thumbnail?: CourseThumbnail;
+    courseSoftwares?: SoftwareItem[];
+    softwareIcons?: Record<string, string>;
 }) {
     const normalizedSlug = normalizeSlug(course.slug || course.title);
     const detailHref = (normalizedSlug ? `/khoa-hoc/${normalizedSlug}` : "/khoa-hoc") as Route;
@@ -145,6 +159,28 @@ function CourseCard({
                     {subtitle ? <p className="line-clamp-2 text-xs text-slate-400">{subtitle}</p> : null}
                 </div>
 
+                {/* Software badges */}
+                {courseSoftwares && courseSoftwares.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                        {courseSoftwares.map((software) => (
+                            <span
+                                key={software.id}
+                                className="inline-flex items-center gap-1 rounded-full border border-slate-700/70 bg-slate-800/60 px-2 py-0.5 text-[10px] text-slate-300"
+                                title={software.name}
+                            >
+                                {software.iconImageId && softwareIcons?.[software.iconImageId] ? (
+                                    <img
+                                        src={softwareIcons[software.iconImageId]}
+                                        alt=""
+                                        className="h-3 w-3 rounded-sm object-contain"
+                                    />
+                                ) : null}
+                                <span className="truncate max-w-[60px]">{software.name}</span>
+                            </span>
+                        ))}
+                    </div>
+                )}
+
                 <div className="mt-auto flex items-center justify-end">
                     <span className="text-sm font-semibold bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,193,7,0.25)]">
                         {priceText}
@@ -164,12 +200,19 @@ function CourseCard({
     );
 }
 
-export default function CourseListView({ courses, thumbnails, error }: CourseListViewProps) {
+export default function CourseListView({ courses, thumbnails, softwares = [], softwareIcons = {}, error }: CourseListViewProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [priceFilter, setPriceFilter] = useState<PriceFilter>("all");
+    const [softwareFilter, setSoftwareFilter] = useState<string>("all");
     const [sortBy, setSortBy] = useState<SortOption>("default");
     const [page, setPage] = useState(1);
     const [headerOffset, setHeaderOffset] = useState(112);
+
+    const softwareMap = useMemo(() => {
+        const map = new Map<string, SoftwareItem>();
+        softwares.forEach((s) => map.set(s.id, s));
+        return map;
+    }, [softwares]);
 
     useEffect(() => {
         const updateOffset = () => {
@@ -194,13 +237,20 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
 
     useEffect(() => {
         setPage(1);
-    }, [searchTerm, priceFilter, sortBy]);
+    }, [searchTerm, priceFilter, softwareFilter, sortBy]);
 
     const filteredCourses = useMemo(() => {
         const query = normalizeText(searchTerm);
         const items = courses.filter((course) => {
             if (priceFilter !== "all" && course.pricingType !== priceFilter) {
                 return false;
+            }
+
+            if (softwareFilter !== "all") {
+                const courseSoftwareIds = course.softwareIds || [];
+                if (!courseSoftwareIds.includes(softwareFilter)) {
+                    return false;
+                }
             }
 
             if (!query) return true;
@@ -242,7 +292,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
         });
 
         return sorted;
-    }, [courses, priceFilter, searchTerm, sortBy]);
+    }, [courses, priceFilter, softwareFilter, searchTerm, sortBy]);
 
     const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE));
     const currentPage = Math.min(page, totalPages);
@@ -268,7 +318,6 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                 <div className="absolute left-1/3 bottom-[-28%] h-96 w-96 rounded-full bg-indigo-600/8 blur-[190px]" />
             </div>
             <div className="relative mx-auto max-w-7xl px-4 md:px-6">
-                {/* Header Section */}
                 <div className="mb-8">
                     <div className="mb-6">
                         <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent tracking-tight drop-shadow-[0_0_18px_rgba(255,193,7,0.35)]">
@@ -276,10 +325,8 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                         </h1>
                     </div>
 
-                    {/* Filter Bar */}
                     <section className="rounded-xl border border-slate-800/70 bg-[#050914]/90 p-4 shadow-[0_22px_60px_rgba(0,0,0,0.55)]">
                         <div className="flex flex-wrap items-center gap-3">
-                            {/* Search */}
                             <div className="flex flex-1 min-w-[220px] items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 shadow-inner shadow-black/40">
                                 <Search className="shrink-0 size-4 text-amber-300/90" />
                                 <input
@@ -290,7 +337,6 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                 />
                             </div>
 
-                            {/* Sort */}
                             <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
                                 <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Sắp xếp</span>
                                 <select
@@ -306,7 +352,6 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                 </select>
                             </label>
 
-                            {/* Price filter dropdown */}
                             <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
                                 <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Giá</span>
                                 <select
@@ -321,6 +366,33 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     ))}
                                 </select>
                             </label>
+
+                            {softwares.length > 0 && (
+                                <label className="flex items-center gap-2 rounded-lg border border-slate-800/70 bg-[#0a1220] px-4 py-2.5 md:shrink-0 text-white">
+                                    <span className="whitespace-nowrap text-sm font-semibold text-slate-200/80">Phần mềm</span>
+                                    <div className="flex items-center gap-2">
+                                        {softwareFilter !== "all" && softwareIcons && (() => {
+                                            const selectedSoftware = softwares.find(s => s.id === softwareFilter);
+                                            const iconUrl = selectedSoftware?.iconImageId ? softwareIcons[selectedSoftware.iconImageId] : null;
+                                            return iconUrl ? (
+                                                <img src={iconUrl} alt="" className="h-4 w-4 rounded-sm object-contain" />
+                                            ) : null;
+                                        })()}
+                                        <select
+                                            value={softwareFilter}
+                                            onChange={(event) => setSoftwareFilter(event.target.value)}
+                                            className="bg-transparent text-sm text-white outline-none max-w-[120px]"
+                                        >
+                                            <option value="all" className="bg-[#050914] text-white">Tất cả</option>
+                                            {softwares.map((software) => (
+                                                <option key={software.id} value={software.id} className="bg-[#050914] text-white">
+                                                    {software.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </label>
+                            )}
                         </div>
                     </section>
                 </div>
@@ -337,7 +409,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                             <div className="text-5xl">📚</div>
                             <p className="text-lg font-semibold text-white">Không tìm thấy khóa học</p>
                             <p className="text-sm text-amber-100/80">
-                                {searchTerm || priceFilter !== "all"
+                                {searchTerm || priceFilter !== "all" || softwareFilter !== "all"
                                     ? "Không có khóa học nào phù hợp với bộ lọc hiện tại. Hãy thử thay đổi điều kiện tìm kiếm."
                                     : "Danh sách khóa học sẽ được cập nhật sớm. Vui lòng quay lại sau."}
                             </p>
@@ -348,15 +420,20 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                 {filteredCourses.length > 0 ? (
                     <>
                         <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                            {paginatedCourses.map((course) => (
-                                <CourseCard
-                                    key={course.id}
-                                    course={course}
-                                    thumbnail={
-                                        course.thumbnailMediaId ? thumbnails[course.thumbnailMediaId] : undefined
-                                    }
-                                />
-                            ))}
+                            {paginatedCourses.map((course) => {
+                                const courseSofts = (course.softwareIds || [])
+                                    .map((id) => softwareMap.get(id))
+                                    .filter(Boolean) as SoftwareItem[];
+                                return (
+                                    <CourseCard
+                                        key={course.id}
+                                        course={course}
+                                        thumbnail={course.thumbnailMediaId ? thumbnails[course.thumbnailMediaId] : undefined}
+                                        courseSoftwares={courseSofts}
+                                        softwareIcons={softwareIcons}
+                                    />
+                                );
+                            })}
                         </section>
 
                         {totalPages > 1 && (
@@ -368,7 +445,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     className="grid size-9 place-items-center rounded-lg border border-slate-800/70 bg-[#0a1220] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#0f1b30] disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang trước"
                                 >
-                                    ‹
+                                    &lsaquo;
                                 </button>
                                 {Array.from({ length: totalPages }, (_, index) => index + 1).map((item) => {
                                     const isActive = item === currentPage;
@@ -396,7 +473,7 @@ export default function CourseListView({ courses, thumbnails, error }: CourseLis
                                     className="grid size-9 place-items-center rounded-lg border border-slate-800/70 bg-[#0a1220] text-sm font-semibold text-amber-100 transition duration-200 hover:border-amber-400/80 hover:bg-[#0f1b30] disabled:cursor-not-allowed disabled:opacity-40"
                                     aria-label="Trang sau"
                                 >
-                                    ›
+                                    &rsaquo;
                                 </button>
                             </nav>
                         )}

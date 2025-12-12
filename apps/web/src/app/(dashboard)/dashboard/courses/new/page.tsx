@@ -25,12 +25,14 @@ const buildInitial = (values?: Partial<CourseFormValues>): CourseFormValues => (
   isPriceVisible: values?.isPriceVisible ?? false,
   order: values?.order ?? "0",
   active: values?.active ?? true,
+  softwareIds: values?.softwareIds ?? [],
 });
 
 export default function CourseCreatePage() {
   const router = useRouter();
   const courses = useQuery(api.courses.listCourses, { includeInactive: true }) as { order: number }[] | undefined;
   const createCourse = useMutation(api.courses.createCourse);
+  const setCourseSoftwares = useMutation(api.courses.setCourseSoftwares);
   const [submitting, setSubmitting] = useState(false);
 
   const initialValues = useMemo(() => {
@@ -54,7 +56,7 @@ export default function CourseCreatePage() {
 
     setSubmitting(true);
     try {
-      await createCourse({
+      const course = await createCourse({
         title,
         slug,
         subtitle: values.subtitle.trim() || undefined,
@@ -69,6 +71,15 @@ export default function CourseCreatePage() {
         order: parsedOrder,
         active: values.active,
       });
+
+      // Set softwares if any selected
+      if (course && values.softwareIds.length > 0) {
+        await setCourseSoftwares({
+          courseId: course._id as Id<"courses">,
+          softwareIds: values.softwareIds as Id<"library_softwares">[],
+        });
+      }
+
       toast.success("Đã tạo khóa học");
       router.push("/dashboard/courses");
     } catch (error: any) {

@@ -7,6 +7,7 @@ import CourseListView, {
   type CourseListItem,
   type CourseListViewProps,
   type CourseThumbnail,
+  type SoftwareItem,
 } from "@/features/learner/pages/course-list-view";
 import { normalizeSlug } from "@/lib/slug";
 import { createMetadata } from "@/lib/seo/metadata";
@@ -25,6 +26,8 @@ async function loadCourseList(): Promise<CourseListViewProps> {
   const base: CourseListViewProps = {
     courses: [],
     thumbnails: {},
+    softwares: [],
+    softwareIcons: {},
     error: null,
   };
 
@@ -36,30 +39,46 @@ async function loadCourseList(): Promise<CourseListViewProps> {
 
   try {
     const client = new ConvexHttpClient(convexUrl);
-    const courses = (await client.query(api.courses.listCourses, {
+    
+    // Load courses with softwares
+    const coursesWithSoftwares = (await client.query(api.courses.listCoursesWithSoftwares, {
       includeInactive: true,
-    })) as Doc<"courses">[];
-    const sorted = courses.slice().sort((a, b) => a.order - b.order);
+    })) as Array<Doc<"courses"> & { softwares: Doc<"library_softwares">[] }>;
+    
+    const sorted = coursesWithSoftwares.slice().sort((a, b) => a.order - b.order);
 
     const normalized: CourseListItem[] = sorted.map((course) => {
       const cleanSlug = normalizeSlug(course.slug || course.title || "");
       return {
-      id: String(course._id),
-      slug: cleanSlug || course.slug || "",
-      title: course.title,
-      subtitle: course.subtitle ?? null,
-      description: course.description ?? null,
-      thumbnailMediaId: course.thumbnailMediaId ? String(course.thumbnailMediaId) : null,
-      pricingType: course.pricingType,
-      priceAmount: course.priceAmount ?? null,
-      priceNote: course.priceNote ?? null,
-      isPriceVisible: course.isPriceVisible,
-      order: course.order,
-      active: course.active,
-      createdAt: course.createdAt,
-      updatedAt: course.updatedAt,
-    };
+        id: String(course._id),
+        slug: cleanSlug || course.slug || "",
+        title: course.title,
+        subtitle: course.subtitle ?? null,
+        description: course.description ?? null,
+        thumbnailMediaId: course.thumbnailMediaId ? String(course.thumbnailMediaId) : null,
+        pricingType: course.pricingType,
+        priceAmount: course.priceAmount ?? null,
+        priceNote: course.priceNote ?? null,
+        isPriceVisible: course.isPriceVisible,
+        order: course.order,
+        active: course.active,
+        createdAt: course.createdAt,
+        updatedAt: course.updatedAt,
+        softwareIds: (course.softwares || []).map((s) => String(s._id)),
+      };
     });
+
+    // Load all softwares for filter
+    const allSoftwares = (await client.query(api.library.listSoftwares, {
+      activeOnly: true,
+    })) as Doc<"library_softwares">[];
+
+    const softwareItems: SoftwareItem[] = allSoftwares.map((software) => ({
+      id: String(software._id),
+      name: software.name,
+      slug: software.slug,
+      iconImageId: software.iconImageId ? String(software.iconImageId) : null,
+    }));
 
     const thumbnailIds = normalized
       .map((course) => course.thumbnailMediaId)
@@ -68,7 +87,15 @@ async function loadCourseList(): Promise<CourseListViewProps> {
     const thumbnails: Record<string, CourseThumbnail> = {};
     const thumbnailIdSet = new Set(thumbnailIds);
 
-    if (thumbnailIdSet.size > 0) {
+    // Load software icons
+    const softwareIconIds = softwareItems
+      .map((s) => s.iconImageId)
+      .filter((value): value is string => Boolean(value));
+    const iconIdSet = new Set(softwareIconIds);
+
+    const softwareIcons: Record<string, string> = {};
+
+    if (thumbnailIdSet.size > 0 || iconIdSet.size > 0) {
       try {
         const media = await client.query(api.media.list, { kind: "image" });
         for (const item of media as Array<{ _id: string; title?: string; url?: string }>) {
@@ -79,6 +106,9 @@ async function loadCourseList(): Promise<CourseListViewProps> {
               title: item.title,
             };
           }
+          if (iconIdSet.has(key) && item.url) {
+            softwareIcons[key] = item.url;
+          }
         }
       } catch (mediaError) {
         console.warn("Không thể tải danh sách media cho thumbnail", mediaError);
@@ -88,6 +118,8 @@ async function loadCourseList(): Promise<CourseListViewProps> {
     return {
       courses: normalized,
       thumbnails,
+      softwares: softwareItems,
+      softwareIcons,
       error: null,
     };
   } catch (error) {

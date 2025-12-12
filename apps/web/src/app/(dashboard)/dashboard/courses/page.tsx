@@ -11,6 +11,13 @@ import { Pencil, Plus, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-re
 
 import type { Id } from "@dohy/backend/convex/_generated/dataModel";
 
+type SoftwareDoc = {
+  _id: Id<"library_softwares">;
+  name: string;
+  slug: string;
+  iconImageId?: Id<"media"> | null;
+};
+
 type CourseDoc = {
   _id: Id<"courses">;
   title: string;
@@ -26,6 +33,7 @@ type CourseDoc = {
   order: number;
   active: boolean;
   createdAt?: number;
+  softwares?: SoftwareDoc[];
 };
 
 type SortColumn = "title" | "pricingType" | "order" | "createdAt" | null;
@@ -33,7 +41,7 @@ type SortDirection = "asc" | "desc";
 type FilterPricingType = "all" | "free" | "paid";
 
 export default function CoursesListPage() {
-  const courses = useQuery(api.courses.listCourses, { includeInactive: true }) as CourseDoc[] | undefined;
+  const courses = useQuery(api.courses.listCoursesWithSoftwares, { includeInactive: true }) as CourseDoc[] | undefined;
   const media = useQuery(api.media.list, { kind: "image" }) as any[] | undefined;
   const updateCourse = useMutation(api.courses.updateCourse);
   const setCourseActive = useMutation(api.courses.setCourseActive);
@@ -224,6 +232,7 @@ export default function CoursesListPage() {
                 Tiêu đề
                 <SortIcon column="title" />
               </button>
+              <div className="w-36">Phần mềm</div>
               <button
                 onClick={() => handleSort("pricingType")}
                 className="w-24 text-left hover:text-foreground transition-colors cursor-pointer"
@@ -256,6 +265,29 @@ export default function CoursesListPage() {
                   )}
                 </div>
                 <div className="flex-1 truncate font-medium">{course.title}</div>
+                <div className="w-36">
+                  {course.softwares && course.softwares.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {course.softwares.map((software) => {
+                        const iconUrl = software.iconImageId ? mediaMap.get(String(software.iconImageId))?.url : null;
+                        return (
+                          <span
+                            key={String(software._id)}
+                            className="inline-flex items-center gap-1 rounded-full border bg-muted/50 px-1.5 py-0.5 text-[10px]"
+                            title={software.name}
+                          >
+                            {iconUrl && (
+                              <img src={iconUrl} alt="" className="h-3 w-3 rounded-sm object-contain" />
+                            )}
+                            <span className="truncate max-w-[50px]">{software.name}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">—</span>
+                  )}
+                </div>
                 <div className="w-24 text-sm capitalize">
                   <span className={`inline-block px-2 py-0.5 rounded-full text-xs ${
                     course.pricingType === "free" 

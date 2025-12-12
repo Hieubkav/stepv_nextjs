@@ -125,6 +125,19 @@ export default defineSchema({
     .index("by_software", ["softwareId"])
     .index("by_pair", ["resourceId", "softwareId"]),
 
+  // Course to software mapping (quan he nhieu-nhieu)
+  course_softwares: defineTable({
+    courseId: v.id("courses"),
+    softwareId: v.id("library_softwares"),
+    note: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    assignedAt: v.number(),
+  })
+    .index("by_course_order", ["courseId", "order"])
+    .index("by_software", ["softwareId"])
+    .index("by_pair", ["courseId", "softwareId"]),
+
   // Project categories
   project_categories: defineTable({
     name: v.string(),

@@ -82,6 +82,24 @@ export const createVideo = mutation({
   },
 });
 
+// Get single media by ID with URL
+export const getById = query({
+  args: { id: v.id("media") },
+  handler: async (ctx, { id }) => {
+    const doc = await ctx.db.get(id);
+    if (!doc || doc.deletedAt) return null;
+    if (doc.storageId) {
+      try {
+        const url = await ctx.storage.getUrl(doc.storageId);
+        return { ...doc, url };
+      } catch (_) {
+        return { ...doc };
+      }
+    }
+    return doc;
+  },
+});
+
 // List media (optionally by kind). Includes ephemeral URL for images.
 export const list = query({
   args: { kind: v.optional(v.union(v.literal("image"), v.literal("video"))) },
