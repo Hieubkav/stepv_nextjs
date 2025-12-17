@@ -86,8 +86,8 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
     includeInactive: false,
   }) as LibraryResourceDetail | null | undefined;
   const media = useQuery(api.media.list, { kind: "image" }) as MediaImageDoc[] | undefined;
-  const resources = useQuery(api.library.listResources, { activeOnly: true }) as
-    | LibraryResourceDoc[]
+  const resourcesWithCover = useQuery(api.library.listResourcesWithCover, { activeOnly: true }) as
+    | Array<LibraryResourceDoc & { coverUrl: string | null }>
     | undefined;
 
   const siteSettingsDoc = useQuery(api.settings.getByKey, { key: "site" }) as SiteSettingsDoc | null | undefined;
@@ -184,18 +184,18 @@ export default function LibraryDetailView({ slug, initialDetail }: LibraryDetail
 
   const { resource, images, softwares } = detail;
   const relatedResources = useMemo(() => {
-    if (!resources) return [];
+    if (!resourcesWithCover) return [];
     const currentId = String(resource._id);
-    return resources
+    return resourcesWithCover
       .filter((item) => String(item._id) !== currentId)
       .sort((a, b) => b.createdAt - a.createdAt)
       .slice(0, 4)
       .map((item) => ({
         resource: item,
-        coverUrl: item.coverImageId ? mediaMap.get(String(item.coverImageId))?.url : undefined,
+        coverUrl: item.coverUrl ?? undefined,
       }));
-  }, [mediaMap, resource._id, resources]);
-  const isRelatedLoading = resources === undefined;
+  }, [resource._id, resourcesWithCover]);
+  const isRelatedLoading = resourcesWithCover === undefined;
   const galleryUrls = images
     .map((image) => mediaMap.get(String(image.mediaId))?.url)
     .filter((url): url is string => Boolean(url));

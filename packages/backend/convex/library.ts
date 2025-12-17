@@ -122,6 +122,62 @@ export const listResources = query({
   },
 });
 
+// List resources with cover image URL (for thumbnails)
+export const listResourcesWithCover = query({
+  args: {
+    activeOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { activeOnly = false }) => {
+    let resources = await ctx.db.query("library_resources").collect();
+
+    if (activeOnly) {
+      resources = resources.filter((item) => item.active);
+    }
+
+    resources.sort((a, b) => a.order - b.order);
+
+    // Get cover image for each resource
+    const result = await Promise.all(
+      resources.map(async (resource) => {
+        // First try coverImageId
+        if (resource.coverImageId) {
+          const media = await ctx.db.get(resource.coverImageId);
+          if (media && !media.deletedAt && media.storageId) {
+            try {
+              const url = await ctx.storage.getUrl(media.storageId);
+              return { ...resource, coverUrl: url };
+            } catch (_) {
+              // Storage blob may be deleted
+            }
+          }
+        }
+
+        // Fallback: get first image from gallery
+        const firstImage = await ctx.db
+          .query("library_resource_images")
+          .withIndex("by_resource_order", (q) => q.eq("resourceId", resource._id))
+          .first();
+
+        if (firstImage?.mediaId) {
+          const media = await ctx.db.get(firstImage.mediaId);
+          if (media && !media.deletedAt && media.storageId) {
+            try {
+              const url = await ctx.storage.getUrl(media.storageId);
+              return { ...resource, coverUrl: url };
+            } catch (_) {
+              // Storage blob may be deleted
+            }
+          }
+        }
+
+        return { ...resource, coverUrl: null };
+      })
+    );
+
+    return result;
+  },
+});
+
 export const getResourceDetail = query({
   args: {
     id: v.optional(v.id("library_resources")),

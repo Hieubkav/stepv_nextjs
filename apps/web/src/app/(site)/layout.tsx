@@ -8,7 +8,7 @@ import SiteLayoutClient from "./site-layout-client";
 export const dynamic = "force-dynamic";
 
 const fallbackMetadata: Metadata = {
-  title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
+  title: "DoHy Studio",
   description:
     "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep. Chung toi giup cac thuong hieu cao cap thu hut khan gia, nang cao cach trinh bay san pham va noi bat trong thi truong canh tranh.",
   keywords:
