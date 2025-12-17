@@ -24,7 +24,8 @@ import {
   ReceiptText,
   BookOpen,
   Cog,
-  ShoppingCart
+  ShoppingCart,
+  Newspaper
 } from 'lucide-react'
 import { type SidebarData } from '../types'
 
@@ -53,6 +54,7 @@ export const sidebarData: SidebarData = {
         { title: 'Khóa học', url: '/dashboard/courses', icon: GraduationCap },
         { title: 'Khách hàng', url: '/dashboard/customers', icon: UserCog },
         { title: 'Đơn hàng', url: '/dashboard/orders', icon: ShoppingCart },
+        { title: 'Bài viết', url: '/dashboard/post', icon: Newspaper },
         {
           title: 'Dự án',
           icon: Construction,

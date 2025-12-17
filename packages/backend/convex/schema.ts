@@ -771,4 +771,40 @@ export default defineSchema({
     .index("by_student", ["studentId"])
     .index("by_order", ["orderId"])
     .index("by_coupon_student", ["couponId", "studentId"]),
+
+  // Post categories (danh muc bai viet)
+  post_categories: defineTable({
+    name: v.string(),
+    slug: v.string(),
+    description: v.optional(v.string()),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"]),
+
+  // Blog posts (bai viet)
+  posts: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    content: v.string(), // Nội dung HTML từ rich editor
+    thumbnailId: v.optional(v.id("media")), // Ảnh đại diện (optional để tương thích dữ liệu cũ)
+    categoryId: v.optional(v.id("post_categories")), // Danh mục bài viết
+    author: v.optional(v.string()), // Tên tác giả
+    // Legacy fields (sẽ bỏ sau khi migrate)
+    excerpt: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    viewCount: v.number(), // Lượt xem
+    order: v.number(),
+    active: v.boolean(),
+    publishedAt: v.optional(v.number()), // Ngày xuất bản
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"])
+    .index("by_category_order", ["categoryId", "order"])
+    .index("by_published", ["publishedAt"]),
 });

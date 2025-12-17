@@ -34,6 +34,7 @@ import type * as pageBlocks from "../pageBlocks.js";
 import type * as pages from "../pages.js";
 import type * as paymentSettings from "../paymentSettings.js";
 import type * as payments from "../payments.js";
+import type * as posts from "../posts.js";
 import type * as progress from "../progress.js";
 import type * as projects from "../projects.js";
 import type * as purchases from "../purchases.js";
@@ -78,6 +79,7 @@ declare const fullApi: ApiFromModules<{
   pages: typeof pages;
   paymentSettings: typeof paymentSettings;
   payments: typeof payments;
+  posts: typeof posts;
   progress: typeof progress;
   projects: typeof projects;
   purchases: typeof purchases;
