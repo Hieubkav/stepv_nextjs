@@ -3,6 +3,9 @@ name: docs-seeker
 description: "Searching internet for technical documentation using llms.txt standard, GitHub repositories via Repomix, and parallel exploration. Use when user needs: (1) Latest documentation for libraries/frameworks, (2) Documentation in llms.txt format, (3) GitHub repository analysis, (4) Documentation without direct llms.txt support, (5) Multiple documentation sources in parallel"
 version: 1.0.0
 ---
+
+# Documentation Discovery & Analysis
+
 ## Overview
 
 Intelligent discovery and analysis of technical documentation through multiple strategies:
@@ -150,6 +153,28 @@ Launch 3 Explorer agents simultaneously:
 [Any limitations, missing information, or caveats]
 ```
 
+## Quick Reference
+
+**Tool selection:**
+- WebSearch → Find llms.txt URLs, GitHub repositories
+- WebFetch → Read single documentation pages
+- Task (Explore) → Multiple URLs, parallel exploration
+- Task (Researcher) → Scattered documentation, diverse sources
+- Repomix → Complete codebase analysis
+
+**Popular llms.txt locations (try context7.com first):**
+- Astro: https://context7.com/withastro/astro/llms.txt
+- Next.js: https://context7.com/vercel/next.js/llms.txt
+- Remix: https://context7.com/remix-run/remix/llms.txt
+- shadcn/ui: https://context7.com/shadcn-ui/ui/llms.txt
+- Better Auth: https://context7.com/better-auth/better-auth/llms.txt
+
+**Fallback to official sites if context7.com unavailable:**
+- Astro: https://docs.astro.build/llms.txt
+- Next.js: https://nextjs.org/llms.txt
+- Remix: https://remix.run/llms.txt
+- SvelteKit: https://kit.svelte.dev/llms.txt
+
 ## Error Handling
 
 - **llms.txt not accessible** → Try alternative domains → Repository analysis
@@ -168,7 +193,10 @@ Launch 3 Explorer agents simultaneously:
 
 ## Detailed Documentation
 
-For comprehensive guide: `read .claude/skills/workflows/docs-seeker/CLAUDE.md`
+For comprehensive guides, examples, and best practices:
+
+**Workflows:**
+- [WORKFLOWS.md](./WORKFLOWS.md) — Detailed workflow examples and strategies
 
 **Reference guides:**
 - [Tool Selection](./references/tool-selection.md) — Complete guide to choosing and using tools
@@ -177,10 +205,3 @@ For comprehensive guide: `read .claude/skills/workflows/docs-seeker/CLAUDE.md`
 - [Best Practices](./references/best-practices.md) — 8 essential principles for effective discovery
 - [Performance](./references/performance.md) — Optimization techniques and benchmarks
 - [Limitations](./references/limitations.md) — Boundaries and success criteria
-
-
----
-
-## References
-
-**Quick Reference:** `read .claude/skills/workflows/docs-seeker/references/quick-reference.md`
