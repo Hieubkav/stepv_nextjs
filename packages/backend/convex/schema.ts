@@ -807,4 +807,27 @@ export default defineSchema({
     .index("by_active_order", ["active", "order"])
     .index("by_category_order", ["categoryId", "order"])
     .index("by_published", ["publishedAt"]),
+
+  // Content images tracking (theo dõi ảnh trong nội dung rich editor)
+  content_images: defineTable({
+    // Reference to content (posts, projects, resources, etc.)
+    contentType: v.string(), // "post", "project", "resource", "vfx", etc.
+    contentId: v.string(), // ID của content chứa ảnh
+    
+    // Image storage reference
+    storageId: v.id("_storage"),
+    mediaId: v.optional(v.id("media")), // Link to media table if exists
+    
+    // Image info
+    src: v.string(), // URL của ảnh
+    width: v.optional(v.number()),
+    height: v.optional(v.number()),
+    
+    // Tracking
+    createdAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_content", ["contentType", "contentId"])
+    .index("by_storage", ["storageId"])
+    .index("by_deleted", ["deletedAt"]),
 });

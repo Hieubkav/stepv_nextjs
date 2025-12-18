@@ -17,6 +17,7 @@ import type * as analytics from "../analytics.js";
 import type * as categories from "../categories.js";
 import type * as certificates from "../certificates.js";
 import type * as comments from "../comments.js";
+import type * as contentImages from "../contentImages.js";
 import type * as coupons from "../coupons.js";
 import type * as course_favorites from "../course_favorites.js";
 import type * as courses from "../courses.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   certificates: typeof certificates;
   comments: typeof comments;
+  contentImages: typeof contentImages;
   coupons: typeof coupons;
   course_favorites: typeof course_favorites;
   courses: typeof courses;

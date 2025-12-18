@@ -5,18 +5,24 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
 import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { HeadingNode, QuoteNode } from "@lexical/rich-text";
 import { ListItemNode, ListNode } from "@lexical/list";
 import { CodeNode } from "@lexical/code";
 import { LinkNode } from "@lexical/link";
-import { $getRoot, $insertNodes, ParagraphNode as LexicalParagraphNode, TextNode } from "lexical";
-import type { EditorState, LexicalEditor, SerializedEditorState } from "lexical";
+import { $getRoot, ParagraphNode as LexicalParagraphNode, TextNode } from "lexical";
 import { $generateNodesFromDOM, $generateHtmlFromNodes } from "@lexical/html";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { FullRichEditorToolbar } from "./full-rich-editor-toolbar";
+import { ImageNode } from "./lexical/image-node";
+import { ImagesPlugin } from "./lexical/image-plugin";
+import { ImageGalleryNode } from "./lexical/image-gallery-node";
+import { ImageGalleryPlugin } from "./lexical/image-gallery-plugin";
+import { VideoNode } from "./lexical/video-node";
+import { VideoPlugin } from "./lexical/video-plugin";
 
 const theme = {
   paragraph: "mb-2",
@@ -31,6 +37,15 @@ const theme = {
   },
   quote: "border-l-4 border-gray-300 pl-4 italic my-2",
   code: "bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5 font-mono text-sm",
+  image: "max-w-full h-auto rounded-lg",
+  ltr: "text-left",
+  rtl: "text-right",
+  text: {
+    left: "[&]:text-left",
+    center: "[&]:text-center",
+    right: "[&]:text-right",
+    justify: "[&]:text-justify",
+  },
 };
 
 function onError(error: Error) {
@@ -97,7 +112,7 @@ export function FullRichEditor({ value, onChange, placeholder = "Nhập nội du
     namespace: "FullRichEditor",
     theme,
     onError,
-    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, CodeNode, LinkNode],
+    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, CodeNode, LinkNode, ImageNode, ImageGalleryNode, VideoNode],
   };
 
   return (
@@ -119,6 +134,10 @@ export function FullRichEditor({ value, onChange, placeholder = "Nhập nội du
         </div>
         <HistoryPlugin />
         <AutoFocusPlugin />
+        <ListPlugin />
+        <ImagesPlugin />
+        <ImageGalleryPlugin />
+        <VideoPlugin />
         <OnChangePlugin onChange={onChange} />
         <InitialValuePlugin value={value} />
       </div>
