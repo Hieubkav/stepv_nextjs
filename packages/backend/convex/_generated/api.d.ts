@@ -44,6 +44,7 @@ import type * as reviews from "../reviews.js";
 import type * as search from "../search.js";
 import type * as seed from "../seed.js";
 import type * as settings from "../settings.js";
+import type * as storageCleanup from "../storageCleanup.js";
 import type * as students from "../students.js";
 import type * as todos from "../todos.js";
 import type * as vfx from "../vfx.js";
@@ -90,6 +91,7 @@ declare const fullApi: ApiFromModules<{
   search: typeof search;
   seed: typeof seed;
   settings: typeof settings;
+  storageCleanup: typeof storageCleanup;
   students: typeof students;
   todos: typeof todos;
   vfx: typeof vfx;
