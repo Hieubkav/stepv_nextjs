@@ -17,8 +17,9 @@ let currentSettings = {
   site_name: 'Dohy Studio',
   site_description: 'Creative studio',
   // SEO
-  meta_title: 'Dohy Studio',
-  meta_description: 'Creative studio',
+  meta_title: 'Dịch Vụ Dựng Hình 3D & Render 3D Chuyên Nghiệp | Hình Ảnh Sắc Nét',
+  meta_description:
+    'Cung cấp dịch vụ dựng hình 3D, render 3D chất lượng cao cho kiến trúc, sản phẩm và quảng cáo. Quy trình chuyên nghiệp, hình ảnh chân thực, đúng tiến độ.',
   meta_keywords: '',
   // Social
   facebook_url:
@@ -53,4 +54,3 @@ export async function PUT(request: Request) {
     );
   }
 }
-

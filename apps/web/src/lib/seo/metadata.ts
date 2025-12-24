@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
 const SITE_NAME = 'DOHY Media';
-const SITE_DESCRIPTION = 'Dịch vụ dựng hình 3D chuyên nghiệp và render kiến trúc siêu thực. Studio làm hoạt hình 3D, dựng mô phỏng sản phẩm 3D quảng cáo, và khóa học đồ họa 3D. Làm hình ảnh 3D chuyên nghiệp cho doanh nghiệp.';
+const DEFAULT_SEO_TITLE = 'Dịch Vụ Dựng Hình 3D & Render 3D Chuyên Nghiệp | Hình Ảnh Sắc Nét';
+const SITE_DESCRIPTION = 'Cung cấp dịch vụ dựng hình 3D, render 3D chất lượng cao cho kiến trúc, sản phẩm và quảng cáo. Quy trình chuyên nghiệp, hình ảnh chân thực, đúng tiến độ.';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://dohymedia.com';
 
 export function createMetadata(options: {
@@ -84,7 +85,7 @@ export const baseMetadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     template: `%s | ${SITE_NAME}`,
-    default: SITE_NAME,
+    default: DEFAULT_SEO_TITLE,
   },
   description: SITE_DESCRIPTION,
   keywords: [
@@ -120,7 +121,7 @@ export const baseMetadata: Metadata = {
     locale: 'vi_VN',
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: SITE_NAME,
+    title: DEFAULT_SEO_TITLE,
     description: SITE_DESCRIPTION,
     images: [
       {
@@ -135,7 +136,7 @@ export const baseMetadata: Metadata = {
     card: 'summary_large_image',
     site: '@dohymedia',
     creator: '@dohymedia',
-    title: SITE_NAME,
+    title: DEFAULT_SEO_TITLE,
     description: SITE_DESCRIPTION,
     images: [`${SITE_URL}/twitter-image.jpg`],
   },
@@ -154,8 +155,8 @@ export const baseMetadata: Metadata = {
     },
   },
   icons: {
-    icon: '/favicon.ico',
-    shortcut: '/favicon.ico',
+    icon: '/images/logo.png',
+    shortcut: '/images/logo.png',
   },
 };
 
@@ -167,3 +168,4 @@ export function truncateDescription(text: string, maxLength: number = 160): stri
   if (text.length <= maxLength) return text;
   return text.substring(0, maxLength - 3) + '...';
 }
+

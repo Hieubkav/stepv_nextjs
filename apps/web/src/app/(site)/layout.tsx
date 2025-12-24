@@ -8,9 +8,9 @@ import SiteLayoutClient from "./site-layout-client";
 export const dynamic = "force-dynamic";
 
 const fallbackMetadata: Metadata = {
-  title: "DoHy Studio",
+  title: "Dịch Vụ Dựng Hình 3D & Render 3D Chuyên Nghiệp | Hình Ảnh Sắc Nét",
   description:
-    "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep. Chung toi giup cac thuong hieu cao cap thu hut khan gia, nang cao cach trinh bay san pham va noi bat trong thi truong canh tranh.",
+    "Cung cấp dịch vụ dựng hình 3D, render 3D chất lượng cao cho kiến trúc, sản phẩm và quảng cáo. Quy trình chuyên nghiệp, hình ảnh chân thực, đúng tiến độ.",
   keywords:
     "hinh anh 3D, hoat hinh 3D, nuoc hoa, lam dep, thuong hieu, marketing, quang cao, visualization, animation, perfume, beauty, brand, advertising",
   authors: [{ name: "DOHY Media" }],
@@ -28,9 +28,14 @@ const fallbackMetadata: Metadata = {
   alternates: {
     canonical: "https://dohymedia.com",
   },
+  icons: {
+    icon: "/images/logo.png",
+    shortcut: "/images/logo.png",
+  },
   openGraph: {
-    title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
-    description: "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep.",
+    title: "Dịch Vụ Dựng Hình 3D & Render 3D Chuyên Nghiệp | Hình Ảnh Sắc Nét",
+    description:
+      "Cung cấp dịch vụ dựng hình 3D, render 3D chất lượng cao cho kiến trúc, sản phẩm và quảng cáo. Quy trình chuyên nghiệp, hình ảnh chân thực, đúng tiến độ.",
     url: "https://dohymedia.com",
     siteName: "DOHY Media",
     images: [
@@ -46,8 +51,9 @@ const fallbackMetadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DOHY Media - Chuyen gia hinh anh 3D cho thuong hieu nuoc hoa & lam dep",
-    description: "DOHY Media chuyen tao ra nhung hinh anh 3D sieu thuc va hoat hinh duoc thiet ke rieng cho nganh nuoc hoa va lam dep.",
+    title: "Dịch Vụ Dựng Hình 3D & Render 3D Chuyên Nghiệp | Hình Ảnh Sắc Nét",
+    description:
+      "Cung cấp dịch vụ dựng hình 3D, render 3D chất lượng cao cho kiến trúc, sản phẩm và quảng cáo. Quy trình chuyên nghiệp, hình ảnh chân thực, đúng tiến độ.",
     images: ["https://dohymedia.com/og-image.jpg"],
     creator: "@dohymedia",
   },
