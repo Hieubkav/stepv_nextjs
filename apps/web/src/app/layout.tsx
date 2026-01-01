@@ -56,6 +56,8 @@ export default function RootLayout({
 	return (
 		<html lang="vi" suppressHydrationWarning>
 			<head>
+				<link rel="icon" href="/favicon.png" type="image/png" />
+				<link rel="apple-touch-icon" href="/favicon.png" />
 				<JsonLd data={[createOrganizationSchema(), createWebsiteSchema()]} />
 			</head>
 			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
