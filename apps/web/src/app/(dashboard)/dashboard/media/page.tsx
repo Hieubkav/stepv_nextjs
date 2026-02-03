@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useMediaModal } from "@/context/media-modal-provider";
 import { toast } from "sonner";
@@ -340,6 +340,9 @@ export default function MediaPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Sửa tiêu đề</DialogTitle>
+            <DialogDescription>
+              Nhập tiêu đề mới cho media này
+            </DialogDescription>
           </DialogHeader>
           <Input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
           <DialogFooter>

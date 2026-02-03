@@ -5,6 +5,15 @@ import { api } from "@dohy/backend/convex/_generated/api";
 
 export const runtime = "nodejs";
 
+// Tăng giới hạn body size lên 50MB
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "50mb",
+    },
+  },
+};
+
 export async function POST(req: NextRequest) {
   try {
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import { ImagePlus } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,6 +105,12 @@ export function MediaModal({ open, onOpenChange }: Props) {
       toast.error("Chỉ hỗ trợ tệp ảnh");
       return;
     }
+    // Giới hạn 10MB cho ảnh
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (file.size > maxSize) {
+      toast.error(`Ảnh quá lớn! Giới hạn ${(maxSize / (1024 * 1024)).toFixed(0)}MB (file bạn: ${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
+      return;
+    }
     setImageFile(file);
   }
 
@@ -115,6 +121,12 @@ export function MediaModal({ open, onOpenChange }: Props) {
     }
     if (!file.type.startsWith("video/")) {
       toast.error("Chỉ hỗ trợ tệp video");
+      return;
+    }
+    // Giới hạn 32MB cho video
+    const maxSize = 32 * 1024 * 1024; // 32MB
+    if (file.size > maxSize) {
+      toast.error(`Video quá lớn! Giới hạn ${(maxSize / (1024 * 1024)).toFixed(0)}MB (file bạn: ${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
       return;
     }
     setVideoFile(file);
@@ -189,6 +201,9 @@ export function MediaModal({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-5xl md:max-w-7xl h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>Quản lý media</DialogTitle>
+          <DialogDescription>
+            Tải ảnh và video lên hoặc thêm link video từ nguồn bên ngoài
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 flex flex-col gap-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)] md:gap-8 overflow-hidden">
