@@ -77,6 +77,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizeCss: false,
+    serverActions: {
+      bodySizeLimit: "50mb",
+    },
   },
   trailingSlash: false,
   compress: true,

@@ -4,15 +4,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@dohy/backend/convex/_generated/api";
 
 export const runtime = "nodejs";
-
-// Tăng giới hạn body size lên 50MB
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "50mb",
-    },
-  },
-};
+export const maxDuration = 60; // 60s timeout
 
 export async function POST(req: NextRequest) {
   try {

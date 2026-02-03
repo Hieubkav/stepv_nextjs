@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { toast } from "sonner";
+import imageCompression from "browser-image-compression";
 
 type Props = {
   open: boolean;
@@ -105,12 +106,6 @@ export function MediaModal({ open, onOpenChange }: Props) {
       toast.error("Chỉ hỗ trợ tệp ảnh");
       return;
     }
-    // Giới hạn 10MB cho ảnh
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (file.size > maxSize) {
-      toast.error(`Ảnh quá lớn! Giới hạn ${(maxSize / (1024 * 1024)).toFixed(0)}MB (file bạn: ${(file.size / (1024 * 1024)).toFixed(2)}MB)`);
-      return;
-    }
     setImageFile(file);
   }
 
@@ -136,8 +131,31 @@ export function MediaModal({ open, onOpenChange }: Props) {
     if (!imageFile) return;
     try {
       setSubmitting(true);
+      
+      let fileToUpload = imageFile;
+      
+      // Auto-compress nếu file > 3MB để bypass Next.js 4MB limit
+      const maxSizeBeforeCompress = 3 * 1024 * 1024; // 3MB
+      if (imageFile.size > maxSizeBeforeCompress) {
+        toast.info(`Đang nén ảnh từ ${(imageFile.size / (1024 * 1024)).toFixed(2)}MB...`);
+        try {
+          const compressed = await imageCompression(imageFile, {
+            maxSizeMB: 3,
+            maxWidthOrHeight: 2560,
+            useWebWorker: true,
+            fileType: "image/webp",
+          });
+          fileToUpload = new File([compressed], imageFile.name.replace(/\.\w+$/, ".webp"), {
+            type: "image/webp",
+          });
+          toast.success(`Đã nén xuống ${(fileToUpload.size / (1024 * 1024)).toFixed(2)}MB`);
+        } catch (compressError: any) {
+          toast.error(`Lỗi nén ảnh: ${compressError?.message}. Thử upload bản gốc...`);
+        }
+      }
+      
       const fd = new FormData();
-      fd.append("file", imageFile);
+      fd.append("file", fileToUpload);
       if (imageTitle) fd.append("title", imageTitle);
       const res = await fetch("/api/media/upload", { method: "POST", body: fd });
       const json = await res.json();
@@ -250,7 +268,7 @@ export function MediaModal({ open, onOpenChange }: Props) {
                     }}
                   >
                     <p className="text-sm font-medium">Thả tệp ảnh vào đây hoặc bấm để chọn</p>
-                    <p className="text-xs text-muted-foreground">Hỗ trợ PNG, JPG, WebP...</p>
+                    <p className="text-xs text-muted-foreground">Hỗ trợ PNG, JPG, WebP... Ảnh &gt; 3MB sẽ tự động nén</p>
                     <Input
                       ref={fileInputRef}
                       type="file"
