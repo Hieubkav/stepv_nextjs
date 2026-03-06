@@ -1,36 +1,39 @@
-import { cookies } from "next/headers";
+import { ConvexHttpClient } from "convex/browser";
 import { NextRequest, NextResponse } from "next/server";
+import { api } from "@dohy/backend/convex/_generated/api";
 
 export async function POST(request: NextRequest) {
   try {
-    const { username, password } = await request.json();
-
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-
-    if (!adminUsername || !adminPassword) {
-      return NextResponse.json(
-        { error: "Admin credentials not configured" },
-        { status: 500 }
-      );
+    const { email, password } = await request.json();
+    const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+      return NextResponse.json({ error: "Thiếu cấu hình Convex" }, { status: 500 });
     }
 
-    if (username === adminUsername && password === adminPassword) {
-      const cookieStore = await cookies();
-      cookieStore.set("admin_session", "authenticated", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-      });
+    const client = new ConvexHttpClient(convexUrl);
+    const bootstrap = await client.mutation(api.adminAuth.ensureBootstrapAdminsFromEnv, {});
+    if (!bootstrap.success) {
+      return NextResponse.json({ error: bootstrap.message }, { status: 500 });
+    }
+    const result = await client.mutation(api.adminAuth.loginWithPassword, {
+      email,
+      password,
+    });
 
-      return NextResponse.json({ success: true });
+    if (!result.success || !result.token) {
+      return NextResponse.json({ error: result.message }, { status: 401 });
     }
 
-    return NextResponse.json(
-      { error: "Invalid credentials" },
-      { status: 401 }
-    );
+    const ttlHours = Number(process.env.ADMIN_SESSION_TTL_HOURS ?? 8);
+    const maxAge = (Number.isFinite(ttlHours) && ttlHours > 0 ? ttlHours : 8) * 60 * 60;
+    const response = NextResponse.json({ success: true });
+    response.cookies.set("admin_session_token", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge,
+    });
+    return response;
   } catch (error) {
     return NextResponse.json(
       { error: "Internal server error" },

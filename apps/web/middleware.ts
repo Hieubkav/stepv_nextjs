@@ -5,9 +5,9 @@ export function middleware(request: NextRequest) {
 
   // Protect all /dashboard routes
   if (pathname.startsWith("/dashboard")) {
-    const adminSession = request.cookies.get("admin_session");
+    const adminSession = request.cookies.get("admin_session_token");
 
-    if (adminSession?.value !== "authenticated") {
+    if (!adminSession?.value) {
       const loginUrl = new URL("/admin-login", request.url);
       const next = `${pathname}${request.nextUrl.search}`;
       if (next.startsWith("/")) {

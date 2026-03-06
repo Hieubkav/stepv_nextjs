@@ -1,6 +1,8 @@
 import type { Metadata, Route } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@dohy/backend/convex/_generated/api";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
 
 type AdminLoginPageProps = {
@@ -24,10 +26,18 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
   const resolvedSearchParams = await searchParams;
   const nextPath = getSafeNextPath(resolvedSearchParams?.next);
   const cookieStore = await cookies();
-  const adminSession = cookieStore.get("admin_session");
+  const adminSession = cookieStore.get("admin_session_token");
+  const token = adminSession?.value;
 
-  if (adminSession?.value === "authenticated") {
-    redirect(nextPath);
+  if (token) {
+    const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (convexUrl) {
+      const client = new ConvexHttpClient(convexUrl);
+      const session = await client.query(api.adminAuth.verifySession, { token });
+      if (session.valid) {
+        redirect(nextPath);
+      }
+    }
   }
 
   return <AdminLoginForm nextPath={nextPath} />;

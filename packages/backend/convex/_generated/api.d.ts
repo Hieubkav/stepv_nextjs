@@ -13,6 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as adminAuth from "../adminAuth.js";
+import type * as adminRoles from "../adminRoles.js";
+import type * as adminUsers from "../adminUsers.js";
 import type * as analytics from "../analytics.js";
 import type * as categories from "../categories.js";
 import type * as certificates from "../certificates.js";
@@ -26,6 +29,8 @@ import type * as email from "../email.js";
 import type * as enrollment from "../enrollment.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as homepage from "../homepage.js";
+import type * as lib_adminPermissions from "../lib/adminPermissions.js";
+import type * as lib_password from "../lib/password.js";
 import type * as library from "../library.js";
 import type * as media from "../media.js";
 import type * as notifications from "../notifications.js";
@@ -60,6 +65,9 @@ import type * as visitors from "../visitors.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  adminAuth: typeof adminAuth;
+  adminRoles: typeof adminRoles;
+  adminUsers: typeof adminUsers;
   analytics: typeof analytics;
   categories: typeof categories;
   certificates: typeof certificates;
@@ -73,6 +81,8 @@ declare const fullApi: ApiFromModules<{
   enrollment: typeof enrollment;
   healthCheck: typeof healthCheck;
   homepage: typeof homepage;
+  "lib/adminPermissions": typeof lib_adminPermissions;
+  "lib/password": typeof lib_password;
   library: typeof library;
   media: typeof media;
   notifications: typeof notifications;

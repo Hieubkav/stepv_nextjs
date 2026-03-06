@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
 import { cn } from '@/lib/utils'
+import { AdminAuthProvider } from '@/features/admin/auth/admin-auth-context'
 
 export function AuthenticatedLayout({ children }: { children?: React.ReactNode }) {
   function Inner({ children }: { children?: React.ReactNode }) {
@@ -30,7 +31,9 @@ export function AuthenticatedLayout({ children }: { children?: React.ReactNode }
     <SearchProvider>
       <ThemeProvider>
         <LayoutProvider>
-          <Inner>{children}</Inner>
+          <AdminAuthProvider>
+            <Inner>{children}</Inner>
+          </AdminAuthProvider>
         </LayoutProvider>
       </ThemeProvider>
     </SearchProvider>

@@ -16,6 +16,44 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_key", ["key"]),
 
+  // Admin roles (RBAC cho dashboard)
+  admin_roles: defineTable({
+    key: v.string(),
+    name: v.string(),
+    description: v.optional(v.string()),
+    isSystem: v.boolean(),
+    isSuperAdmin: v.boolean(),
+    permissions: v.record(v.string(), v.array(v.string())),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_key", ["key"])
+    .index("by_name", ["name"]),
+
+  // Admin users (dang nhap dashboard)
+  admin_users: defineTable({
+    email: v.string(),
+    name: v.string(),
+    passwordHash: v.string(),
+    roleId: v.id("admin_roles"),
+    status: v.union(v.literal("Active"), v.literal("Inactive")),
+    lastLogin: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_role_status", ["roleId", "status"]),
+
+  // Admin sessions
+  admin_sessions: defineTable({
+    token: v.string(),
+    userId: v.id("admin_users"),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_user", ["userId"]),
+
   // Page meta (chi dung 'active')
   pages: defineTable({
     slug: v.string(),

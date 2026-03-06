@@ -53,6 +53,14 @@ export const sidebarData: SidebarData = {
         { title: 'Media', url: '/dashboard/media', icon: GalleryVerticalEnd },
         { title: 'Khóa học', url: '/dashboard/courses', icon: GraduationCap },
         { title: 'Khách hàng', url: '/dashboard/customers', icon: UserCog },
+        {
+          title: 'Người dùng',
+          icon: ShieldCheck,
+          items: [
+            { title: 'Danh sách', url: '/dashboard/user', icon: ShieldCheck },
+            { title: 'Vai trò', url: '/dashboard/user/roles', icon: ShieldCheck },
+          ],
+        },
         { title: 'Đơn hàng', url: '/dashboard/orders', icon: ShoppingCart },
         { title: 'Bài viết', url: '/dashboard/post', icon: Newspaper },
         {
