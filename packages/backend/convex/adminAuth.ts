@@ -82,24 +82,12 @@ async function upsertAdminUser(
 export const ensureBootstrapAdminsFromEnv = mutation({
   args: {},
   handler: async (ctx): Promise<BootstrapResult> => {
-    const superEmail = process.env.ADMIN_SUPER_EMAIL;
-    const superPassword = process.env.ADMIN_SUPER_PASSWORD;
-    const superName = process.env.ADMIN_SUPER_NAME ?? "Super Admin";
-    const ownerEmail = process.env.ADMIN_OWNER_EMAIL;
-    const ownerPassword = process.env.ADMIN_OWNER_PASSWORD;
-    const ownerName = process.env.ADMIN_OWNER_NAME ?? "Chủ shop";
+    const username = process.env.ADMIN_USERNAME;
+    const password = process.env.ADMIN_PASSWORD;
 
-    if (!superEmail || !superPassword || !ownerEmail || !ownerPassword) {
-      return { message: "Thiếu cấu hình tài khoản admin trong env", success: false };
+    if (!username || !password) {
+      return { message: "Thiếu cấu hình ADMIN_USERNAME/ADMIN_PASSWORD", success: false };
     }
-
-    const superRoleId = await resolveRole(
-      ctx,
-      "super_admin",
-      "Super Admin",
-      true,
-      { "*": ["*"] }
-    );
 
     const ownerRoleId = await resolveRole(
       ctx,
@@ -110,16 +98,9 @@ export const ensureBootstrapAdminsFromEnv = mutation({
     );
 
     await upsertAdminUser(ctx, {
-      email: superEmail,
-      name: superName,
-      password: superPassword,
-      roleId: superRoleId,
-    });
-
-    await upsertAdminUser(ctx, {
-      email: ownerEmail,
-      name: ownerName,
-      password: ownerPassword,
+      email: username,
+      name: "Chủ shop",
+      password,
       roleId: ownerRoleId,
     });
 
@@ -129,23 +110,23 @@ export const ensureBootstrapAdminsFromEnv = mutation({
 
 export const loginWithPassword = mutation({
   args: {
-    email: v.string(),
+    username: v.string(),
     password: v.string(),
   },
   handler: async (ctx, args) => {
-    const normalizedEmail = args.email.trim().toLowerCase();
+    const normalizedUsername = args.username.trim().toLowerCase();
     const user = await ctx.db
       .query("admin_users")
-      .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
+      .withIndex("by_email", (q) => q.eq("email", normalizedUsername))
       .unique();
 
     if (!user || user.status !== "Active") {
-      return { message: "Email hoặc mật khẩu không đúng", success: false };
+      return { message: "Tài khoản hoặc mật khẩu không đúng", success: false };
     }
 
     const isValid = verifyPassword(args.password, user.passwordHash);
     if (!isValid) {
-      return { message: "Email hoặc mật khẩu không đúng", success: false };
+      return { message: "Tài khoản hoặc mật khẩu không đúng", success: false };
     }
 
     const role = await ctx.db.get(user.roleId);

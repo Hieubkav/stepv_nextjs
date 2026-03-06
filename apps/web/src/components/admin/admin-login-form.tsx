@@ -18,7 +18,7 @@ type AdminLoginFormProps = {
 
 export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -28,14 +28,14 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
     router.refresh();
   };
 
-  const submit = async (emailValue: string, passwordValue: string) => {
+  const submit = async (usernameValue: string, passwordValue: string) => {
     setError(null);
     setPending(true);
     try {
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailValue, password: passwordValue }),
+        body: JSON.stringify({ username: usernameValue, password: passwordValue }),
       });
       if (response.ok) return finishLogin();
       const payload = await response.json().catch(() => null);
@@ -49,15 +49,15 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const trimmedEmail = email.trim();
+    const trimmedUsername = username.trim();
     const trimmedPassword = password.trim();
 
-    if (!trimmedEmail || !trimmedPassword) {
+    if (!trimmedUsername || !trimmedPassword) {
       setError("Vui lòng nhập đầy đủ tài khoản và mật khẩu.");
       return;
     }
 
-    await submit(trimmedEmail, trimmedPassword);
+    await submit(trimmedUsername, trimmedPassword);
   };
 
   return (
@@ -81,15 +81,15 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
             <div className="space-y-2">
               <Label htmlFor="username" className="flex items-center gap-2 text-sm font-medium text-slate-800">
                 <UserRound className="size-4 text-slate-500" />
-                Email
+                Tài khoản
               </Label>
               <Input
-                id="email"
-                name="email"
+                id="username"
+                name="username"
                 autoComplete="username"
-                placeholder="admin@dohy.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                placeholder="admin"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
                 disabled={pending}
               />
             </div>
@@ -118,7 +118,7 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
 
           <Separator />
           <p className="text-xs text-slate-500 text-center">
-            Tài khoản & mật khẩu lấy từ biến môi trường Convex (ADMIN_SUPER_EMAIL / ADMIN_OWNER_EMAIL).
+            Tài khoản & mật khẩu lấy từ biến môi trường Convex (ADMIN_USERNAME / ADMIN_PASSWORD).
           </p>
         </CardContent>
       </Card>

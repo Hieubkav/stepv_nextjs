@@ -4,7 +4,7 @@ import { api } from "@dohy/backend/convex/_generated/api";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    const { username, password } = await request.json();
     const convexUrl = process.env.CONVEX_URL ?? process.env.NEXT_PUBLIC_CONVEX_URL;
     if (!convexUrl) {
       return NextResponse.json({ error: "Thiếu cấu hình Convex" }, { status: 500 });
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: bootstrap.message }, { status: 500 });
     }
     const result = await client.mutation(api.adminAuth.loginWithPassword, {
-      email,
+      username,
       password,
     });
 
