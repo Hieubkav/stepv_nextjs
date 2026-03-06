@@ -106,7 +106,7 @@ export const create = mutation({
       throw new Error("Email đã tồn tại");
     }
     const now = Date.now();
-    const passwordHash = hashPassword(args.password.trim());
+    const passwordHash = await hashPassword(args.password.trim());
     return await ctx.db.insert("admin_users", {
       email,
       name: args.name.trim(),
@@ -177,7 +177,7 @@ export const changePassword = mutation({
       throw new Error("Không tìm thấy người dùng");
     }
     await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), user.roleId as any);
-    const passwordHash = hashPassword(args.password.trim());
+    const passwordHash = await hashPassword(args.password.trim());
     await ctx.db.patch(args.id, { passwordHash, updatedAt: Date.now() });
     return null;
   },

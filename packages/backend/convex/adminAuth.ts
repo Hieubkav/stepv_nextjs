@@ -55,7 +55,7 @@ async function upsertAdminUser(
     .withIndex("by_email", (q) => q.eq("email", normalizedEmail))
     .unique();
 
-  const passwordHash = hashPassword(payload.password.trim());
+  const passwordHash = await hashPassword(payload.password.trim());
   if (existing) {
     await ctx.db.patch(existing._id, {
       email: normalizedEmail,
@@ -124,7 +124,7 @@ export const loginWithPassword = mutation({
       return { message: "Tài khoản hoặc mật khẩu không đúng", success: false };
     }
 
-    const isValid = verifyPassword(args.password, user.passwordHash);
+    const isValid = await verifyPassword(args.password, user.passwordHash);
     if (!isValid) {
       return { message: "Tài khoản hoặc mật khẩu không đúng", success: false };
     }
