@@ -11,6 +11,7 @@ import { toast } from "sonner";
 type Role = {
   _id: string;
   name: string;
+  key: string;
   isSystem: boolean;
   isSuperAdmin: boolean;
 };
@@ -25,6 +26,9 @@ export default function AdminUserCreatePage() {
   const [status, setStatus] = useState<"Active" | "Inactive">("Active");
   const [pending, setPending] = useState(false);
 
+  const assignableRoles = roles.filter((role) => role.key !== "shop_owner");
+  const hasAssignableRole = assignableRoles.length > 0;
+
   const loadRoles = async () => {
     const response = await fetch("/api/admin/roles");
     const payload = await response.json();
@@ -33,8 +37,9 @@ export default function AdminUserCreatePage() {
       return;
     }
     setRoles(payload.roles ?? []);
-    if (!roleId && payload.roles?.length) {
-      setRoleId(payload.roles[0]._id);
+    const nextAssignable = (payload.roles ?? []).filter((role: Role) => role.key !== "shop_owner");
+    if (!roleId && nextAssignable.length) {
+      setRoleId(nextAssignable[0]._id);
     }
   };
 
@@ -44,6 +49,10 @@ export default function AdminUserCreatePage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!hasAssignableRole) {
+      toast.error("Không có vai trò hợp lệ để gán");
+      return;
+    }
     if (!email.trim() || !name.trim() || !password.trim() || !roleId) {
       toast.error("Vui lòng nhập đủ thông tin");
       return;
@@ -105,14 +114,24 @@ export default function AdminUserCreatePage() {
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 value={roleId}
                 onChange={(e) => setRoleId(e.target.value)}
+                disabled={!hasAssignableRole}
               >
-                {roles.map((role) => (
-                  <option key={role._id} value={role._id}>
-                    {role.name}
-                    {role.isSuperAdmin ? " (Super)" : ""}
+                {hasAssignableRole ? (
+                  assignableRoles.map((role) => (
+                    <option key={role._id} value={role._id}>
+                      {role.name}
+                      {role.isSuperAdmin ? " (Super)" : ""}
+                    </option>
+                  ))
+                ) : (
+                  <option value="" disabled>
+                    Không có vai trò hợp lệ để gán
                   </option>
-                ))}
+                )}
               </select>
+              {!hasAssignableRole && (
+                <p className="text-xs text-muted-foreground">Không có vai trò hợp lệ để gán.</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Trạng thái</Label>
@@ -126,7 +145,7 @@ export default function AdminUserCreatePage() {
               </select>
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending || !hasAssignableRole}>
                 {pending ? "Đang lưu..." : "Tạo người dùng"}
               </Button>
               <Button type="button" variant="outline" onClick={() => router.back()}>
