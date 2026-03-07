@@ -115,6 +115,10 @@ export default function AdminUsersPage() {
   };
 
   const handleToggleStatus = async (user: AdminUser) => {
+    if (user.roleKey === "shop_owner") {
+      toast.error("Không thể thay đổi trạng thái tài khoản Chủ shop");
+      return;
+    }
     try {
       const nextStatus = user.status === "Active" ? "Inactive" : "Active";
       const response = await fetch(`/api/admin/users/${user._id}`, {
@@ -259,16 +263,28 @@ export default function AdminUsersPage() {
                     <div className="w-40 text-xs text-muted-foreground">
                       <div>Tạo: {formatDate(user.createdAt)}</div>
                       <div>Login: {formatDate(user.lastLogin)}</div>
-                      <button
-                        onClick={() => handleToggleStatus(user)}
-                        className={`mt-1 inline-flex items-center rounded px-2 py-0.5 text-xs ${
-                          user.status === "Active"
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                        }`}
-                      >
-                        {user.status === "Active" ? "Đang hoạt động" : "Đang khóa"}
-                      </button>
+                      {isShopOwner ? (
+                        <span
+                          className={`mt-1 inline-flex items-center rounded px-2 py-0.5 text-xs ${
+                            user.status === "Active"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
+                          {user.status === "Active" ? "Đang hoạt động" : "Đang khóa"}
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleToggleStatus(user)}
+                          className={`mt-1 inline-flex items-center rounded px-2 py-0.5 text-xs ${
+                            user.status === "Active"
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                          }`}
+                        >
+                          {user.status === "Active" ? "Đang hoạt động" : "Đang khóa"}
+                        </button>
+                      )}
                     </div>
                     <div className="flex w-28 items-center justify-end gap-1.5">
                       <Button size="icon" variant="outline" title="Sửa" aria-label="Sửa" asChild>

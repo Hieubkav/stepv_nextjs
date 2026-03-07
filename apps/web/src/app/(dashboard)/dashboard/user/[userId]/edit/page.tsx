@@ -152,7 +152,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
               <Label>Vai trò</Label>
               {isShopOwner ? (
                 <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                  Chủ shop (khóa vai trò)
+                  Chủ shop
                 </div>
               ) : (
                 <select
@@ -171,14 +171,20 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
             </div>
             <div className="space-y-2">
               <Label>Trạng thái</Label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as "Active" | "Inactive")}
-              >
-                <option value="Active">Đang hoạt động</option>
-                <option value="Inactive">Đang khóa</option>
-              </select>
+              {isShopOwner ? (
+                <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                  Đang hoạt động
+                </div>
+              ) : (
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as "Active" | "Inactive")}
+                >
+                  <option value="Active">Đang hoạt động</option>
+                  <option value="Inactive">Đang khóa</option>
+                </select>
+              )}
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={pending}>

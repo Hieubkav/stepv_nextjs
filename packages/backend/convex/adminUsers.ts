@@ -185,6 +185,9 @@ export const update = mutation({
     ) {
       throw new Error("Không thể thay đổi vai trò tài khoản Chủ shop");
     }
+    if (currentRole?.key === "shop_owner" && args.status && args.status !== "Active") {
+      throw new Error("Không thể thay đổi trạng thái tài khoản Chủ shop");
+    }
     await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), user.roleId as any);
     if (args.roleId) {
       await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), args.roleId as any);

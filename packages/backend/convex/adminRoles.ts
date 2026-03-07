@@ -93,6 +93,9 @@ export const update = mutation({
     if (!role) {
       throw new Error("Không tìm thấy vai trò");
     }
+    if (role.key === "shop_owner") {
+      throw new Error("Không thể chỉnh sửa vai trò Chủ shop");
+    }
     if (role.isSystem) {
       throw new Error("Không thể chỉnh sửa vai trò hệ thống");
     }
@@ -126,6 +129,9 @@ export const remove = mutation({
     const role = await ctx.db.get(args.id);
     if (!role) {
       throw new Error("Không tìm thấy vai trò");
+    }
+    if (role.key === "shop_owner") {
+      throw new Error("Không thể xóa vai trò Chủ shop");
     }
     if (role.isSystem) {
       throw new Error("Không thể xóa vai trò hệ thống");

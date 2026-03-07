@@ -52,6 +52,7 @@ const emptyPermissions = () =>
 export default function AdminRolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+  const [isReadonlyShopOwnerRole, setIsReadonlyShopOwnerRole] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [permissions, setPermissions] = useState<Record<string, string[]>>(emptyPermissions());
@@ -73,6 +74,7 @@ export default function AdminRolesPage() {
 
   const resetForm = () => {
     setEditingRoleId(null);
+    setIsReadonlyShopOwnerRole(false);
     setName("");
     setDescription("");
     setPermissions(emptyPermissions());
@@ -85,6 +87,7 @@ export default function AdminRolesPage() {
 
   const startEdit = (role: Role) => {
     setEditingRoleId(role._id);
+    setIsReadonlyShopOwnerRole(role.key === "shop_owner");
     setName(role.name);
     setDescription(role.description ?? "");
     const next = emptyPermissions();
@@ -190,11 +193,21 @@ export default function AdminRolesPage() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label>Tên vai trò</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Biên tập" />
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Biên tập"
+                disabled={isReadonlyShopOwnerRole}
+              />
             </div>
             <div className="space-y-2">
               <Label>Mô tả</Label>
-              <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Mô tả ngắn" />
+              <Input
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Mô tả ngắn"
+                disabled={isReadonlyShopOwnerRole}
+              />
             </div>
             <div className="space-y-2">
               <Label>Phân quyền</Label>
@@ -207,6 +220,7 @@ export default function AdminRolesPage() {
                         type="checkbox"
                         checked={isAllModuleActionsSelected(module.key)}
                         onChange={() => toggleAllPermissions(module.key)}
+                        disabled={isReadonlyShopOwnerRole}
                       />
                       Toàn bộ
                     </label>
@@ -216,6 +230,7 @@ export default function AdminRolesPage() {
                           type="checkbox"
                           checked={(permissions[module.key] ?? []).includes(action.key)}
                           onChange={() => togglePermission(module.key, action.key)}
+                          disabled={isReadonlyShopOwnerRole}
                         />
                         {action.label}
                       </label>
@@ -225,12 +240,14 @@ export default function AdminRolesPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button type="submit" disabled={pending}>
-                {pending ? "Đang lưu..." : editingRoleId ? "Lưu thay đổi" : "Tạo vai trò"}
-              </Button>
+              {!isReadonlyShopOwnerRole && (
+                <Button type="submit" disabled={pending}>
+                  {pending ? "Đang lưu..." : editingRoleId ? "Lưu thay đổi" : "Tạo vai trò"}
+                </Button>
+              )}
               {editingRoleId && (
                 <Button type="button" variant="outline" onClick={resetForm}>
-                  Hủy chỉnh sửa
+                  {isReadonlyShopOwnerRole ? "Đóng" : "Hủy chỉnh sửa"}
                 </Button>
               )}
             </div>
@@ -269,20 +286,22 @@ export default function AdminRolesPage() {
                       title="Sửa"
                       aria-label="Sửa"
                       onClick={() => startEdit(role)}
-                      disabled={role.isSystem}
+                      disabled={role.isSystem && role.key !== "shop_owner"}
                     >
                       <Pencil className="size-4" />
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      title="Xóa"
-                      aria-label="Xóa"
-                      onClick={() => handleDelete(role)}
-                      disabled={role.isSystem}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
+                    {role.key !== "shop_owner" && (
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        title="Xóa"
+                        aria-label="Xóa"
+                        onClick={() => handleDelete(role)}
+                        disabled={role.isSystem}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
