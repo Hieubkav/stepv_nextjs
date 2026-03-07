@@ -12,6 +12,7 @@ const adminUserSafeDoc = v.object({
   lastLogin: v.optional(v.number()),
   name: v.string(),
   roleId: v.id("admin_roles"),
+  roleKey: v.optional(v.string()),
   status: v.union(v.literal("Active"), v.literal("Inactive")),
   createdAt: v.number(),
   updatedAt: v.number(),
@@ -56,6 +57,13 @@ async function assertCanModifySuperAdmin(
   }
 }
 
+async function assertNotShopOwner(ctx: MutationCtx, targetRoleId: Id<"admin_roles">) {
+  const role = await ctx.db.get(targetRoleId);
+  if (role?.key === "shop_owner") {
+    throw new Error("Không thể xóa hoặc đổi mật khẩu tài khoản Chủ shop");
+  }
+}
+
 export const list = query({
   args: {
     token: v.string(),
@@ -83,6 +91,7 @@ export const list = query({
       ...toSafeUser(user),
       roleName: roleMap.get(user.roleId)?.name,
       isSuperAdmin: roleMap.get(user.roleId)?.isSuperAdmin ?? false,
+      roleKey: roleMap.get(user.roleId)?.key,
     }));
   },
   returns: v.array(v.object({
@@ -92,6 +101,7 @@ export const list = query({
     lastLogin: v.optional(v.number()),
     name: v.string(),
     roleId: v.id("admin_roles"),
+    roleKey: v.optional(v.string()),
     status: v.union(v.literal("Active"), v.literal("Inactive")),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -105,7 +115,14 @@ export const getById = query({
   handler: async (ctx, args) => {
     await requireAdminPermission(ctx, args.token, "users", "read");
     const user = await ctx.db.get(args.id);
-    return user ? toSafeUser(user) : null;
+    if (!user) {
+      return null;
+    }
+    const role = await ctx.db.get(user.roleId);
+    return {
+      ...toSafeUser(user),
+      roleKey: role?.key,
+    };
   },
   returns: v.union(adminUserSafeDoc, v.null()),
 });
@@ -201,6 +218,7 @@ export const changePassword = mutation({
     if (!user) {
       throw new Error("Không tìm thấy người dùng");
     }
+    await assertNotShopOwner(ctx, user.roleId as any);
     await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), user.roleId as any);
     const passwordHash = await hashPassword(args.password.trim());
     await ctx.db.patch(args.id, { passwordHash, updatedAt: Date.now() });
@@ -217,6 +235,7 @@ export const remove = mutation({
     if (!user) {
       throw new Error("Không tìm thấy người dùng");
     }
+    await assertNotShopOwner(ctx, user.roleId as any);
     await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), user.roleId as any);
     const role = await ctx.db.get(user.roleId);
     if (role?.isSuperAdmin) {

@@ -14,6 +14,7 @@ type AdminUser = {
   name: string;
   status: "Active" | "Inactive";
   roleName?: string;
+  roleKey?: string;
   isSuperAdmin: boolean;
   lastLogin?: number;
   createdAt: number;
@@ -133,6 +134,10 @@ export default function AdminUsersPage() {
   };
 
   const handleDelete = async (user: AdminUser) => {
+    if (user.roleKey === "shop_owner") {
+      toast.error("Không thể xóa tài khoản Chủ shop");
+      return;
+    }
     if (!window.confirm(`Xóa người dùng "${user.name}"?`)) return;
     try {
       const response = await fetch(`/api/admin/users/${user._id}`, { method: "DELETE" });
@@ -239,48 +244,52 @@ export default function AdminUsersPage() {
                 <div className="w-28 text-right">Hành động</div>
               </div>
 
-              {items.map((user) => (
-                <div key={user._id} className="flex items-center gap-3 p-3">
-                  <div className="flex-[1.2] space-y-1">
-                    <div className="font-medium leading-tight">{user.name}</div>
-                    {user.isSuperAdmin && (
-                      <span className="text-xs text-red-500">Super Admin</span>
-                    )}
+              {items.map((user) => {
+                const isShopOwner = user.roleKey === "shop_owner";
+                return (
+                  <div key={user._id} className="flex items-center gap-3 p-3">
+                    <div className="flex-[1.2] space-y-1">
+                      <div className="font-medium leading-tight">{user.name}</div>
+                      {user.isSuperAdmin && (
+                        <span className="text-xs text-red-500">Super Admin</span>
+                      )}
+                    </div>
+                    <div className="flex-[1.3] text-sm text-muted-foreground">{user.email}</div>
+                    <div className="flex-1 text-sm">{user.roleName ?? "-"}</div>
+                    <div className="w-40 text-xs text-muted-foreground">
+                      <div>Tạo: {formatDate(user.createdAt)}</div>
+                      <div>Login: {formatDate(user.lastLogin)}</div>
+                      <button
+                        onClick={() => handleToggleStatus(user)}
+                        className={`mt-1 inline-flex items-center rounded px-2 py-0.5 text-xs ${
+                          user.status === "Active"
+                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                        }`}
+                      >
+                        {user.status === "Active" ? "Đang hoạt động" : "Đang khóa"}
+                      </button>
+                    </div>
+                    <div className="flex w-28 items-center justify-end gap-1.5">
+                      <Button size="icon" variant="outline" title="Sửa" aria-label="Sửa" asChild>
+                        <Link href={`/dashboard/user/${user._id}/edit`}>
+                          <Pencil className="size-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="destructive"
+                        title={isShopOwner ? "Không thể xóa tài khoản Chủ shop" : "Xóa"}
+                        aria-label={isShopOwner ? "Không thể xóa tài khoản Chủ shop" : "Xóa"}
+                        disabled={isShopOwner}
+                        onClick={() => handleDelete(user)}
+                      >
+                        <Trash2 className="size-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex-[1.3] text-sm text-muted-foreground">{user.email}</div>
-                  <div className="flex-1 text-sm">{user.roleName ?? "-"}</div>
-                  <div className="w-40 text-xs text-muted-foreground">
-                    <div>Tạo: {formatDate(user.createdAt)}</div>
-                    <div>Login: {formatDate(user.lastLogin)}</div>
-                    <button
-                      onClick={() => handleToggleStatus(user)}
-                      className={`mt-1 inline-flex items-center rounded px-2 py-0.5 text-xs ${
-                        user.status === "Active"
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                      }`}
-                    >
-                      {user.status === "Active" ? "Đang hoạt động" : "Đang khóa"}
-                    </button>
-                  </div>
-                  <div className="flex w-28 items-center justify-end gap-1.5">
-                    <Button size="icon" variant="outline" title="Sửa" aria-label="Sửa" asChild>
-                      <Link href={`/dashboard/user/${user._id}/edit`}>
-                        <Pencil className="size-4" />
-                      </Link>
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      title="Xóa"
-                      aria-label="Xóa"
-                      onClick={() => handleDelete(user)}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

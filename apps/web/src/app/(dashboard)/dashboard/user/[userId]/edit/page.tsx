@@ -19,6 +19,7 @@ type AdminUser = {
   email: string;
   name: string;
   roleId: string;
+  roleKey?: string;
   status: "Active" | "Inactive";
 };
 
@@ -100,6 +101,10 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
   };
 
   const handleChangePassword = async () => {
+    if (user?.roleKey === "shop_owner") {
+      toast.error("Không thể đổi mật khẩu tài khoản Chủ shop");
+      return;
+    }
     if (!newPassword.trim()) {
       toast.error("Vui lòng nhập mật khẩu mới");
       return;
@@ -124,6 +129,8 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
   if (!user) {
     return <div className="p-6 text-sm text-muted-foreground">Đang tải...</div>;
   }
+
+  const isShopOwner = user.roleKey === "shop_owner";
 
   return (
     <div className="space-y-4 p-4">
@@ -190,7 +197,17 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Mật khẩu mới"
           />
-          <Button variant="secondary" onClick={handleChangePassword}>
+          {isShopOwner && (
+            <p className="text-sm text-muted-foreground">
+              Tài khoản Chủ shop không được đổi mật khẩu tại đây.
+            </p>
+          )}
+          <Button
+            variant="secondary"
+            onClick={handleChangePassword}
+            disabled={isShopOwner}
+            title={isShopOwner ? "Không thể đổi mật khẩu tài khoản Chủ shop" : "Cập nhật mật khẩu"}
+          >
             Cập nhật mật khẩu
           </Button>
         </CardContent>
