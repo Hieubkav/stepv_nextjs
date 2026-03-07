@@ -106,6 +106,19 @@ export default function AdminRolesPage() {
     });
   };
 
+  const isAllModuleActionsSelected = (moduleKey: string) =>
+    actions.every((action) => (permissions[moduleKey] ?? []).includes(action.key));
+
+  const toggleAllPermissions = (moduleKey: string) => {
+    setPermissions((prev) => {
+      const hasAll = actions.every((action) => (prev[moduleKey] ?? []).includes(action.key));
+      return {
+        ...prev,
+        [moduleKey]: hasAll ? [] : actions.map((action) => action.key),
+      };
+    });
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!name.trim()) {
@@ -189,6 +202,14 @@ export default function AdminRolesPage() {
                 {modules.map((module) => (
                   <div key={module.key} className="flex flex-wrap items-center gap-3">
                     <span className="w-40 text-sm font-medium">{module.label}</span>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={isAllModuleActionsSelected(module.key)}
+                        onChange={() => toggleAllPermissions(module.key)}
+                      />
+                      Toàn bộ
+                    </label>
                     {actions.map((action) => (
                       <label key={`${module.key}-${action.key}`} className="flex items-center gap-2 text-sm">
                         <input
