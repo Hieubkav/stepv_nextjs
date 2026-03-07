@@ -206,7 +206,7 @@ export default function AdminUsersPage() {
             <div className="p-6 text-sm text-muted-foreground">Chưa có người dùng nào.</div>
           )}
           {!loading && items.length > 0 && (
-            <div className="-mx-4 divide-y rounded-md border">
+            <div className="divide-y rounded-md border">
               <div className="flex items-center gap-3 bg-muted/30 p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <button
                   onClick={() => handleSort("name")}
