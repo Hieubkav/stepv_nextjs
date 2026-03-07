@@ -148,9 +148,6 @@ export function AdminLoginForm({ nextPath, reason }: AdminLoginFormProps) {
           </form>
 
           <Separator />
-          <p className="text-xs text-slate-500 text-center">
-            Tài khoản & mật khẩu lấy từ biến môi trường Convex (ADMIN_USERNAME / ADMIN_PASSWORD).
-          </p>
         </CardContent>
       </Card>
     </div>
