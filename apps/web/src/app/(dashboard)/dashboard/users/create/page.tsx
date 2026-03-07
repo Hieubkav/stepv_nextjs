@@ -92,8 +92,8 @@ export default function AdminUserCreatePage() {
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin@dohy.com" />
+              <Label>Tên đăng nhập</Label>
+              <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="admin.dohy" />
             </div>
             <div className="space-y-2">
               <Label>Họ tên</Label>

@@ -167,7 +167,7 @@ export default function AdminUsersPage() {
         </div>
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <Input
-            placeholder="Tìm theo tên, email..."
+            placeholder="Tìm theo tên, tên đăng nhập..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="sm:w-72"
@@ -228,7 +228,7 @@ export default function AdminUsersPage() {
                   onClick={() => handleSort("email")}
                   className="flex-[1.3] text-left transition-colors hover:text-foreground"
                 >
-                  Email
+                  Tên đăng nhập
                   <SortIcon column="email" />
                 </button>
                 <button

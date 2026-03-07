@@ -141,7 +141,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ id: st
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label>Email</Label>
+              <Label>Tên đăng nhập</Label>
               <Input value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div className="space-y-2">
