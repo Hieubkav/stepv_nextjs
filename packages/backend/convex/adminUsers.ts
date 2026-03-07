@@ -5,7 +5,7 @@ import { v } from "convex/values";
 import { hashPassword } from "./lib/password";
 import { requireAdminPermission } from "./lib/adminPermissions";
 
-const userDoc = v.object({
+const adminUserSafeDoc = v.object({
   _creationTime: v.number(),
   _id: v.id("admin_users"),
   email: v.string(),
@@ -16,6 +16,30 @@ const userDoc = v.object({
   createdAt: v.number(),
   updatedAt: v.number(),
 });
+
+function toSafeUser(user: {
+  _creationTime: number;
+  _id: Id<"admin_users">;
+  email: string;
+  lastLogin?: number | null;
+  name: string;
+  roleId: Id<"admin_roles">;
+  status: "Active" | "Inactive";
+  createdAt: number;
+  updatedAt: number;
+}) {
+  return {
+    _creationTime: user._creationTime,
+    _id: user._id,
+    email: user.email,
+    lastLogin: user.lastLogin ?? undefined,
+    name: user.name,
+    roleId: user.roleId,
+    status: user.status,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+  };
+}
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -56,7 +80,7 @@ export const list = query({
     }
     const sorted = users.sort((a, b) => b.createdAt - a.createdAt);
     return sorted.map((user) => ({
-      ...user,
+      ...toSafeUser(user),
       roleName: roleMap.get(user.roleId)?.name,
       isSuperAdmin: roleMap.get(user.roleId)?.isSuperAdmin ?? false,
     }));
@@ -80,9 +104,10 @@ export const getById = query({
   args: { id: v.id("admin_users"), token: v.string() },
   handler: async (ctx, args) => {
     await requireAdminPermission(ctx, args.token, "users", "read");
-    return await ctx.db.get(args.id);
+    const user = await ctx.db.get(args.id);
+    return user ? toSafeUser(user) : null;
   },
-  returns: v.union(userDoc, v.null()),
+  returns: v.union(adminUserSafeDoc, v.null()),
 });
 
 export const create = mutation({
