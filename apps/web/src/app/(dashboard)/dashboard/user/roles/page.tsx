@@ -226,7 +226,7 @@ export default function AdminRolesPage() {
             <div className="p-6 text-sm text-muted-foreground">Chưa có vai trò nào.</div>
           )}
           {roles.length > 0 && (
-            <div className="divide-y rounded-md border">
+            <div className="-mx-4 divide-y rounded-md border">
               <div className="flex items-center gap-3 bg-muted/30 p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <div className="flex-[1.4]">Tên vai trò</div>
                 <div className="flex-1">Mô tả</div>
