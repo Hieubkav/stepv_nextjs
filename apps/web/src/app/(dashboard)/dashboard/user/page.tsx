@@ -276,16 +276,17 @@ export default function AdminUsersPage() {
                           <Pencil className="size-4" />
                         </Link>
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="destructive"
-                        title={isShopOwner ? "Không thể xóa tài khoản Chủ shop" : "Xóa"}
-                        aria-label={isShopOwner ? "Không thể xóa tài khoản Chủ shop" : "Xóa"}
-                        disabled={isShopOwner}
-                        onClick={() => handleDelete(user)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                      {!isShopOwner && (
+                        <Button
+                          size="icon"
+                          variant="destructive"
+                          title="Xóa"
+                          aria-label="Xóa"
+                          onClick={() => handleDelete(user)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 );

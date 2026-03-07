@@ -186,32 +186,24 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
         </CardContent>
       </Card>
 
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Đổi mật khẩu</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Input
-            type="password"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            placeholder="Mật khẩu mới"
-          />
-          {isShopOwner && (
-            <p className="text-sm text-muted-foreground">
-              Tài khoản Chủ shop không được đổi mật khẩu tại đây.
-            </p>
-          )}
-          <Button
-            variant="secondary"
-            onClick={handleChangePassword}
-            disabled={isShopOwner}
-            title={isShopOwner ? "Không thể đổi mật khẩu tài khoản Chủ shop" : "Cập nhật mật khẩu"}
-          >
-            Cập nhật mật khẩu
-          </Button>
-        </CardContent>
-      </Card>
+      {!isShopOwner && (
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardTitle>Đổi mật khẩu</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="Mật khẩu mới"
+            />
+            <Button variant="secondary" onClick={handleChangePassword}>
+              Cập nhật mật khẩu
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
