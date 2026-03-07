@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -185,6 +186,13 @@ export default function AdminRolesPage() {
 
   return (
     <div className="space-y-4 p-4">
+      <div className="text-sm text-muted-foreground">
+        <Link href="/dashboard/user" className="transition-colors hover:text-foreground">
+          Người dùng
+        </Link>
+        <span className="px-1">/</span>
+        <span className="text-foreground">Vai trò</span>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>{editingRoleId ? "Cập nhật vai trò" : "Tạo vai trò"}</CardTitle>
