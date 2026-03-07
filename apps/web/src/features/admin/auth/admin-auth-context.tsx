@@ -1,6 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  canAccessPath,
+  getFirstAccessibleDashboardPath,
+  hasAnyReadPermission,
+  hasPermission,
+} from "@/lib/admin-route-access";
 
 type AdminUser = {
   email: string;
@@ -15,6 +21,9 @@ type AdminAuthContextValue = {
   isLoading: boolean;
   user: AdminUser | null;
   hasPermission: (moduleKey: string, action: string) => boolean;
+  canAccessPath: (pathname: string) => boolean;
+  firstAccessiblePath: string | null;
+  hasAnyReadAccess: boolean;
   refresh: () => Promise<void>;
 };
 
@@ -43,19 +52,30 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
     void load();
   }, []);
 
-  const hasPermission = useMemo(() => {
-    return (moduleKey: string, action: string) => {
-      if (!user) return false;
-      if (user.isSuperAdmin) return true;
-      const permissions = user.permissions ?? {};
-      if (permissions["*"]?.includes("*") || permissions["*"]?.includes(action)) return true;
-      if (permissions[moduleKey]?.includes("*") || permissions[moduleKey]?.includes(action)) return true;
-      return false;
-    };
+  const hasPermissionMemo = useMemo(() => {
+    return (moduleKey: string, action: string) => hasPermission(user, moduleKey, action);
   }, [user]);
 
+  const canAccessPathMemo = useMemo(() => {
+    return (pathname: string) => canAccessPath(user, pathname);
+  }, [user]);
+
+  const firstAccessiblePath = useMemo(() => getFirstAccessibleDashboardPath(user), [user]);
+
+  const hasAnyReadAccess = useMemo(() => hasAnyReadPermission(user), [user]);
+
   return (
-    <AdminAuthContext.Provider value={{ hasPermission, isLoading, refresh: load, user }}>
+    <AdminAuthContext.Provider
+      value={{
+        canAccessPath: canAccessPathMemo,
+        firstAccessiblePath,
+        hasAnyReadAccess,
+        hasPermission: hasPermissionMemo,
+        isLoading,
+        refresh: load,
+        user,
+      }}
+    >
       {children}
     </AdminAuthContext.Provider>
   );

@@ -23,6 +23,18 @@ function toKey(input: string) {
     .replace(/[^a-z0-9-_]/g, "");
 }
 
+function assertHasReadPermission(permissions: Record<string, string[]>) {
+  const values = Object.values(permissions);
+  const hasAnyAction = values.some((actions) => actions.length > 0);
+  if (!hasAnyAction) {
+    throw new Error("Vai trò phải có ít nhất 1 quyền xem");
+  }
+  const hasRead = values.some((actions) => actions.includes("read"));
+  if (!hasRead) {
+    throw new Error("Vai trò phải có ít nhất 1 quyền xem");
+  }
+}
+
 export const listAll = query({
   args: {
     token: v.string(),
@@ -63,6 +75,8 @@ export const create = mutation({
     if (existingByName) {
       throw new Error("Tên vai trò đã tồn tại");
     }
+
+    assertHasReadPermission(args.permissions);
 
     const now = Date.now();
     return await ctx.db.insert("admin_roles", {
@@ -114,6 +128,7 @@ export const update = mutation({
       updates.description = args.description?.trim();
     }
     if (args.permissions) {
+      assertHasReadPermission(args.permissions);
       updates.permissions = args.permissions;
     }
     await ctx.db.patch(args.id, updates);

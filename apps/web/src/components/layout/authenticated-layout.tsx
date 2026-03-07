@@ -7,10 +7,17 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import { SkipToMain } from '@/components/skip-to-main'
 import { cn } from '@/lib/utils'
 import { AdminAuthProvider } from '@/features/admin/auth/admin-auth-context'
+import { DashboardLayoutSkeleton } from '@/components/layout/dashboard-layout-skeleton'
+import { DashboardRouteGuard } from '@/components/layout/dashboard-route-guard'
+import { useAdminAuth } from '@/features/admin/auth/admin-auth-context'
 
 export function AuthenticatedLayout({ children }: { children?: React.ReactNode }) {
   function Inner({ children }: { children?: React.ReactNode }) {
     const { sidebarHidden } = useLayout()
+    const { isLoading } = useAdminAuth()
+    if (isLoading) {
+      return <DashboardLayoutSkeleton />
+    }
     return (
       <SidebarProvider>
         <SkipToMain />
@@ -22,7 +29,7 @@ export function AuthenticatedLayout({ children }: { children?: React.ReactNode }
             'peer-data-[variant=inset]:has-[[data-layout=fixed]]:h-[calc(100svh-(var(--spacing)*4))]'
           )}
         >
-          {children}
+          <DashboardRouteGuard>{children}</DashboardRouteGuard>
         </SidebarInset>
       </SidebarProvider>
     )

@@ -4,6 +4,11 @@ import { redirect } from "next/navigation";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { AdminLoginForm } from "@/components/admin/admin-login-form";
+import {
+  canAccessPath,
+  getFirstAccessibleDashboardPath,
+  hasAnyReadPermission,
+} from "@/lib/admin-route-access";
 
 type AdminLoginPageProps = {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -25,6 +30,7 @@ export const metadata: Metadata = {
 export default async function AdminLoginPage({ searchParams }: AdminLoginPageProps) {
   const resolvedSearchParams = await searchParams;
   const nextPath = getSafeNextPath(resolvedSearchParams?.next);
+  const reason = typeof resolvedSearchParams?.reason === "string" ? resolvedSearchParams.reason : undefined;
   const cookieStore = await cookies();
   const adminSession = cookieStore.get("admin_session_token");
   const token = adminSession?.value;
@@ -35,10 +41,15 @@ export default async function AdminLoginPage({ searchParams }: AdminLoginPagePro
       const client = new ConvexHttpClient(convexUrl);
       const session = await client.query(api.adminAuth.verifySession, { token });
       if (session.valid) {
-        redirect(nextPath);
+        if (!hasAnyReadPermission(session.user)) {
+          return <AdminLoginForm nextPath={nextPath} reason="no-access" />;
+        }
+        const fallback = getFirstAccessibleDashboardPath(session.user) ?? DEFAULT_REDIRECT;
+        const targetPath = (canAccessPath(session.user, nextPath) ? nextPath : fallback) as Route;
+        redirect(targetPath);
       }
     }
   }
 
-  return <AdminLoginForm nextPath={nextPath} />;
+  return <AdminLoginForm nextPath={nextPath} reason={reason} />;
 }

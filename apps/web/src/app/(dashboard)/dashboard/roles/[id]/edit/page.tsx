@@ -112,10 +112,17 @@ export default function AdminRoleEditPage({ params }: { params: Promise<{ id: st
     });
   };
 
+  const hasAnyReadAccess = () =>
+    Object.values(permissions).some((moduleActions) => moduleActions.includes("read"));
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!name.trim()) {
       toast.error("Vui lòng nhập tên vai trò");
+      return;
+    }
+    if (!hasAnyReadAccess()) {
+      toast.error("Vai trò phải có ít nhất 1 quyền xem");
       return;
     }
     setPending(true);

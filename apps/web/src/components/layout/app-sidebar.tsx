@@ -14,34 +14,12 @@ import { useAdminAuth } from "@/features/admin/auth/admin-auth-context";
 export function AppSidebar() {
   const { collapsible, variant } = useLayout();
   const router = useRouter();
-  const { hasPermission, isLoading, user } = useAdminAuth();
-
-  const resolveModuleKey = (url: string) => {
-    if (url.startsWith("/dashboard/roles")) return "roles";
-    if (url.startsWith("/dashboard/users")) return "users";
-    if (url.startsWith("/dashboard/library/software")) return "library_software";
-    if (url.startsWith("/dashboard/library")) return "library";
-    if (url.startsWith("/dashboard/project-category")) return "project_category";
-    if (url.startsWith("/dashboard/project")) return "project";
-    if (url.startsWith("/dashboard/orders") || url.startsWith("/dashboard/order")) return "orders";
-    if (url.startsWith("/dashboard/notifications")) return "notifications";
-    if (url.startsWith("/dashboard/students")) return "students";
-    if (url.startsWith("/dashboard/customers")) return "customers";
-    if (url.startsWith("/dashboard/courses")) return "courses";
-    if (url.startsWith("/dashboard/post")) return "post";
-    if (url.startsWith("/dashboard/vfx")) return "vfx";
-    if (url.startsWith("/dashboard/home-blocks")) return "home_blocks";
-    if (url.startsWith("/dashboard/about-blocks")) return "about_blocks";
-    if (url.startsWith("/dashboard/settings")) return "settings";
-    if (url.startsWith("/dashboard/media")) return "media";
-    return "dashboard";
-  };
+  const { canAccessPath, isLoading, user } = useAdminAuth();
 
   const canAccess = (url?: string) => {
     if (!url) return true;
-    if (isLoading || !user) return true;
-    const moduleKey = resolveModuleKey(url);
-    return hasPermission(moduleKey, "read");
+    if (isLoading || !user) return false;
+    return canAccessPath(url);
   };
 
   const filteredGroups = sidebarData.navGroups

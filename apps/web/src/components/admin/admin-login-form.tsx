@@ -11,21 +11,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ShieldCheck, LockKeyhole, UserRound } from "lucide-react";
+import {
+  canAccessPath,
+  getFirstAccessibleDashboardPath,
+  hasAnyReadPermission,
+} from "@/lib/admin-route-access";
 
 type AdminLoginFormProps = {
   nextPath: Route;
+  reason?: string;
 };
 
-export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
+export function AdminLoginForm({ nextPath, reason }: AdminLoginFormProps) {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    reason === "no-access"
+      ? "Tài khoản chưa được cấp quyền truy cập dashboard, vui lòng liên hệ quản trị."
+      : null
+  );
   const [pending, setPending] = useState(false);
 
-  const finishLogin = () => {
-    router.replace(nextPath);
+  const finishLogin = (targetPath: string) => {
+    router.replace(targetPath as Route);
     router.refresh();
+  };
+
+  const resolvePostLoginPath = async () => {
+    const response = await fetch("/api/admin/session", { cache: "no-store" });
+    if (!response.ok) return nextPath;
+    const payload = await response.json();
+    const user = payload?.user;
+    if (!hasAnyReadPermission(user)) {
+      await fetch("/api/admin/logout", { method: "POST" }).catch(() => null);
+      setError("Tài khoản chưa được cấp quyền truy cập dashboard, vui lòng liên hệ quản trị.");
+      return null;
+    }
+    const fallback = getFirstAccessibleDashboardPath(user);
+    const target = canAccessPath(user, nextPath) ? nextPath : fallback;
+    return target ?? null;
   };
 
   const submit = async (usernameValue: string, passwordValue: string) => {
@@ -37,7 +62,13 @@ export function AdminLoginForm({ nextPath }: AdminLoginFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: usernameValue, password: passwordValue }),
       });
-      if (response.ok) return finishLogin();
+      if (response.ok) {
+        const targetPath = await resolvePostLoginPath();
+        if (targetPath) {
+          finishLogin(targetPath);
+        }
+        return;
+      }
       const payload = await response.json().catch(() => null);
       setError(typeof payload?.error === "string" ? payload.error : "Sai tài khoản hoặc mật khẩu.");
     } catch {
