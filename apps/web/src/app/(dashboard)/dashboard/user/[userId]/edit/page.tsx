@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,9 @@ type AdminUser = {
   status: "Active" | "Inactive";
 };
 
-export default function AdminUserEditPage({ params }: { params: { userId: string } }) {
+export default function AdminUserEditPage({ params }: { params: Promise<{ userId: string }> }) {
   const router = useRouter();
+  const { userId } = use(params);
   const [roles, setRoles] = useState<Role[]>([]);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [email, setEmail] = useState("");
@@ -44,7 +45,7 @@ export default function AdminUserEditPage({ params }: { params: { userId: string
   };
 
   const loadUser = async () => {
-    const response = await fetch(`/api/admin/users/${params.userId}`);
+    const response = await fetch(`/api/admin/users/${userId}`);
     const payload = await response.json();
     if (!response.ok) {
       toast.error(payload?.error ?? "Không thể tải người dùng");
@@ -65,7 +66,7 @@ export default function AdminUserEditPage({ params }: { params: { userId: string
   useEffect(() => {
     void loadRoles();
     void loadUser();
-  }, [params.userId]);
+  }, [userId]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,7 +76,7 @@ export default function AdminUserEditPage({ params }: { params: { userId: string
     }
     setPending(true);
     try {
-      const response = await fetch(`/api/admin/users/${params.userId}`, {
+      const response = await fetch(`/api/admin/users/${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -104,7 +105,7 @@ export default function AdminUserEditPage({ params }: { params: { userId: string
       return;
     }
     try {
-      const response = await fetch(`/api/admin/users/${params.userId}/password`, {
+      const response = await fetch(`/api/admin/users/${userId}/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: newPassword.trim() }),
