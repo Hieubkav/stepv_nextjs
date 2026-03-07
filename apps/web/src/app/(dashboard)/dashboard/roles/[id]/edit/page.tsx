@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Pencil, Trash2 } from "lucide-react";
 
 type Role = {
   _id: string;
@@ -50,9 +49,10 @@ const actions = [
 const emptyPermissions = () =>
   Object.fromEntries(modules.map((module) => [module.key, [] as string[]]));
 
-export default function AdminRolesPage() {
+export default function AdminRoleEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter();
+  const { id } = use(params);
   const [roles, setRoles] = useState<Role[]>([]);
-  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [isReadonlyShopOwnerRole, setIsReadonlyShopOwnerRole] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -73,30 +73,19 @@ export default function AdminRolesPage() {
     void loadRoles();
   }, []);
 
-  const resetForm = () => {
-    setEditingRoleId(null);
-    setIsReadonlyShopOwnerRole(false);
-    setName("");
-    setDescription("");
-    setPermissions(emptyPermissions());
-  };
+  const currentRole = useMemo(() => roles.find((role) => role._id === id) ?? null, [roles, id]);
 
-  const currentRole = useMemo(
-    () => roles.find((role) => role._id === editingRoleId) ?? null,
-    [roles, editingRoleId]
-  );
-
-  const startEdit = (role: Role) => {
-    setEditingRoleId(role._id);
-    setIsReadonlyShopOwnerRole(role.key === "shop_owner");
-    setName(role.name);
-    setDescription(role.description ?? "");
+  useEffect(() => {
+    if (!currentRole) return;
+    setIsReadonlyShopOwnerRole(currentRole.key === "shop_owner");
+    setName(currentRole.name);
+    setDescription(currentRole.description ?? "");
     const next = emptyPermissions();
-    Object.entries(role.permissions ?? {}).forEach(([key, values]) => {
+    Object.entries(currentRole.permissions ?? {}).forEach(([key, values]) => {
       next[key] = [...values];
     });
     setPermissions(next);
-  };
+  }, [currentRole]);
 
   const togglePermission = (moduleKey: string, action: string) => {
     setPermissions((prev) => {
@@ -136,31 +125,17 @@ export default function AdminRolesPage() {
         description: description.trim() || undefined,
         permissions,
       };
-      if (editingRoleId) {
-        const response = await fetch(`/api/admin/roles/${editingRoleId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data?.error ?? "Không thể cập nhật vai trò");
-        }
-        toast.success("Đã cập nhật vai trò");
-      } else {
-        const response = await fetch("/api/admin/roles", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error(data?.error ?? "Không thể tạo vai trò");
-        }
-        toast.success("Đã tạo vai trò");
+      const response = await fetch(`/api/admin/roles/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error ?? "Không thể cập nhật vai trò");
       }
-      resetForm();
-      await loadRoles();
+      toast.success("Đã cập nhật vai trò");
+      router.push("/dashboard/roles");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể lưu vai trò");
     } finally {
@@ -168,34 +143,35 @@ export default function AdminRolesPage() {
     }
   };
 
-  const handleDelete = async (role: Role) => {
-    if (!window.confirm(`Xóa vai trò "${role.name}"?`)) return;
-    try {
-      const response = await fetch(`/api/admin/roles/${role._id}`, { method: "DELETE" });
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload?.error ?? "Không thể xóa vai trò");
-      }
-      toast.success("Đã xóa vai trò");
-      await loadRoles();
-      if (editingRoleId === role._id) resetForm();
-    } catch (error: any) {
-      toast.error(error?.message ?? "Không thể xóa vai trò");
-    }
-  };
+  if (!currentRole) {
+    return <div className="p-6 text-sm text-muted-foreground">Đang tải...</div>;
+  }
+
+  if (currentRole.isSystem && currentRole.key !== "shop_owner") {
+    return (
+      <div className="space-y-4 p-4">
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardTitle>Không thể chỉnh sửa</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Vai trò hệ thống không thể chỉnh sửa.
+            </p>
+            <Button variant="outline" onClick={() => router.back()}>
+              Quay lại
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 p-4">
-      <div className="text-sm text-muted-foreground">
-        <Link href="/dashboard/user" className="transition-colors hover:text-foreground">
-          Người dùng
-        </Link>
-        <span className="px-1">/</span>
-        <span className="text-foreground">Vai trò</span>
-      </div>
-      <Card>
+      <Card className="max-w-3xl">
         <CardHeader>
-          <CardTitle>{editingRoleId ? "Cập nhật vai trò" : "Tạo vai trò"}</CardTitle>
+          <CardTitle>Cập nhật vai trò</CardTitle>
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -250,71 +226,14 @@ export default function AdminRolesPage() {
             <div className="flex gap-2">
               {!isReadonlyShopOwnerRole && (
                 <Button type="submit" disabled={pending}>
-                  {pending ? "Đang lưu..." : editingRoleId ? "Lưu thay đổi" : "Tạo vai trò"}
+                  {pending ? "Đang lưu..." : "Lưu thay đổi"}
                 </Button>
               )}
-              {editingRoleId && (
-                <Button type="button" variant="outline" onClick={resetForm}>
-                  {isReadonlyShopOwnerRole ? "Đóng" : "Hủy chỉnh sửa"}
-                </Button>
-              )}
+              <Button type="button" variant="outline" onClick={() => router.back()}>
+                {isReadonlyShopOwnerRole ? "Đóng" : "Hủy chỉnh sửa"}
+              </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Danh sách vai trò</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {roles.length === 0 && (
-            <div className="p-6 text-sm text-muted-foreground">Chưa có vai trò nào.</div>
-          )}
-          {roles.length > 0 && (
-            <div className="divide-y rounded-md border">
-              <div className="flex items-center gap-3 bg-muted/30 p-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <div className="flex-[1.4]">Tên vai trò</div>
-                <div className="flex-1">Mô tả</div>
-                <div className="w-28 text-right">Hành động</div>
-              </div>
-              {roles.map((role) => (
-                <div key={role._id} className="flex items-center gap-3 p-3">
-                  <div className="flex-[1.4]">
-                    <div className="font-medium">{role.name}</div>
-                    {role.isSystem && (
-                      <span className="text-xs text-muted-foreground">Vai trò hệ thống</span>
-                    )}
-                  </div>
-                  <div className="flex-1 text-sm text-muted-foreground">{role.description ?? "-"}</div>
-                  <div className="flex w-28 items-center justify-end gap-1.5">
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      title="Sửa"
-                      aria-label="Sửa"
-                      onClick={() => startEdit(role)}
-                      disabled={role.isSystem && role.key !== "shop_owner"}
-                    >
-                      <Pencil className="size-4" />
-                    </Button>
-                    {role.key !== "shop_owner" && (
-                      <Button
-                        size="icon"
-                        variant="destructive"
-                        title="Xóa"
-                        aria-label="Xóa"
-                        onClick={() => handleDelete(role)}
-                        disabled={role.isSystem}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -173,7 +173,7 @@ export default function AdminUsersPage() {
             className="sm:w-72"
           />
           <Button asChild>
-            <Link href="/dashboard/user/new">
+            <Link href="/dashboard/users/create">
               <Plus className="mr-2 size-4" />
               Thêm người dùng
             </Link>
@@ -288,7 +288,7 @@ export default function AdminUsersPage() {
                     </div>
                     <div className="flex w-28 items-center justify-end gap-1.5">
                       <Button size="icon" variant="outline" title="Sửa" aria-label="Sửa" asChild>
-                        <Link href={`/dashboard/user/${user._id}/edit`}>
+                        <Link href={`/dashboard/users/${user._id}/edit`}>
                           <Pencil className="size-4" />
                         </Link>
                       </Button>

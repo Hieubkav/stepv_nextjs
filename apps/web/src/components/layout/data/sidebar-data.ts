@@ -57,8 +57,8 @@ export const sidebarData: SidebarData = {
           title: 'Người dùng',
           icon: ShieldCheck,
           items: [
-            { title: 'Danh sách', url: '/dashboard/user', icon: ShieldCheck },
-            { title: 'Vai trò', url: '/dashboard/user/roles', icon: ShieldCheck },
+            { title: 'Danh sách', url: '/dashboard/users', icon: ShieldCheck },
+            { title: 'Vai trò', url: '/dashboard/roles', icon: ShieldCheck },
           ],
         },
         { title: 'Đơn hàng', url: '/dashboard/orders', icon: ShoppingCart },

@@ -23,9 +23,9 @@ type AdminUser = {
   status: "Active" | "Inactive";
 };
 
-export default function AdminUserEditPage({ params }: { params: Promise<{ userId: string }> }) {
+export default function AdminUserEditPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const { userId } = use(params);
+  const { id } = use(params);
   const [roles, setRoles] = useState<Role[]>([]);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [email, setEmail] = useState("");
@@ -46,7 +46,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
   };
 
   const loadUser = async () => {
-    const response = await fetch(`/api/admin/users/${userId}`);
+    const response = await fetch(`/api/admin/users/${id}`);
     const payload = await response.json();
     if (!response.ok) {
       toast.error(payload?.error ?? "Không thể tải người dùng");
@@ -67,7 +67,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
   useEffect(() => {
     void loadRoles();
     void loadUser();
-  }, [userId]);
+  }, [id]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -77,7 +77,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
     }
     setPending(true);
     try {
-      const response = await fetch(`/api/admin/users/${userId}`, {
+      const response = await fetch(`/api/admin/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -92,7 +92,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
         throw new Error(payload?.error ?? "Không thể cập nhật người dùng");
       }
       toast.success("Đã cập nhật người dùng");
-      router.push("/dashboard/user");
+      router.push("/dashboard/users");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể cập nhật người dùng");
     } finally {
@@ -110,7 +110,7 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
       return;
     }
     try {
-      const response = await fetch(`/api/admin/users/${userId}/password`, {
+      const response = await fetch(`/api/admin/users/${id}/password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: newPassword.trim() }),

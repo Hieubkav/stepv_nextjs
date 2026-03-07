@@ -66,7 +66,7 @@ export default function AdminUserCreatePage() {
         throw new Error(payload?.error ?? "Không thể tạo người dùng");
       }
       toast.success("Đã tạo người dùng");
-      router.push("/dashboard/user");
+      router.push("/dashboard/users");
     } catch (error: any) {
       toast.error(error?.message ?? "Không thể tạo người dùng");
     } finally {

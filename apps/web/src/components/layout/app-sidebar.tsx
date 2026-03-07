@@ -17,8 +17,8 @@ export function AppSidebar() {
   const { hasPermission, isLoading, user } = useAdminAuth();
 
   const resolveModuleKey = (url: string) => {
-    if (url.startsWith("/dashboard/user/roles")) return "roles";
-    if (url.startsWith("/dashboard/user")) return "users";
+    if (url.startsWith("/dashboard/roles")) return "roles";
+    if (url.startsWith("/dashboard/users")) return "users";
     if (url.startsWith("/dashboard/library/software")) return "library_software";
     if (url.startsWith("/dashboard/library")) return "library";
     if (url.startsWith("/dashboard/project-category")) return "project_category";
