@@ -177,6 +177,14 @@ export const update = mutation({
     if (!user) {
       throw new Error("Không tìm thấy người dùng");
     }
+    const currentRole = await ctx.db.get(user.roleId);
+    if (
+      currentRole?.key === "shop_owner" &&
+      args.roleId !== undefined &&
+      args.roleId !== user.roleId
+    ) {
+      throw new Error("Không thể thay đổi vai trò tài khoản Chủ shop");
+    }
     await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), user.roleId as any);
     if (args.roleId) {
       await assertCanModifySuperAdmin(ctx, Boolean(actorRole?.isSuperAdmin), args.roleId as any);

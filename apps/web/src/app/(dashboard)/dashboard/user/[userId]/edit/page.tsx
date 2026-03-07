@@ -150,18 +150,24 @@ export default function AdminUserEditPage({ params }: { params: Promise<{ userId
             </div>
             <div className="space-y-2">
               <Label>Vai trò</Label>
-              <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={roleId}
-                onChange={(e) => setRoleId(e.target.value)}
-              >
-                {roles.map((role) => (
-                  <option key={role._id} value={role._id}>
-                    {role.name}
-                    {role.isSuperAdmin ? " (Super)" : ""}
-                  </option>
-                ))}
-              </select>
+              {isShopOwner ? (
+                <div className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+                  Chủ shop (khóa vai trò)
+                </div>
+              ) : (
+                <select
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={roleId}
+                  onChange={(e) => setRoleId(e.target.value)}
+                >
+                  {roles.map((role) => (
+                    <option key={role._id} value={role._id}>
+                      {role.name}
+                      {role.isSuperAdmin ? " (Super)" : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Trạng thái</Label>
