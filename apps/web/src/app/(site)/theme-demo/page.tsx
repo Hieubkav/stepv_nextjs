@@ -9,17 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Globe, ChevronRight, Layout, FileText, CheckSquare, MessageSquare } from "lucide-react";
 
-const TAGS_FILTER = [
-  "Tất cả",
-  "Spa & Làm đẹp",
-  "Nha khoa & Y tế",
-  "Khóa học & Giáo dục",
-  "Nhà hàng & Quán cafe",
-  "Bất động sản",
-  "Giới thiệu công ty",
-  "Bán hàng & E-commerce",
-  "Khác",
-];
+// Tags sẽ được trích xuất động từ database để tránh hard-code
 
 export default function ThemeDemoPage() {
   const demos = useQuery(api.web_demos.list, { active: "true" }) as any[] | any | undefined;
@@ -31,6 +21,21 @@ export default function ThemeDemoPage() {
   const items = useMemo(() => {
     return demos?.items ?? [];
   }, [demos]);
+
+  // Trích xuất danh sách tags thực tế không trùng lặp từ database
+  const dynamicTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    items.forEach((item: any) => {
+      if (Array.isArray(item.tags)) {
+        item.tags.forEach((tag: string) => {
+          if (tag && tag.trim()) {
+            tagsSet.add(tag.trim());
+          }
+        });
+      }
+    });
+    return ["Tất cả", ...Array.from(tagsSet).sort()];
+  }, [items]);
 
   const mediaMap = useMemo(() => {
     const map = new Map<string, any>();
@@ -63,7 +68,7 @@ export default function ThemeDemoPage() {
   }, [items, selectedTag, searchQuery]);
 
   return (
-    <main className="min-h-screen bg-slate-50/50 py-12 px-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-slate-50/50 pt-28 sm:pt-32 pb-12 px-4 sm:px-6 lg:px-8">
       {/* SEO Title & Semantic H1 */}
       <div className="max-w-7xl mx-auto space-y-8">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
@@ -92,25 +97,23 @@ export default function ThemeDemoPage() {
             />
           </div>
 
-          {/* Hàng bộ lọc tabs */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 overflow-x-auto pb-2">
-            {TAGS_FILTER.map((tag) => {
-              const isSelected = selectedTag === tag;
-              return (
-                <button
-                  key={tag}
-                  id={`tag-filter-${tag.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
-                  onClick={() => setSelectedTag(tag)}
-                  className={`px-4 py-2 text-xs font-semibold rounded-full transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                    isSelected
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
-                  }`}
-                >
+          {/* Bộ lọc Dropdown Combo box */}
+          <div className="flex items-center justify-center gap-2 pb-2">
+            <label htmlFor="tag-select-filter" className="text-xs font-semibold text-slate-500 whitespace-nowrap">
+              Lọc theo danh mục:
+            </label>
+            <select
+              id="tag-select-filter"
+              value={selectedTag}
+              onChange={(e) => setSelectedTag(e.target.value)}
+              className="h-10 px-4 py-2 text-xs font-semibold rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 cursor-pointer min-w-[180px]"
+            >
+              {dynamicTags.map((tag) => (
+                <option key={tag} value={tag}>
                   {tag}
-                </button>
-              );
-            })}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
