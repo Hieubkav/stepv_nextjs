@@ -885,6 +885,8 @@ export default defineSchema({
     pages: v.optional(v.number()),
     popups: v.optional(v.number()),
     forms: v.optional(v.number()),
+    // blocks legacy field - still present in some documents, will be cleaned by migration
+    blocks: v.optional(v.array(v.object({ title: v.string(), description: v.string() }))),
     stats: v.optional(
       v.array(
         v.object({
