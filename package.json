@@ -8,6 +8,7 @@
 	"scripts": {
 		"check": "oxlint",
 		"dev": "bun run --cwd apps/web dev",
+		"convex": "bun run --cwd packages/backend convex",
 		"dev:convex": "bun run --cwd packages/backend dev",
 		"dev:all": "turbo dev",
 		"build": "turbo build",
