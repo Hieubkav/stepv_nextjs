@@ -7,8 +7,8 @@
 	],
 	"scripts": {
 		"check": "oxlint",
-		"dev": "turbo -F web dev",
-		"dev:convex": "turbo -F @dohy/backend dev",
+		"dev": "bun --cwd apps/web run dev",
+		"dev:convex": "bun --cwd packages/backend run dev",
 		"dev:all": "turbo dev",
 		"build": "turbo build",
 		"check-types": "turbo check-types",
