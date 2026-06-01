@@ -880,6 +880,11 @@ export default defineSchema({
     screenshotLaptopId: v.optional(v.id("media")),
     screenshotMobileId: v.optional(v.id("media")),
     features: v.optional(v.array(v.string())),
+    // Legacy fields - kept for backward compat during migration; will be removed after migrateLegacyStats runs
+    sections: v.optional(v.number()),
+    pages: v.optional(v.number()),
+    popups: v.optional(v.number()),
+    forms: v.optional(v.number()),
     stats: v.optional(
       v.array(
         v.object({
