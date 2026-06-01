@@ -21,43 +21,47 @@ type AiWebDemoImportDialogProps = {
   onApply: (values: Partial<WebDemoFormValues>) => void;
 };
 
-const PROMPT_TEMPLATE = `Bạn là một chuyên gia viết nội dung chuyển đổi (Conversion Copywriter) và chuyên gia SEO cho các mẫu giao diện website (Web Demos / Themes).
-Nhiệm vụ của bạn là viết thông tin chi tiết và dữ liệu cho một mẫu giao diện website dựa trên tên thương hiệu và lĩnh vực hoạt động do người dùng cung cấp.
+const PROMPT_TEMPLATE = `Bạn là một chuyên gia viết nội dung chuyển đổi (Conversion Copywriter) cho các mẫu giao diện website cao cấp bán cho doanh nghiệp.
+Nhiệm vụ của bạn là viết thông tin chi tiết của mẫu giao diện dựa trên tên thương hiệu/lĩnh vực hoạt động do người dùng cung cấp.
 
-Hãy viết nội dung bằng Tiếng Việt, mang tính thực tế, hấp dẫn, chuẩn SEO và xuất ra định dạng JSON chính xác theo cấu trúc dưới đây. Tuyệt đối không trả về bất kỳ văn bản giải thích nào khác ngoài chuỗi JSON sạch.
+Hãy tập trung tối đa vào những điểm người mua theme thực sự quan tâm:
+1. Giao diện sang trọng, bố cục chuẩn UI/UX thúc đẩy chuyển đổi (giữ khách hàng ở lại).
+2. Tốc độ tải trang tối ưu vượt trội, chuẩn SEO Google 100% giúp dễ lên top.
+3. Các tính năng thực chiến: Form đăng ký/đặt lịch thông minh, bản đồ chỉ đường, nút gọi nhanh, tích hợp MXH.
+4. Trọng tâm, cực kỳ gọn gàng, ngắn gọn dưới 120 từ. Tránh viết dài dòng lê thê, dùng các đoạn ngắn gọn để người dùng dễ scan thông tin.
+
+Yêu cầu xuất ra định dạng JSON chính xác theo cấu trúc dưới đây. Tuyệt đối không trả về bất kỳ văn bản giải thích nào khác ngoài chuỗi JSON sạch.
 
 Cấu trúc JSON mong muốn:
 {
-  "title": "Tiêu đề giao diện (ví dụ: Dr. Thoang DermaCos Cần Thơ - Spa thảo dược & Trị liệu)",
-  "summary": "Mô tả ngắn gọn hiển thị ngoài danh sách (khoảng 120-200 ký tự)",
-  "description": "Mô tả chi tiết các tính năng, điểm nhấn giao diện và giá trị mang lại (khoảng 200-400 từ, định dạng có phân dòng)",
-  "previewUrl": "URL xem thử demo (ví dụ: https://demo.dohy.vn/spa-an-nhien)",
-  "tags": "Các tag phân tách bằng dấu phẩy (ví dụ: Spa & Làm đẹp, Trị liệu y tế, Cần Thơ)",
+  "title": "Tiêu đề mẫu giao diện website (Ví dụ: Spa An Nhiên - Mẫu Website Spa & Trị Liệu Cao Cấp)",
+  "description": "Mô tả chi tiết và gọn gàng, chia thành 2-3 đoạn ngắn nhấn mạnh tính thẩm mỹ, tốc độ load, chuẩn SEO và các tính năng thực tế giúp chuyển đổi (Viết dưới dạng HTML cơ bản như <p> hoặc <br> để tương thích rich text, tối đa 120 từ)",
+  "previewUrl": "URL xem thử demo (Ví dụ: https://demo.dohy.vn/spa-an-nhien)",
+  "tags": "Các tag phân tách bằng dấu phẩy (Ví dụ: Spa & Làm đẹp, Trị liệu, Cao cấp)",
   "stats": [
     { "label": "Sections", "value": 12 },
     { "label": "Trang mẫu", "value": 8 },
     { "label": "Popup", "value": 2 },
     { "label": "Biểu mẫu", "value": 3 }
   ],
-  "features": "Đặc điểm nổi bật (mỗi đặc điểm viết trên 1 dòng mới, ví dụ:\\nTương thích 100% Mobile\\nTối ưu SEO Google\\nTích hợp đặt lịch online)"
+  "features": "Đặc điểm nổi bật (phân tách bởi dấu phẩy, tập trung vào kỹ thuật & chuyển đổi, Ví dụ: Giao diện chuẩn UI/UX, Tốc độ load tối ưu, Tương thích 100% Mobile, Chuẩn SEO 100% Google, Form đặt lịch thông minh)"
 }
 
 Thông tin yêu cầu từ khách hàng:
-[NHẬP LĨNH VỰC/THƯƠNG HIỆU TẠI ĐÂY - Ví dụ: "Nha khoa quốc tế Smile tại Hà Nội"]`;
+[NHẬP LĨNH VỰC/THƯƠNG HIỆU TẠI ĐÂY - Ví dụ: "Phòng khám nha khoa Smile tại Hà Nội"]`;
 
 const SAMPLE_JSON = `{
-  "title": "Nha Khoa Quốc Tế Smile Hà Nội",
-  "summary": "Mẫu giao diện phòng khám nha khoa cao cấp, tối ưu trải nghiệm đặt lịch hẹn khám răng và hiển thị dịch vụ chuyên nghiệp.",
-  "description": "Giao diện được thiết kế đặc thù cho các phòng khám răng hàm mặt hiện đại. Cung cấp đầy đủ các module giới thiệu bác sĩ, bảng giá dịch vụ niềng răng, bọc sứ, nhổ răng khôn cùng quy trình điều trị trực quan giúp gia tăng sự tin tưởng của bệnh nhân.\\n\\nTích hợp hệ thống form đặt lịch thông minh giúp lễ tân dễ dàng tiếp nhận thông tin.",
+  "title": "Nha Khoa Smile - Mẫu Website Phòng Khám Cao Cấp",
+  "description": "<p>Giao diện thiết kế chuyên biệt cho phòng khám nha khoa hiện đại. Sở hữu tone màu xanh y tế sang trọng kết hợp bố cục chuẩn UI/UX giúp xây dựng lòng tin tuyệt đối từ khách hàng ngay từ lần đầu truy cập.</p><p>Website được tối ưu hóa tốc độ tải trang cực nhanh, đạt chuẩn SEO Google 100%. Tích hợp sẵn form đăng ký khám bệnh thông minh giúp tăng tỷ lệ chuyển đổi đặt lịch lên tới 40%.</p>",
   "previewUrl": "https://demo.dohy.vn/nha-khoa-smile",
-  "tags": "Nha khoa & Y tế, Phòng khám, Hà Nội",
+  "tags": "Nha khoa & Y tế, Phòng khám, Tối ưu chuyển đổi",
   "stats": [
     { "label": "Sections", "value": 11 },
     { "label": "Trang mẫu", "value": 6 },
     { "label": "Popup", "value": 1 },
     { "label": "Biểu mẫu", "value": 2 }
   ],
-  "features": "Đặt lịch hẹn trực tuyến\\nGiới thiệu bác sĩ chuyên khoa\\nBảng giá dịch vụ trực quan\\nChuẩn SEO y tế"
+  "features": "Thiết kế chuẩn UI/UX y khoa, Tốc độ load tối ưu, Chuẩn SEO Google 100%, Form đăng ký thông minh, Tương thích 100% di động"
 }`;
 
 export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
@@ -97,7 +101,7 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
       const normalizedData: Partial<WebDemoFormValues> = {
         title: String(parsed.title || "").trim(),
         slug: parsed.slug ? String(parsed.slug).trim() : undefined,
-        summary: String(parsed.summary || "").trim(),
+        summary: "",
         description: String(parsed.description || "").trim(),
         previewUrl: String(parsed.previewUrl || "").trim(),
         tags: String(parsed.tags || "").trim(),
@@ -144,17 +148,17 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" className="gap-2 border-primary/30 hover:border-primary/80">
-          <Bot className="h-4 w-4 text-primary animate-pulse" /> Import bằng AI
+        <Button type="button" variant="outline" className="gap-2 border-indigo-500/30 hover:border-indigo-500/80">
+          <Bot className="h-4 w-4 text-indigo-600 animate-pulse" /> Import bằng AI
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl w-[calc(100vw-2rem)] max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-primary" /> Nhập thông tin Web Demo bằng AI
+          <DialogTitle className="flex items-center gap-2 text-indigo-600">
+            <Bot className="h-5 w-5" /> Nhập thông tin Web Demo bằng AI (Chuyển đổi cao)
           </DialogTitle>
           <DialogDescription>
-            Sao chép Prompt hướng dẫn dưới đây sang ChatGPT/Claude để AI soạn thông tin, sau đó dán JSON kết quả vào ô phía dưới.
+            Sao chép Prompt hướng dẫn dưới đây sang ChatGPT/Claude để AI soạn thảo nội dung trọng tâm, siêu gọn gàng rồi dán JSON vào ô phía dưới.
           </DialogDescription>
         </DialogHeader>
 
@@ -165,7 +169,7 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
               <span className="text-xs font-semibold text-foreground uppercase tracking-wider">
                 Bước 1: Copy prompt hướng dẫn cho AI
               </span>
-              <Button type="button" variant="outline" size="sm" onClick={handleCopyPrompt} className="h-7 text-xs gap-1.5">
+              <Button type="button" variant="outline" size="sm" onClick={handleCopyPrompt} className="h-7 text-xs gap-1.5 border-indigo-500/20 text-indigo-600 hover:bg-indigo-50">
                 {copied ? <Check className="h-3 w-3 text-green-500" /> : <Clipboard className="h-3 w-3" />}
                 {copied ? "Đã copy" : "Copy Prompt"}
               </Button>
@@ -181,7 +185,7 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
               Bước 2: Dán chuỗi JSON kết quả từ AI
             </span>
             <Textarea
-              placeholder={`Dán chuỗi JSON của bạn vào đây...\nVí dụ:\n${SAMPLE_JSON}`}
+              placeholder={`Dán chuỗi JSON gọn gàng của bạn vào đây...\nVí dụ:\n${SAMPLE_JSON}`}
               value={rawInput}
               onChange={(e) => setRawInput(e.target.value)}
               className="font-mono text-xs h-48 focus-visible:ring-1"
@@ -226,7 +230,7 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
           <Button type="button" variant="outline" onClick={() => setOpen(false)}>
             Hủy
           </Button>
-          <Button type="button" onClick={handleApply} disabled={!validationResult.isValid}>
+          <Button type="button" onClick={handleApply} disabled={!validationResult.isValid} className="bg-indigo-600 hover:bg-indigo-700 text-white">
             Áp dụng vào Form
           </Button>
         </DialogFooter>
