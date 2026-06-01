@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 import { MoveUp, MoveDown, Trash2, Image as ImageIcon, Plus } from "lucide-react";
+import { WebDemoImageUploader } from "./web-demo-image-uploader";
+import { AiWebDemoImportDialog } from "./ai-web-demo-import-dialog";
 
 export type ReviewItem = {
   name: string;
@@ -74,6 +76,19 @@ export function WebDemoForm({
   const images = useQuery(api.media.list, { kind: "image" }) as MediaItem[] | undefined;
 
   const [values, setValues] = useState<WebDemoFormValues>(initialValues);
+
+  function handleAiApply(aiValues: Partial<WebDemoFormValues>) {
+    setValues((prev) => ({
+      ...prev,
+      ...aiValues,
+    }));
+    if (aiValues.title && mode === "new" && !slugDirty) {
+      setValues((prev) => ({
+        ...prev,
+        slug: slugify(aiValues.title!),
+      }));
+    }
+  }
   
   // States cho các Dialog chọn ảnh
   const [thumbPickerOpen, setThumbPickerOpen] = useState(false);
@@ -208,6 +223,14 @@ export function WebDemoForm({
   return (
     <>
       <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="flex items-center justify-between border-b pb-4 bg-muted/5 p-3 rounded-lg border border-border">
+          <div>
+            <h3 className="text-sm font-semibold">Cấu hình thông tin giao diện</h3>
+            <p className="text-xs text-muted-foreground">Tự động soạn thảo dữ liệu bằng AI hoặc điền các trường bên dưới.</p>
+          </div>
+          <AiWebDemoImportDialog onApply={handleAiApply} />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <label className="text-sm font-medium">
@@ -342,92 +365,41 @@ export function WebDemoForm({
         </div>
 
         {/* Mockup & Media */}
-        <div className="border-t pt-4">
+        <div className="border-t pt-6">
           <h3 className="text-base font-semibold mb-4">Hình ảnh giao diện mẫu</h3>
           <div className="grid gap-6 sm:grid-cols-3">
             {/* Thumbnail */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium">Ảnh Card Thumbnail</label>
-              {selectedThumb ? (
-                <div className="space-y-2">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-muted/40">
-                    <img src={selectedThumb.url} alt="Thumbnail" className="h-full w-full object-cover" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setThumbPickerOpen(true)}>
-                      Đổi ảnh
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => update("thumbnailId", "")}>
-                      Xóa
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-muted/20 hover:bg-muted/40"
-                  onClick={() => setThumbPickerOpen(true)}
-                >
-                  <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                  <span className="text-xs text-muted-foreground">Chọn ảnh Card</span>
-                </div>
-              )}
-            </div>
+            <WebDemoImageUploader
+              label="Ảnh Card Thumbnail"
+              value={values.thumbnailId}
+              imageUrl={selectedThumb?.url}
+              onChange={(id) => update("thumbnailId", id)}
+              onRemove={() => update("thumbnailId", "")}
+              onOpenPicker={() => setThumbPickerOpen(true)}
+              aspectRatio={4 / 3}
+            />
 
             {/* Laptop Mockup */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium">Mockup Laptop</label>
-              {selectedLaptop ? (
-                <div className="space-y-2">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-muted/40">
-                    <img src={selectedLaptop.url} alt="Laptop Mockup" className="h-full w-full object-cover" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setLaptopPickerOpen(true)}>
-                      Đổi ảnh
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => update("screenshotLaptopId", "")}>
-                      Xóa
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-muted/20 hover:bg-muted/40"
-                  onClick={() => setLaptopPickerOpen(true)}
-                >
-                  <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                  <span className="text-xs text-muted-foreground">Chọn ảnh Laptop</span>
-                </div>
-              )}
-            </div>
+            <WebDemoImageUploader
+              label="Mockup Laptop"
+              value={values.screenshotLaptopId}
+              imageUrl={selectedLaptop?.url}
+              onChange={(id) => update("screenshotLaptopId", id)}
+              onRemove={() => update("screenshotLaptopId", "")}
+              onOpenPicker={() => setLaptopPickerOpen(true)}
+              aspectRatio={16 / 9}
+            />
 
             {/* Mobile Mockup */}
-            <div className="space-y-3">
-              <label className="text-sm font-medium">Mockup Mobile</label>
-              {selectedMobile ? (
-                <div className="space-y-2">
-                  <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border bg-muted/40">
-                    <img src={selectedMobile.url} alt="Mobile Mockup" className="h-full w-full object-cover" />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => setMobilePickerOpen(true)}>
-                      Đổi ảnh
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => update("screenshotMobileId", "")}>
-                      Xóa
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-muted/20 hover:bg-muted/40"
-                  onClick={() => setMobilePickerOpen(true)}
-                >
-                  <ImageIcon className="h-8 w-8 text-muted-foreground/40" />
-                  <span className="text-xs text-muted-foreground">Chọn ảnh Mobile</span>
-                </div>
-              )}
-            </div>
+            <WebDemoImageUploader
+              label="Mockup Mobile"
+              value={values.screenshotMobileId}
+              imageUrl={selectedMobile?.url}
+              onChange={(id) => update("screenshotMobileId", id)}
+              onRemove={() => update("screenshotMobileId", "")}
+              onOpenPicker={() => setMobilePickerOpen(true)}
+              aspectRatio={9 / 16}
+            />
           </div>
         </div>
 
