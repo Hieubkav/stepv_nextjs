@@ -149,9 +149,10 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
 
           {/* Description — full width */}
           {(demo.description || demo.summary) && (
-            <p className="text-slate-600 text-base sm:text-lg leading-[1.85] max-w-prose">
-              {demo.description || demo.summary}
-            </p>
+            <div 
+              className="text-slate-600 text-base sm:text-lg leading-[1.85] max-w-prose prose prose-indigo dark:prose-invert"
+              dangerouslySetInnerHTML={{ __html: demo.description || demo.summary || "" }}
+            />
           )}
 
           {/* Stats */}

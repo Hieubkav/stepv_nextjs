@@ -152,12 +152,6 @@ export default function ThemeDemoPage() {
                         <Layout className="size-10 text-slate-300" />
                       </div>
                     )}
-                    {/* Badge tag góc card */}
-                    {item.tags && item.tags.length > 0 && (
-                      <span className="absolute left-3 top-3 inline-flex items-center rounded-full bg-slate-900/85 px-2.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-xs">
-                        {item.tags[0]}
-                      </span>
-                    )}
                   </div>
 
                   {/* Body Content */}
@@ -171,24 +165,6 @@ export default function ThemeDemoPage() {
                       <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                         {item.summary || "Giao diện cao cấp được tối ưu mượt mà và chuẩn SEO."}
                       </p>
-                    </div>
-
-                    {/* Stats Icons */}
-                    <div className="flex items-center gap-4 text-xs text-slate-400 border-t border-slate-50 pt-3">
-                      <span className="flex items-center gap-1">
-                        <Layout className="size-3.5 text-indigo-500" />
-                        <strong>{item.sections ?? 0}</strong> Blocks
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <FileText className="size-3.5 text-indigo-500" />
-                        <strong>{item.pages ?? 0}</strong> Trang
-                      </span>
-                      {item.forms !== undefined && item.forms > 0 && (
-                        <span className="flex items-center gap-1">
-                          <CheckSquare className="size-3.5 text-indigo-500" />
-                          <strong>{item.forms}</strong> Form
-                        </span>
-                      )}
                     </div>
 
                     {/* Buttons */}
