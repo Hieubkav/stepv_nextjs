@@ -66,133 +66,156 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
   const mobileUrl = demo.screenshotMobileId ? mediaMap.get(demo.screenshotMobileId)?.url : null;
 
   const stats: { label: string; value: number }[] = demo.stats ?? [];
+  const heroImg = laptopUrl ?? thumbUrl;
 
   return (
-    <div className="min-h-screen bg-white" style={{ paddingTop: "80px" }}>
-      {/* Breadcrumb */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-        <Link
-          href="/theme-demo"
-          className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 transition-colors font-medium"
-        >
-          <ChevronLeft className="size-3.5" /> Kho giao diện
-        </Link>
-      </div>
+    <>
+      {/* Be Vietnam Pro font */}
+      <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com"
+      />
+      <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossOrigin=""
+      />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+      <link
+        href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+        rel="stylesheet"
+      />
 
-      {/* ── HERO ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-14">
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <div
+        className="min-h-screen bg-white"
+        style={{ paddingTop: "80px", fontFamily: "'Be Vietnam Pro', sans-serif" }}
+      >
+        {/* ── BREADCRUMB ── */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+          <Link
+            href="/theme-demo"
+            className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-600 transition-colors font-medium"
+          >
+            <ChevronLeft className="size-3.5" /> Kho giao diện
+          </Link>
+        </div>
 
-          {/* Left: Info */}
-          <div className="space-y-7 order-2 lg:order-1">
-            {/* Tags */}
-            {demo.tags && demo.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {demo.tags.map((tag: string, idx: number) => (
-                  <Badge
-                    key={idx}
-                    variant="outline"
-                    className="text-indigo-600 border-indigo-200 bg-indigo-50/60 font-medium text-[11px] px-2.5 py-0.5"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
+        {/* ── HEADER: Tags + Title ── */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+          {/* Tags */}
+          {demo.tags && demo.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-5">
+              {demo.tags.map((tag: string, idx: number) => (
+                <Badge
+                  key={idx}
+                  variant="outline"
+                  className="text-indigo-600 border-indigo-200 bg-indigo-50/60 font-medium text-[11px] px-2.5 py-0.5"
+                >
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Title */}
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
+            {demo.title}
+          </h1>
+        </section>
+
+        {/* ── HERO IMAGE: full width ── */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-2xl shadow-slate-200/60 bg-slate-100">
+            {heroImg ? (
+              <img
+                src={heroImg}
+                alt={demo.title}
+                className="w-full object-cover"
+                style={{ aspectRatio: "16/9", objectPosition: "top" }}
+              />
+            ) : (
+              <div className="flex items-center justify-center bg-slate-100" style={{ aspectRatio: "16/9" }}>
+                <Layout className="size-20 text-slate-300" />
               </div>
             )}
 
-            {/* Title */}
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-[1.15]">
-              {demo.title}
-            </h1>
+            {/* Mobile floating — chỉ hiện khi có ảnh mobile */}
+            {mobileUrl && (
+              <div className="absolute right-4 bottom-0 translate-y-1/4 w-[80px] sm:w-[100px] aspect-[9/19] rounded-[16px] overflow-hidden shadow-2xl border-4 border-slate-800 bg-white hidden sm:block">
+                <img src={mobileUrl} alt={`${demo.title} Mobile`} className="w-full h-full object-cover" />
+              </div>
+            )}
+          </div>
+        </section>
 
-            {/* Description */}
-            <p className="text-slate-500 text-sm sm:text-base leading-relaxed">
-              {demo.description || demo.summary || "Mẫu giao diện thiết kế chuyên nghiệp, bố cục hài hòa và tối ưu hóa cao."}
+        {/* ── BODY: Description + Stats + Features + CTAs ── */}
+        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+          {/* Description — full width */}
+          {(demo.description || demo.summary) && (
+            <p className="text-slate-600 text-base sm:text-lg leading-[1.85] max-w-prose">
+              {demo.description || demo.summary}
             </p>
+          )}
 
-            {/* Stats động — chỉ hiện nếu có data */}
-            {stats.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {stats.map((stat, idx) => (
-                  <div
-                    key={idx}
-                    className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-center"
-                  >
-                    <div className="text-2xl font-black text-indigo-600">{stat.value}</div>
-                    <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Stats */}
+          {stats.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {stats.map((stat, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl border border-slate-100 bg-slate-50 px-5 py-4 text-center"
+                >
+                  <div className="text-3xl font-black text-indigo-600 leading-none">{stat.value}</div>
+                  <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mt-1.5">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          )}
 
-            {/* Features list */}
-            {demo.features && demo.features.length > 0 && (
-              <ul className="space-y-2">
+          {/* Features — 2 columns */}
+          {demo.features && demo.features.length > 0 && (
+            <div>
+              <h2 className="text-base font-bold text-slate-800 mb-4">Tính năng nổi bật</h2>
+              <ul className="grid sm:grid-cols-2 gap-x-10 gap-y-3">
                 {demo.features.map((feat: string, idx: number) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm text-slate-600">
-                    <span className="mt-0.5 flex size-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                      <Check className="size-2.5" />
+                  <li key={idx} className="flex items-start gap-3 text-sm text-slate-600">
+                    <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                      <Check className="size-3" />
                     </span>
                     {feat}
                   </li>
                 ))}
               </ul>
-            )}
+            </div>
+          )}
 
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3 pt-1">
-              {demo.previewUrl && (
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl h-11 px-6 shadow-md shadow-indigo-200"
-                >
-                  <a href={demo.previewUrl} target="_blank" rel="noopener noreferrer">
-                    <Globe className="mr-2 size-4" /> Xem demo trực tiếp
-                  </a>
-                </Button>
-              )}
+          {/* CTAs */}
+          <div className="flex flex-wrap gap-3 pt-2">
+            {demo.previewUrl && (
               <Button
                 asChild
                 size="lg"
-                variant="outline"
-                className="border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold rounded-xl h-11 px-6"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl h-11 px-6 shadow-md shadow-indigo-200"
               >
-                <Link href="/about">
-                  <Phone className="mr-2 size-4" /> Yêu cầu tư vấn
-                </Link>
+                <a href={demo.previewUrl} target="_blank" rel="noopener noreferrer">
+                  <Globe className="mr-2 size-4" /> Xem demo trực tiếp
+                </a>
               </Button>
-            </div>
-          </div>
-
-          {/* Right: Mockup */}
-          <div className="order-1 lg:order-2 relative flex items-center justify-center">
-            {/* Gradient glow behind */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/60 via-violet-50/30 to-transparent rounded-3xl blur-2xl" />
-
-            {/* Laptop frame */}
-            <div className="relative w-full max-w-[540px] aspect-[16/10] rounded-2xl overflow-hidden shadow-2xl shadow-slate-200/80 border border-slate-200 bg-slate-100 z-10">
-              {laptopUrl ? (
-                <img src={laptopUrl} alt={`${demo.title} Laptop`} className="w-full h-full object-cover" />
-              ) : thumbUrl ? (
-                <img src={thumbUrl} alt={demo.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                  <Layout className="size-16 text-slate-300" />
-                </div>
-              )}
-            </div>
-
-            {/* Mobile floating */}
-            {mobileUrl && (
-              <div className="absolute -right-2 sm:right-2 bottom-0 sm:-bottom-6 w-[90px] sm:w-[120px] aspect-[9/19] rounded-[20px] overflow-hidden shadow-2xl border-4 border-slate-800 bg-white z-20 hidden sm:block">
-                <img src={mobileUrl} alt={`${demo.title} Mobile`} className="w-full h-full object-cover" />
-              </div>
             )}
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold rounded-xl h-11 px-6"
+            >
+              <Link href="/about">
+                <Phone className="mr-2 size-4" /> Yêu cầu tư vấn
+              </Link>
+            </Button>
           </div>
-        </div>
-      </section>
-
-    </div>
+        </section>
+      </div>
+    </>
   );
 }
