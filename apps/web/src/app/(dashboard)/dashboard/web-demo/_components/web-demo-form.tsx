@@ -4,16 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@dohy/backend/convex/_generated/api";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
 import { Trash2, Plus } from "lucide-react";
 import { WebDemoImageUploader } from "./web-demo-image-uploader";
 import { AiWebDemoImportDialog } from "./ai-web-demo-import-dialog";
-
-
+import { FullRichEditor } from "@/components/ui/full-rich-editor";
+import { TagInput } from "@/components/ui/tag-input";
 
 export type WebDemoFormValues = {
   title: string;
@@ -64,13 +62,8 @@ export function WebDemoForm({
     setValues((prev) => ({
       ...prev,
       ...aiValues,
+      slug: aiValues.title ? slugify(aiValues.title) : (aiValues.slug || prev.slug),
     }));
-    if (aiValues.title && mode === "new" && !slugDirty) {
-      setValues((prev) => ({
-        ...prev,
-        slug: slugify(aiValues.title!),
-      }));
-    }
   }
   
   // States cho các Dialog chọn ảnh
@@ -78,7 +71,7 @@ export function WebDemoForm({
   const [laptopPickerOpen, setLaptopPickerOpen] = useState(false);
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
 
-  // Ghi nhận sự thay đổi của name để sinh slug tự động nếu ở chế độ tạo mới
+  // Ghi nhận sự thay đổi của name để sinh slug tự động
   const shouldSlugStayAuto = useMemo(() => {
     const suggested = slugify(initialValues.title || "");
     if (!initialValues.slug) return true;
@@ -114,27 +107,16 @@ export function WebDemoForm({
 
     if (field === "title") {
       const nextTitle = String(value);
-      setValues((prev) => {
-        const next = { ...prev, title: nextTitle };
-        if (!slugDirty && mode === "new") {
-          next.slug = slugify(nextTitle);
-        }
-        return next;
-      });
+      setValues((prev) => ({
+        ...prev,
+        title: nextTitle,
+        slug: slugify(nextTitle),
+      }));
       return;
     }
 
     setValues((prev) => ({ ...prev, [field]: value }));
   }
-
-
-  // Render preview các tag badge từ chuỗi tags
-  const tagsList = useMemo(() => {
-    return values.tags
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-  }, [values.tags]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -179,22 +161,11 @@ export function WebDemoForm({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Mô tả ngắn (Summary)</label>
-          <Textarea
-            value={values.summary}
-            onChange={(e) => update("summary", e.target.value)}
-            placeholder="Mô tả ngắn gọn hiển thị ngoài danh sách..."
-            rows={2}
-          />
-        </div>
-
-        <div className="space-y-2">
           <label className="text-sm font-medium">Mô tả chi tiết (Description)</label>
-          <Textarea
+          <FullRichEditor
             value={values.description}
-            onChange={(e) => update("description", e.target.value)}
-            placeholder="Mô tả đầy đủ chi tiết các tính năng, điểm nhấn giao diện..."
-            rows={4}
+            onChange={(val) => update("description", val)}
+            placeholder="Mô tả đầy đủ chi tiết các tính năng, điểm nhấn giao diện bằng rich text..."
           />
         </div>
 
@@ -210,20 +181,11 @@ export function WebDemoForm({
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Tags (cách nhau bởi dấu phẩy)</label>
-            <Input
+            <TagInput
               value={values.tags}
-              onChange={(e) => update("tags", e.target.value)}
-              placeholder="Spa & Làm đẹp, Nha khoa & Y tế"
+              onChange={(val) => update("tags", val)}
+              placeholder="Nhấn Enter để thêm tag (ví dụ: Spa & Làm đẹp, Cần Thơ)..."
             />
-            {tagsList.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {tagsList.map((tag, idx) => (
-                  <Badge key={idx} variant="outline">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -232,7 +194,7 @@ export function WebDemoForm({
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-base font-semibold">Chỉ số cấu trúc Theme (Stats)</h3>
-              <p className="text-xs text-muted-foreground">Tối đa 4 chỉ số. Tự đết label (VD: Sections, Trang mẫu, Popup...).</p>
+              <p className="text-xs text-muted-foreground">Tối đa 4 chỉ số. Tự đặt label (VD: Sections, Trang mẫu, Popup...).</p>
             </div>
             {values.stats.length < 4 && (
               <Button
@@ -283,11 +245,10 @@ export function WebDemoForm({
         {/* Đặc điểm nổi bật */}
         <div className="space-y-2">
           <label className="text-sm font-medium">Đặc điểm nổi bật (mỗi dòng 1 đặc điểm)</label>
-          <Textarea
+          <TagInput
             value={values.features}
-            onChange={(e) => update("features", e.target.value)}
-            placeholder="Tương thích 100% Mobile&#10;Chuẩn SEO Google&#10;Tốc độ load cực nhanh"
-            rows={3}
+            onChange={(val) => update("features", val)}
+            placeholder="Nhấn Enter để thêm đặc điểm nổi bật..."
           />
         </div>
 
@@ -329,7 +290,6 @@ export function WebDemoForm({
             />
           </div>
         </div>
-
 
         {/* Buttons lưu */}
         <div className="flex items-center justify-between border-t pt-4">
@@ -380,7 +340,6 @@ export function WebDemoForm({
         selectedId={values.screenshotMobileId}
         onSelect={(item) => update("screenshotMobileId", String(item._id))}
       />
-
     </>
   );
 }

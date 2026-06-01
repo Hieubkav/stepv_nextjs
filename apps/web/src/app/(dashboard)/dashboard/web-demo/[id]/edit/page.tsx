@@ -17,6 +17,10 @@ export default function EditWebDemoPage() {
   
   const [submitting, setSubmitting] = useState(false);
   const [initialFormValues, setInitialFormValues] = useState<WebDemoFormValues | null>(null);
+  const stripHtml = (html: string) => {
+    if (!html) return "";
+    return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  };
 
   useEffect(() => {
     if (data) {
@@ -29,7 +33,7 @@ export default function EditWebDemoPage() {
         previewUrl: data.previewUrl ?? "",
         screenshotLaptopId: data.screenshotLaptopId ?? "",
         screenshotMobileId: data.screenshotMobileId ?? "",
-        features: data.features ? data.features.join("\n") : "",
+        features: data.features ? data.features.join(", ") : "",
         tags: data.tags ? data.tags.join(", ") : "",
         active: data.active,
         stats: (data.stats ?? []).map((s: any) => ({ label: s.label, value: String(s.value) })),
@@ -51,7 +55,7 @@ export default function EditWebDemoPage() {
     setSubmitting(true);
     try {
       const features = values.features
-        .split("\n")
+        .split(",")
         .map((f) => f.trim())
         .filter(Boolean);
 
@@ -60,11 +64,14 @@ export default function EditWebDemoPage() {
         .map((t) => t.trim())
         .filter(Boolean);
 
+      const plainTextDescription = stripHtml(values.description);
+      const autoSummary = plainTextDescription.slice(0, 150) + (plainTextDescription.length > 150 ? "..." : "");
+
       await updateDemo({
         id: data._id,
         title,
         slug,
-        summary: values.summary.trim() || undefined,
+        summary: autoSummary || undefined,
         description: values.description.trim() || undefined,
         thumbnailId: values.thumbnailId ? (values.thumbnailId as any) : undefined,
         previewUrl: values.previewUrl.trim() || undefined,

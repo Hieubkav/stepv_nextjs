@@ -28,6 +28,11 @@ export default function NewWebDemoPage() {
   const createDemo = useMutation(api.web_demos.create);
   const [submitting, setSubmitting] = useState(false);
 
+  const stripHtml = (html: string) => {
+    if (!html) return "";
+    return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  };
+
   async function handleSubmit(values: WebDemoFormValues) {
     const title = values.title.trim();
     const slug = values.slug.trim().toLowerCase();
@@ -40,7 +45,7 @@ export default function NewWebDemoPage() {
     setSubmitting(true);
     try {
       const features = values.features
-        .split("\n")
+        .split(",")
         .map((f) => f.trim())
         .filter(Boolean);
 
@@ -49,10 +54,13 @@ export default function NewWebDemoPage() {
         .map((t) => t.trim())
         .filter(Boolean);
 
+      const plainTextDescription = stripHtml(values.description);
+      const autoSummary = plainTextDescription.slice(0, 150) + (plainTextDescription.length > 150 ? "..." : "");
+
       await createDemo({
         title,
         slug,
-        summary: values.summary.trim() || undefined,
+        summary: autoSummary || undefined,
         description: values.description.trim() || undefined,
         thumbnailId: values.thumbnailId ? (values.thumbnailId as any) : undefined,
         previewUrl: values.previewUrl.trim() || undefined,
