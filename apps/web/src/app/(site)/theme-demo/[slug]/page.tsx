@@ -88,7 +88,7 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
 
       <div
         className="min-h-screen bg-white"
-        style={{ paddingTop: "80px", fontFamily: "'Be Vietnam Pro', sans-serif" }}
+        style={{ paddingTop: "120px", fontFamily: "'Be Vietnam Pro', sans-serif" }}
       >
         {/* ── BREADCRUMB ── */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
