@@ -178,38 +178,38 @@ const StayControlSection = ({
             font-size: 2.5rem !important;
           }
 
-          .lg\:text-\[60\.8px\] {
+          .lg:text-[60.8px] {
             font-size: 2.5rem !important;
             line-height: 2.5rem !important;
           }
 
-          .lg\:w-\[60\%\] {
+          .lg:w-[60%] {
             width: 100% !important;
           }
 
-          .md\:w-\[40\%\],
-          .md\:w-\[60\%\] {
+          .md:w-[40%],
+          .md:w-[60%] {
             width: 100% !important;
           }
 
-          .md\:flex-row {
+          .md:flex-row {
             flex-direction: column !important;
           }
 
-          .text-\[28px\] {
+          .text-[28px] {
             font-size: 24px !important;
           }
 
-          .text-\[20px\] {
+          .text-[20px] {
             font-size: 18px !important;
           }
         }
 
-        .hover\:scale-\[1\.02\]:hover {
+        .hover:scale-[1.02]:hover {
           transform: matrix3d(1.018, -0.001, 0.062, 0, 0, 1.019, 0.019, 0, -0.062, -0.019, 1.017, 0, 0, 0, 0, 1);
         }
 
-        .hover\:shadow-2xl:hover {
+        .hover:shadow-2xl:hover {
           box-shadow: 0 35px 70px -12px rgba(0, 0, 0, 0.6);
         }
 

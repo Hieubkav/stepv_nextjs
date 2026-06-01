@@ -43,7 +43,7 @@ export async function PUT(request: Request) {
     const body = await request.json();
     currentSettings = {
       ...currentSettings,
-      ...(body ?? {}),
+      ...body,
       updated_at: new Date().toISOString(),
     };
     return NextResponse.json(currentSettings);
