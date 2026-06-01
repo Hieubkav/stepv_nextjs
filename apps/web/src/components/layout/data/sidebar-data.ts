@@ -80,6 +80,7 @@ export const sidebarData: SidebarData = {
           ],
         },
         { title: 'VFX Store', url: '/dashboard/vfx', icon: Palette },
+        { title: 'Web Demo', url: '/dashboard/web-demo', icon: Monitor },
       ],
     },
     {

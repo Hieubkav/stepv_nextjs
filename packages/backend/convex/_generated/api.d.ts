@@ -55,6 +55,7 @@ import type * as todos from "../todos.js";
 import type * as vfx from "../vfx.js";
 import type * as vietqr from "../vietqr.js";
 import type * as visitors from "../visitors.js";
+import type * as web_demos from "../web_demos.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -107,6 +108,7 @@ declare const fullApi: ApiFromModules<{
   vfx: typeof vfx;
   vietqr: typeof vietqr;
   visitors: typeof visitors;
+  web_demos: typeof web_demos;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

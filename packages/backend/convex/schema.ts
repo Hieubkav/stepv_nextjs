@@ -868,4 +868,49 @@ export default defineSchema({
     .index("by_content", ["contentType", "contentId"])
     .index("by_storage", ["storageId"])
     .index("by_deleted", ["deletedAt"]),
+
+  // Web Demos (Giao diện website mẫu)
+  web_demos: defineTable({
+    title: v.string(),
+    slug: v.string(),
+    summary: v.optional(v.string()),
+    description: v.optional(v.string()),
+    thumbnailId: v.optional(v.id("media")),
+    previewUrl: v.optional(v.string()),
+    screenshotLaptopId: v.optional(v.id("media")),
+    screenshotMobileId: v.optional(v.id("media")),
+    sections: v.optional(v.number()),
+    pages: v.optional(v.number()),
+    popups: v.optional(v.number()),
+    forms: v.optional(v.number()),
+    features: v.optional(v.array(v.string())),
+    reviews: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          role: v.optional(v.string()),
+          avatarUrl: v.optional(v.string()),
+          comment: v.string(),
+          rating: v.number(),
+        })
+      )
+    ),
+    blocks: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          description: v.optional(v.string()),
+          imageId: v.optional(v.id("media")),
+        })
+      )
+    ),
+    tags: v.optional(v.array(v.string())),
+    order: v.number(),
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    deletedAt: v.optional(v.number()),
+  })
+    .index("by_slug", ["slug"])
+    .index("by_active_order", ["active", "order"]),
 });
