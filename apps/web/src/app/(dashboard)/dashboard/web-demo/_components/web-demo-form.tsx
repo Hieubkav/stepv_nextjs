@@ -67,9 +67,8 @@ export function WebDemoForm({
   }
   
   // States cho các Dialog chọn ảnh
+  // States cho các Dialog chọn ảnh
   const [thumbPickerOpen, setThumbPickerOpen] = useState(false);
-  const [laptopPickerOpen, setLaptopPickerOpen] = useState(false);
-  const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
 
   // Ghi nhận sự thay đổi của name để sinh slug tự động
   const shouldSlugStayAuto = useMemo(() => {
@@ -95,8 +94,6 @@ export function WebDemoForm({
   }, [images]);
 
   const selectedThumb = values.thumbnailId ? imageMap.get(values.thumbnailId) ?? null : null;
-  const selectedLaptop = values.screenshotLaptopId ? imageMap.get(values.screenshotLaptopId) ?? null : null;
-  const selectedMobile = values.screenshotMobileId ? imageMap.get(values.screenshotMobileId) ?? null : null;
 
   function update(field: keyof WebDemoFormValues, value: any) {
     if (field === "slug") {
@@ -255,7 +252,7 @@ export function WebDemoForm({
         {/* Mockup & Media */}
         <div className="border-t pt-6">
           <h3 className="text-base font-semibold mb-4">Hình ảnh giao diện mẫu</h3>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="max-w-md">
             {/* Thumbnail */}
             <WebDemoImageUploader
               label="Ảnh Card Thumbnail"
@@ -265,28 +262,6 @@ export function WebDemoForm({
               onRemove={() => update("thumbnailId", "")}
               onOpenPicker={() => setThumbPickerOpen(true)}
               aspectRatio={4 / 3}
-            />
-
-            {/* Laptop Mockup */}
-            <WebDemoImageUploader
-              label="Mockup Laptop"
-              value={values.screenshotLaptopId}
-              imageUrl={selectedLaptop?.url}
-              onChange={(id) => update("screenshotLaptopId", id)}
-              onRemove={() => update("screenshotLaptopId", "")}
-              onOpenPicker={() => setLaptopPickerOpen(true)}
-              aspectRatio={16 / 9}
-            />
-
-            {/* Mobile Mockup */}
-            <WebDemoImageUploader
-              label="Mockup Mobile"
-              value={values.screenshotMobileId}
-              imageUrl={selectedMobile?.url}
-              onChange={(id) => update("screenshotMobileId", id)}
-              onRemove={() => update("screenshotMobileId", "")}
-              onOpenPicker={() => setMobilePickerOpen(true)}
-              aspectRatio={9 / 16}
             />
           </div>
         </div>
@@ -323,22 +298,6 @@ export function WebDemoForm({
         title="Chọn ảnh Card Thumbnail"
         selectedId={values.thumbnailId}
         onSelect={(item) => update("thumbnailId", String(item._id))}
-      />
-
-      <MediaPickerDialog
-        open={laptopPickerOpen}
-        onOpenChange={setLaptopPickerOpen}
-        title="Chọn ảnh Mockup Laptop"
-        selectedId={values.screenshotLaptopId}
-        onSelect={(item) => update("screenshotLaptopId", String(item._id))}
-      />
-
-      <MediaPickerDialog
-        open={mobilePickerOpen}
-        onOpenChange={setMobilePickerOpen}
-        title="Chọn ảnh Mockup Mobile"
-        selectedId={values.screenshotMobileId}
-        onSelect={(item) => update("screenshotMobileId", String(item._id))}
       />
     </>
   );

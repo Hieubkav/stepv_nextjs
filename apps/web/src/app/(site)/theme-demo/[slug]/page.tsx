@@ -124,29 +124,25 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
         </section>
 
         {/* ── HERO IMAGE: full width ── */}
-        <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-2xl shadow-slate-200/60 bg-slate-100">
-            {heroImg ? (
+        {heroImg && (
+          <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-2xl shadow-slate-200/60 bg-slate-100">
               <img
                 src={heroImg}
                 alt={demo.title}
                 className="w-full object-cover"
                 style={{ aspectRatio: "16/9", objectPosition: "top" }}
               />
-            ) : (
-              <div className="flex items-center justify-center bg-slate-100" style={{ aspectRatio: "16/9" }}>
-                <Layout className="size-20 text-slate-300" />
-              </div>
-            )}
 
-            {/* Mobile floating — chỉ hiện khi có ảnh mobile */}
-            {mobileUrl && (
-              <div className="absolute right-4 bottom-0 translate-y-1/4 w-[80px] sm:w-[100px] aspect-[9/19] rounded-[16px] overflow-hidden shadow-2xl border-4 border-slate-800 bg-white hidden sm:block">
-                <img src={mobileUrl} alt={`${demo.title} Mobile`} className="w-full h-full object-cover" />
-              </div>
-            )}
-          </div>
-        </section>
+              {/* Mobile floating — chỉ hiện khi có ảnh mobile */}
+              {mobileUrl && (
+                <div className="absolute right-4 bottom-0 translate-y-1/4 w-[80px] sm:w-[100px] aspect-[9/19] rounded-[16px] overflow-hidden shadow-2xl border-4 border-slate-800 bg-white hidden sm:block">
+                  <img src={mobileUrl} alt={`${demo.title} Mobile`} className="w-full h-full object-cover" />
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* ── BODY: Description + Stats + Features + CTAs ── */}
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
