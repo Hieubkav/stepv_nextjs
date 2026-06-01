@@ -193,27 +193,6 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
         </div>
       </section>
 
-      {/* ── DIVIDER BANNER CTA ── */}
-      <section className="bg-gradient-to-r from-indigo-600 to-violet-600 py-12 mt-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="text-white text-center sm:text-left">
-            <p className="text-lg font-bold">Bạn muốn triển khai giao diện này?</p>
-            <p className="text-indigo-200 text-sm mt-1">Liên hệ DOHY Media để được tư vấn và báo giá nhanh chóng.</p>
-          </div>
-          <div className="flex flex-wrap gap-3 justify-center">
-            {demo.previewUrl && (
-              <Button asChild className="bg-white text-indigo-700 hover:bg-indigo-50 font-semibold rounded-xl h-10 px-5">
-                <a href={demo.previewUrl} target="_blank" rel="noopener noreferrer">
-                  <Globe className="mr-1.5 size-4" /> Xem Demo
-                </a>
-              </Button>
-            )}
-            <Button asChild variant="outline" className="border-white/40 text-white hover:bg-white/10 font-semibold rounded-xl h-10 px-5">
-              <Link href="/about">Liên hệ tư vấn</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
