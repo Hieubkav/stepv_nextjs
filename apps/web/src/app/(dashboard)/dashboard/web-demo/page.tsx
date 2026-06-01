@@ -185,6 +185,12 @@ export default function WebDemoListPage() {
           <Button variant="destructive" size="sm" disabled={selected.length === 0} onClick={handleBulkDelete}>
             Xóa đã chọn
           </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/theme-demo" target="_blank" rel="noopener noreferrer">
+              <Globe className="mr-2 size-4 text-primary" />
+              Xem trang Public
+            </Link>
+          </Button>
           <Button size="sm" asChild>
             <Link href="/dashboard/web-demo/new">
               <Plus className="mr-2 size-4" />
