@@ -100,7 +100,7 @@ export default async function ThemeDetailPage({ params }: ThemeDetailPageProps) 
   const mobileUrl = demo.screenshotMobileId ? mediaMap.get(demo.screenshotMobileId)?.url : null;
 
   return (
-    <div className="bg-slate-50/50 min-h-screen">
+    <div className="bg-slate-50/50 min-h-screen pt-20 sm:pt-24">
       {/* Nút quay lại */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
         <Link
