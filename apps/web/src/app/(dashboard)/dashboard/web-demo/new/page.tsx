@@ -17,15 +17,10 @@ const defaultValues: WebDemoFormValues = {
   previewUrl: "",
   screenshotLaptopId: "",
   screenshotMobileId: "",
-  sections: "",
-  pages: "",
-  popups: "",
-  forms: "",
   features: "",
   tags: "",
   active: true,
-  reviews: [],
-  blocks: [],
+  stats: [],
 };
 
 export default function NewWebDemoPage() {
@@ -44,11 +39,6 @@ export default function NewWebDemoPage() {
 
     setSubmitting(true);
     try {
-      const sections = values.sections ? Number(values.sections) : undefined;
-      const pages = values.pages ? Number(values.pages) : undefined;
-      const popups = values.popups ? Number(values.popups) : undefined;
-      const forms = values.forms ? Number(values.forms) : undefined;
-
       const features = values.features
         .split("\n")
         .map((f) => f.trim())
@@ -59,7 +49,6 @@ export default function NewWebDemoPage() {
         .map((t) => t.trim())
         .filter(Boolean);
 
-      // Submit lên backend Convex
       await createDemo({
         title,
         slug,
@@ -69,23 +58,13 @@ export default function NewWebDemoPage() {
         previewUrl: values.previewUrl.trim() || undefined,
         screenshotLaptopId: values.screenshotLaptopId ? (values.screenshotLaptopId as any) : undefined,
         screenshotMobileId: values.screenshotMobileId ? (values.screenshotMobileId as any) : undefined,
-        sections,
-        pages,
-        popups,
-        forms,
         features,
         tags,
         active: values.active,
-        reviews: values.reviews.map((rev) => ({
-          ...rev,
-          role: rev.role?.trim() || undefined,
-          avatarUrl: rev.avatarUrl?.trim() || undefined,
-        })),
-        blocks: values.blocks.map((blk) => ({
-          ...blk,
-          description: blk.description?.trim() || undefined,
-          imageId: blk.imageId ? (blk.imageId as any) : undefined,
-        })),
+        stats: values.stats
+          .filter((s) => s.label.trim() && s.value !== "")
+          .slice(0, 4)
+          .map((s) => ({ label: s.label.trim(), value: Number(s.value) })),
       });
 
       toast.success("Tạo giao diện mẫu thành công!");

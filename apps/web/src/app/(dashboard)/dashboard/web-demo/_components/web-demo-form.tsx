@@ -9,23 +9,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MediaPickerDialog, type MediaItem } from "@/components/media/media-picker-dialog";
-import { MoveUp, MoveDown, Trash2, Image as ImageIcon, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { WebDemoImageUploader } from "./web-demo-image-uploader";
 import { AiWebDemoImportDialog } from "./ai-web-demo-import-dialog";
 
-export type ReviewItem = {
-  name: string;
-  role?: string;
-  avatarUrl?: string;
-  comment: string;
-  rating: number;
-};
 
-export type BlockItem = {
-  title: string;
-  description?: string;
-  imageId?: string;
-};
 
 export type WebDemoFormValues = {
   title: string;
@@ -36,15 +24,10 @@ export type WebDemoFormValues = {
   previewUrl: string;
   screenshotLaptopId: string;
   screenshotMobileId: string;
-  sections: string;
-  pages: string;
-  popups: string;
-  forms: string;
-  features: string; // Chuỗi thô phân tách bằng dòng hoặc dấu phẩy
-  tags: string;     // Chuỗi thô phân tách bằng dấu phẩy
+  features: string;
+  tags: string;
   active: boolean;
-  reviews: ReviewItem[];
-  blocks: BlockItem[];
+  stats: { label: string; value: string }[];
 };
 
 export type WebDemoFormProps = {
@@ -94,10 +77,6 @@ export function WebDemoForm({
   const [thumbPickerOpen, setThumbPickerOpen] = useState(false);
   const [laptopPickerOpen, setLaptopPickerOpen] = useState(false);
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
-  const [blockPickerOpen, setBlockPickerOpen] = useState(false);
-  
-  // State lưu index của block đang được chọn ảnh
-  const [activeBlockIndex, setActiveBlockIndex] = useState<number | null>(null);
 
   // Ghi nhận sự thay đổi của name để sinh slug tự động nếu ở chế độ tạo mới
   const shouldSlugStayAuto = useMemo(() => {
@@ -148,64 +127,6 @@ export function WebDemoForm({
     setValues((prev) => ({ ...prev, [field]: value }));
   }
 
-  // Quản lý Reviews động
-  function handleAddReview() {
-    update("reviews", [
-      ...values.reviews,
-      { name: "", role: "", comment: "", rating: 5 },
-    ]);
-  }
-
-  function updateReview(index: number, patch: Partial<ReviewItem>) {
-    update(
-      "reviews",
-      values.reviews.map((rev, idx) => (idx === index ? { ...rev, ...patch } : rev))
-    );
-  }
-
-  function removeReview(index: number) {
-    update("reviews", values.reviews.filter((_, idx) => idx !== index));
-  }
-
-  // Quản lý Blocks động
-  function handleAddBlock() {
-    update("blocks", [
-      ...values.blocks,
-      { title: "", description: "", imageId: "" },
-    ]);
-  }
-
-  function updateBlock(index: number, patch: Partial<BlockItem>) {
-    update(
-      "blocks",
-      values.blocks.map((blk, idx) => (idx === index ? { ...blk, ...patch } : blk))
-    );
-  }
-
-  function removeBlock(index: number) {
-    update("blocks", values.blocks.filter((_, idx) => idx !== index));
-  }
-
-  function moveBlock(index: number, direction: "up" | "down") {
-    const target = direction === "up" ? index - 1 : index + 1;
-    if (target < 0 || target >= values.blocks.length) return;
-    const next = values.blocks.slice();
-    [next[index], next[target]] = [next[target], next[index]];
-    update("blocks", next);
-  }
-
-  function openBlockImagePicker(index: number) {
-    setActiveBlockIndex(index);
-    setBlockPickerOpen(true);
-  }
-
-  function handleSelectBlockImage(item: MediaItem) {
-    if (activeBlockIndex !== null) {
-      updateBlock(activeBlockIndex, { imageId: String(item._id) });
-    }
-    setBlockPickerOpen(false);
-    setActiveBlockIndex(null);
-  }
 
   // Render preview các tag badge từ chuỗi tags
   const tagsList = useMemo(() => {
@@ -306,51 +227,57 @@ export function WebDemoForm({
           </div>
         </div>
 
-        {/* Phần Stats */}
+        {/* Phần Stats động */}
         <div className="border-t pt-4">
-          <h3 className="text-base font-semibold mb-3">Chỉ số cấu trúc Theme (Stats)</h3>
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Số Sections</label>
-              <Input
-                type="number"
-                min={0}
-                value={values.sections}
-                onChange={(e) => update("sections", e.target.value)}
-                placeholder="11"
-              />
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-base font-semibold">Chỉ số cấu trúc Theme (Stats)</h3>
+              <p className="text-xs text-muted-foreground">Tối đa 4 chỉ số. Tự đết label (VD: Sections, Trang mẫu, Popup...).</p>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Số Pages</label>
-              <Input
-                type="number"
-                min={0}
-                value={values.pages}
-                onChange={(e) => update("pages", e.target.value)}
-                placeholder="22"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Số Popups</label>
-              <Input
-                type="number"
-                min={0}
-                value={values.popups}
-                onChange={(e) => update("popups", e.target.value)}
-                placeholder="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Số Forms</label>
-              <Input
-                type="number"
-                min={0}
-                value={values.forms}
-                onChange={(e) => update("forms", e.target.value)}
-                placeholder="11"
-              />
-            </div>
+            {values.stats.length < 4 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => update("stats", [...values.stats, { label: "", value: "" }])}
+              >
+                <Plus className="mr-1 size-3.5" /> Thêm chỉ số
+              </Button>
+            )}
           </div>
+          {values.stats.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+              Chưa có chỉ số nào. Nhấn "Thêm chỉ số" để bắt đầu.
+            </div>
+          ) : (
+            <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+              {values.stats.map((stat, idx) => (
+                <div key={idx} className="space-y-1.5 rounded-lg border p-3 relative bg-muted/20">
+                  <button
+                    type="button"
+                    onClick={() => update("stats", values.stats.filter((_, i) => i !== idx))}
+                    className="absolute right-1.5 top-1.5 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                  <Input
+                    value={stat.label}
+                    onChange={(e) => update("stats", values.stats.map((s, i) => i === idx ? { ...s, label: e.target.value } : s))}
+                    placeholder="Sections"
+                    className="h-7 text-xs"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={stat.value}
+                    onChange={(e) => update("stats", values.stats.map((s, i) => i === idx ? { ...s, value: e.target.value } : s))}
+                    placeholder="12"
+                    className="h-7 text-xs font-bold"
+                  />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Đặc điểm nổi bật */}
@@ -403,169 +330,6 @@ export function WebDemoForm({
           </div>
         </div>
 
-        {/* Danh sách Blocks */}
-        <div className="border-t pt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold">Các Block giao diện cấu thành</h3>
-              <p className="text-xs text-muted-foreground">Các khối sections chính cấu tạo nên giao diện này.</p>
-            </div>
-            <Button type="button" size="sm" variant="outline" onClick={handleAddBlock}>
-              <Plus className="mr-1.5 size-4" /> Thêm Block
-            </Button>
-          </div>
-
-          {values.blocks.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              Chưa có block nào. Nhấn nút "Thêm Block" để bắt đầu cấu trúc.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {values.blocks.map((blk, idx) => {
-                const blockImage = blk.imageId ? imageMap.get(blk.imageId) ?? null : null;
-                return (
-                  <div key={idx} className="flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="h-16 w-24 overflow-hidden rounded border bg-muted/40 flex items-center justify-center cursor-pointer"
-                        onClick={() => openBlockImagePicker(idx)}
-                      >
-                        {blockImage?.url ? (
-                          <img src={blockImage.url} alt="Block img" className="h-full w-full object-cover" />
-                        ) : (
-                          <ImageIcon className="h-5 w-5 text-muted-foreground/40" />
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid flex-1 gap-2 sm:grid-cols-2">
-                      <Input
-                        value={blk.title}
-                        onChange={(e) => updateBlock(idx, { title: e.target.value })}
-                        placeholder="Tiêu đề Block (VD: Hero Section)"
-                        required
-                      />
-                      <Input
-                        value={blk.description || ""}
-                        onChange={(e) => updateBlock(idx, { description: e.target.value })}
-                        placeholder="Mô tả block..."
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-end gap-1.5">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => moveBlock(idx, "up")}
-                        disabled={idx === 0}
-                      >
-                        <MoveUp className="size-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => moveBlock(idx, "down")}
-                        disabled={idx === values.blocks.length - 1}
-                      >
-                        <MoveDown className="size-4" />
-                      </Button>
-                      <Button type="button" variant="destructive" size="icon" onClick={() => removeBlock(idx)}>
-                        <Trash2 className="size-4" />
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Danh sách Reviews */}
-        <div className="border-t pt-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold">Phản hồi của khách hàng</h3>
-              <p className="text-xs text-muted-foreground">Đánh giá và cảm nhận thực tế của khách dùng giao diện này.</p>
-            </div>
-            <Button type="button" size="sm" variant="outline" onClick={handleAddReview}>
-              <Plus className="mr-1.5 size-4" /> Thêm Phản Hồi
-            </Button>
-          </div>
-
-          {values.reviews.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-              Chưa có phản hồi nào. Nhấn "Thêm Phản Hồi" để nhập đánh giá.
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {values.reviews.map((rev, idx) => (
-                <div key={idx} className="rounded-lg border p-4 space-y-3 relative bg-muted/10">
-                  <div className="absolute right-3 top-3">
-                    <Button type="button" variant="ghost" size="sm" className="text-destructive h-8 w-8 p-0" onClick={() => removeReview(idx)}>
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-medium">Tên khách hàng</label>
-                      <Input
-                        value={rev.name}
-                        onChange={(e) => updateReview(idx, { name: e.target.value })}
-                        placeholder="Nguyễn Văn A"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-medium">Chức danh / Vai trò</label>
-                      <Input
-                        value={rev.role || ""}
-                        onChange={(e) => updateReview(idx, { role: e.target.value })}
-                        placeholder="Bác sĩ điều hành"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-medium">Đánh giá (1-5 Sao)</label>
-                      <select
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-                        value={rev.rating}
-                        onChange={(e) => updateReview(idx, { rating: Number(e.target.value) })}
-                      >
-                        <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                        <option value="4">⭐⭐⭐⭐ (4/5)</option>
-                        <option value="3">⭐⭐⭐ (3/5)</option>
-                        <option value="2">⭐⭐ (2/5)</option>
-                        <option value="1">⭐ (1/5)</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-medium">Link Avatar ảnh đại diện</label>
-                      <Input
-                        value={rev.avatarUrl || ""}
-                        onChange={(e) => updateReview(idx, { avatarUrl: e.target.value })}
-                        placeholder="https://example.com/avatar.jpg"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-xs text-muted-foreground font-medium">Nội dung cảm nhận</label>
-                      <Input
-                        value={rev.comment}
-                        onChange={(e) => updateReview(idx, { comment: e.target.value })}
-                        placeholder="Giao diện chạy nhanh, thiết kế rất chuyên nghiệp..."
-                        required
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
 
         {/* Buttons lưu */}
         <div className="flex items-center justify-between border-t pt-4">
@@ -617,13 +381,6 @@ export function WebDemoForm({
         onSelect={(item) => update("screenshotMobileId", String(item._id))}
       />
 
-      <MediaPickerDialog
-        open={blockPickerOpen}
-        onOpenChange={setBlockPickerOpen}
-        title="Chọn ảnh Block minh họa"
-        selectedId={activeBlockIndex !== null ? values.blocks[activeBlockIndex]?.imageId : null}
-        onSelect={handleSelectBlockImage}
-      />
     </>
   );
 }

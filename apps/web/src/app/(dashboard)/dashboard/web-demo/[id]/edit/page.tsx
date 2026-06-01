@@ -29,15 +29,10 @@ export default function EditWebDemoPage() {
         previewUrl: data.previewUrl ?? "",
         screenshotLaptopId: data.screenshotLaptopId ?? "",
         screenshotMobileId: data.screenshotMobileId ?? "",
-        sections: data.sections !== undefined ? String(data.sections) : "",
-        pages: data.pages !== undefined ? String(data.pages) : "",
-        popups: data.popups !== undefined ? String(data.popups) : "",
-        forms: data.forms !== undefined ? String(data.forms) : "",
         features: data.features ? data.features.join("\n") : "",
         tags: data.tags ? data.tags.join(", ") : "",
         active: data.active,
-        reviews: data.reviews ?? [],
-        blocks: data.blocks ?? [],
+        stats: (data.stats ?? []).map((s: any) => ({ label: s.label, value: String(s.value) })),
       });
     }
   }, [data]);
@@ -55,11 +50,6 @@ export default function EditWebDemoPage() {
 
     setSubmitting(true);
     try {
-      const sections = values.sections ? Number(values.sections) : undefined;
-      const pages = values.pages ? Number(values.pages) : undefined;
-      const popups = values.popups ? Number(values.popups) : undefined;
-      const forms = values.forms ? Number(values.forms) : undefined;
-
       const features = values.features
         .split("\n")
         .map((f) => f.trim())
@@ -80,23 +70,13 @@ export default function EditWebDemoPage() {
         previewUrl: values.previewUrl.trim() || undefined,
         screenshotLaptopId: values.screenshotLaptopId ? (values.screenshotLaptopId as any) : undefined,
         screenshotMobileId: values.screenshotMobileId ? (values.screenshotMobileId as any) : undefined,
-        sections,
-        pages,
-        popups,
-        forms,
         features,
         tags,
         active: values.active,
-        reviews: values.reviews.map((rev) => ({
-          ...rev,
-          role: rev.role?.trim() || undefined,
-          avatarUrl: rev.avatarUrl?.trim() || undefined,
-        })),
-        blocks: values.blocks.map((blk) => ({
-          ...blk,
-          description: blk.description?.trim() || undefined,
-          imageId: blk.imageId ? (blk.imageId as any) : undefined,
-        })),
+        stats: values.stats
+          .filter((s) => s.label.trim() && s.value !== "")
+          .slice(0, 4)
+          .map((s) => ({ label: s.label.trim(), value: Number(s.value) })),
       });
 
       toast.success("Cập nhật giao diện mẫu thành công!");

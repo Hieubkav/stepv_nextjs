@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import type { WebDemoFormValues, ReviewItem, BlockItem } from "./web-demo-form";
+import type { WebDemoFormValues } from "./web-demo-form";
 
 type AiWebDemoImportDialogProps = {
   onApply: (values: Partial<WebDemoFormValues>) => void;
@@ -33,39 +33,13 @@ Cấu trúc JSON mong muốn:
   "description": "Mô tả chi tiết các tính năng, điểm nhấn giao diện và giá trị mang lại (khoảng 200-400 từ, định dạng có phân dòng)",
   "previewUrl": "URL xem thử demo (ví dụ: https://demo.dohy.vn/spa-an-nhien)",
   "tags": "Các tag phân tách bằng dấu phẩy (ví dụ: Spa & Làm đẹp, Trị liệu y tế, Cần Thơ)",
-  "sections": 12, // Số lượng sections cấu thành trang (số nguyên)
-  "pages": 8, // Số lượng trang con (số nguyên)
-  "popups": 2, // Số lượng popup tích hợp (số nguyên)
-  "forms": 3, // Số lượng form đăng ký/liên hệ (số nguyên)
-  "features": "Đặc điểm nổi bật (mỗi đặc điểm viết trên 1 dòng mới, ví dụ:\\nTương thích 100% Mobile\\nTối ưu SEO Google\\nTích hợp đặt lịch online)",
-  "blocks": [
-    {
-      "title": "Hero Banner chính",
-      "description": "Banner chào mừng rực rỡ với nút đặt lịch nổi bật và slide ảnh dịch vụ."
-    },
-    {
-      "title": "Bảng giá dịch vụ spa",
-      "description": "Khối hiển thị danh sách các gói dịch vụ, giá tiền và mô tả ngắn gọn đi kèm."
-    },
-    {
-      "title": "Form đăng ký tư vấn",
-      "description": "Khối form thu thập thông tin khách hàng đặt lịch hẹn tự động gửi email."
-    }
+  "stats": [
+    { "label": "Sections", "value": 12 },
+    { "label": "Trang mẫu", "value": 8 },
+    { "label": "Popup", "value": 2 },
+    { "label": "Biểu mẫu", "value": 3 }
   ],
-  "reviews": [
-    {
-      "name": "Nguyễn Thị Mai",
-      "role": "Khách hàng thân thiết",
-      "comment": "Giao diện chạy rất nhanh trên điện thoại, tôi đặt lịch hẹn massage chỉ mất 30 giây.",
-      "rating": 5
-    },
-    {
-      "name": "Trần Văn Bình",
-      "role": "CEO Spa An Nhiên",
-      "comment": "Trang web thiết kế sang trọng, khách hàng của tôi phản hồi rất tích cực kể từ khi thay đổi.",
-      "rating": 5
-    }
-  ]
+  "features": "Đặc điểm nổi bật (mỗi đặc điểm viết trên 1 dòng mới, ví dụ:\\nTương thích 100% Mobile\\nTối ưu SEO Google\\nTích hợp đặt lịch online)"
 }
 
 Thông tin yêu cầu từ khách hàng:
@@ -77,29 +51,13 @@ const SAMPLE_JSON = `{
   "description": "Giao diện được thiết kế đặc thù cho các phòng khám răng hàm mặt hiện đại. Cung cấp đầy đủ các module giới thiệu bác sĩ, bảng giá dịch vụ niềng răng, bọc sứ, nhổ răng khôn cùng quy trình điều trị trực quan giúp gia tăng sự tin tưởng của bệnh nhân.\\n\\nTích hợp hệ thống form đặt lịch thông minh giúp lễ tân dễ dàng tiếp nhận thông tin.",
   "previewUrl": "https://demo.dohy.vn/nha-khoa-smile",
   "tags": "Nha khoa & Y tế, Phòng khám, Hà Nội",
-  "sections": 11,
-  "pages": 6,
-  "popups": 1,
-  "forms": 2,
-  "features": "Đặt lịch hẹn trực tuyến\\nGiới thiệu bác sĩ chuyên khoa\\nBảng giá dịch vụ trực quan\\nChuẩn SEO y tế",
-  "blocks": [
-    {
-      "title": "Banner đặt lịch khẩn cấp",
-      "description": "Khối đầu trang hiển thị hotline và nút hẹn lịch nhanh."
-    },
-    {
-      "title": "Showcase dịch vụ nổi bật",
-      "description": "Grid hiển thị 6 dịch vụ nha khoa cốt lõi kèm icon sinh động."
-    }
+  "stats": [
+    { "label": "Sections", "value": 11 },
+    { "label": "Trang mẫu", "value": 6 },
+    { "label": "Popup", "value": 1 },
+    { "label": "Biểu mẫu", "value": 2 }
   ],
-  "reviews": [
-    {
-      "name": "Bác sĩ Lê Hoàng",
-      "role": "Giám đốc chuyên môn",
-      "comment": "Website sạch sẽ, chuẩn y khoa và giúp chúng tôi tăng 40% lượng khách đặt lịch hẹn online.",
-      "rating": 5
-    }
-  ]
+  "features": "Đặt lịch hẹn trực tuyến\\nGiới thiệu bác sĩ chuyên khoa\\nBảng giá dịch vụ trực quan\\nChuẩn SEO y tế"
 }`;
 
 export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
@@ -126,29 +84,15 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
         errors.push("Thiếu thông tin 'title' (Tiêu đề giao diện).");
       }
 
-      // Ép kiểu các giá trị số
-      const sections = Number(parsed.sections) || 0;
-      const pages = Number(parsed.pages) || 0;
-      const popups = Number(parsed.popups) || 0;
-      const forms = Number(parsed.forms) || 0;
-
-      // Chuẩn hóa blocks
-      const rawBlocks = Array.isArray(parsed.blocks) ? parsed.blocks : [];
-      const blocks: BlockItem[] = rawBlocks.map((b: any) => ({
-        title: String(b?.title || "").trim() || "Untitled Block",
-        description: String(b?.description || "").trim(),
-        imageId: String(b?.imageId || "").trim(),
-      }));
-
-      // Chuẩn hóa reviews
-      const rawReviews = Array.isArray(parsed.reviews) ? parsed.reviews : [];
-      const reviews: ReviewItem[] = rawReviews.map((r: any) => ({
-        name: String(r?.name || "").trim() || "Khách hàng ẩn danh",
-        role: String(r?.role || "").trim(),
-        avatarUrl: String(r?.avatarUrl || "").trim(),
-        comment: String(r?.comment || "").trim() || "Đánh giá tuyệt vời",
-        rating: Math.max(1, Math.min(5, Number(r?.rating) || 5)),
-      }));
+      // Chuẩn hóa stats
+      const rawStats = Array.isArray(parsed.stats) ? parsed.stats : [];
+      const stats: { label: string; value: string }[] = rawStats
+        .slice(0, 4)
+        .map((s: any) => ({
+          label: String(s?.label || "").trim(),
+          value: String(Number(s?.value) || 0),
+        }))
+        .filter((s: any) => s.label);
 
       const normalizedData: Partial<WebDemoFormValues> = {
         title: String(parsed.title || "").trim(),
@@ -157,13 +101,8 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
         description: String(parsed.description || "").trim(),
         previewUrl: String(parsed.previewUrl || "").trim(),
         tags: String(parsed.tags || "").trim(),
-        sections: String(sections),
-        pages: String(pages),
-        popups: String(popups),
-        forms: String(forms),
         features: String(parsed.features || "").trim(),
-        blocks,
-        reviews,
+        stats,
       };
 
       return {
@@ -264,7 +203,6 @@ export function AiWebDemoImportDialog({ onApply }: AiWebDemoImportDialogProps) {
                   <Check className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold">Dữ liệu JSON hợp lệ!</span> Có thể áp dụng ngay vào form.
-                    (Gồm: {validationResult.data?.blocks?.length || 0} Blocks và {validationResult.data?.reviews?.length || 0} Reviews mẫu).
                   </div>
                 </>
               ) : (

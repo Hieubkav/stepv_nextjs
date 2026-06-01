@@ -2,19 +2,8 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 
-const reviewValidator = v.object({
-  name: v.string(),
-  role: v.optional(v.string()),
-  avatarUrl: v.optional(v.string()),
-  comment: v.string(),
-  rating: v.number(),
-});
 
-const blockValidator = v.object({
-  title: v.string(),
-  description: v.optional(v.string()),
-  imageId: v.optional(v.id("media")),
-});
+
 
 const normalizeSlug = (value: string) => value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "");
 
@@ -113,13 +102,8 @@ export const create = mutation({
     previewUrl: v.optional(v.string()),
     screenshotLaptopId: v.optional(v.id("media")),
     screenshotMobileId: v.optional(v.id("media")),
-    sections: v.optional(v.number()),
-    pages: v.optional(v.number()),
-    popups: v.optional(v.number()),
-    forms: v.optional(v.number()),
     features: v.optional(v.array(v.string())),
-    reviews: v.optional(v.array(reviewValidator)),
-    blocks: v.optional(v.array(blockValidator)),
+    stats: v.optional(v.array(v.object({ label: v.string(), value: v.number() }))),
     tags: v.optional(v.array(v.string())),
     active: v.boolean(),
   },
@@ -148,13 +132,8 @@ export const create = mutation({
       previewUrl: args.previewUrl ? args.previewUrl.trim() : undefined,
       screenshotLaptopId: args.screenshotLaptopId,
       screenshotMobileId: args.screenshotMobileId,
-      sections: args.sections,
-      pages: args.pages,
-      popups: args.popups,
-      forms: args.forms,
       features: args.features,
-      reviews: args.reviews,
-      blocks: args.blocks,
+      stats: args.stats,
       tags: args.tags,
       order,
       active: args.active,
@@ -178,13 +157,8 @@ export const update = mutation({
     previewUrl: v.optional(v.string()),
     screenshotLaptopId: v.optional(v.id("media")),
     screenshotMobileId: v.optional(v.id("media")),
-    sections: v.optional(v.number()),
-    pages: v.optional(v.number()),
-    popups: v.optional(v.number()),
-    forms: v.optional(v.number()),
     features: v.optional(v.array(v.string())),
-    reviews: v.optional(v.array(reviewValidator)),
-    blocks: v.optional(v.array(blockValidator)),
+    stats: v.optional(v.array(v.object({ label: v.string(), value: v.number() }))),
     tags: v.optional(v.array(v.string())),
     active: v.boolean(),
   },
@@ -212,13 +186,8 @@ export const update = mutation({
       previewUrl: updates.previewUrl ? updates.previewUrl.trim() : undefined,
       screenshotLaptopId: updates.screenshotLaptopId,
       screenshotMobileId: updates.screenshotMobileId,
-      sections: updates.sections,
-      pages: updates.pages,
-      popups: updates.popups,
-      forms: updates.forms,
       features: updates.features,
-      reviews: updates.reviews,
-      blocks: updates.blocks,
+      stats: updates.stats,
       tags: updates.tags,
       active: updates.active,
       updatedAt: Date.now(),
@@ -267,5 +236,41 @@ export const reorder = mutation({
       });
     }
     return { success: true };
+  },
+});
+
+// Migration: chuyển sections/pages/popups/forms cũ → stats array mới, đồng thời dọn blocks
+// Có thể xóa mutation này sau khi đã chạy và verify xong.
+export const migrateLegacyStats = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const all = await ctx.db.query("web_demos").collect();
+    let migrated = 0;
+    for (const item of all) {
+      const anyItem = item as any;
+      const hasLegacy =
+        anyItem.sections !== undefined ||
+        anyItem.pages !== undefined ||
+        anyItem.popups !== undefined ||
+        anyItem.forms !== undefined ||
+        anyItem.blocks !== undefined;
+
+      if (!hasLegacy) continue;
+
+      // Chỉ build stats nếu chưa có stats mới
+      const patch: any = { blocks: undefined, sections: undefined, pages: undefined, popups: undefined, forms: undefined };
+      if (!item.stats || item.stats.length === 0) {
+        const stats: { label: string; value: number }[] = [];
+        if (anyItem.sections) stats.push({ label: "Sections", value: Number(anyItem.sections) });
+        if (anyItem.pages) stats.push({ label: "Trang mẫu", value: Number(anyItem.pages) });
+        if (anyItem.popups) stats.push({ label: "Popup", value: Number(anyItem.popups) });
+        if (anyItem.forms) stats.push({ label: "Biểu mẫu", value: Number(anyItem.forms) });
+        if (stats.length > 0) patch.stats = stats;
+      }
+
+      await ctx.db.patch(item._id, patch);
+      migrated++;
+    }
+    return { success: true, migrated };
   },
 });

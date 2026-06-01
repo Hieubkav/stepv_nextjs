@@ -879,28 +879,12 @@ export default defineSchema({
     previewUrl: v.optional(v.string()),
     screenshotLaptopId: v.optional(v.id("media")),
     screenshotMobileId: v.optional(v.id("media")),
-    sections: v.optional(v.number()),
-    pages: v.optional(v.number()),
-    popups: v.optional(v.number()),
-    forms: v.optional(v.number()),
     features: v.optional(v.array(v.string())),
-    reviews: v.optional(
+    stats: v.optional(
       v.array(
         v.object({
-          name: v.string(),
-          role: v.optional(v.string()),
-          avatarUrl: v.optional(v.string()),
-          comment: v.string(),
-          rating: v.number(),
-        })
-      )
-    ),
-    blocks: v.optional(
-      v.array(
-        v.object({
-          title: v.string(),
-          description: v.optional(v.string()),
-          imageId: v.optional(v.id("media")),
+          label: v.string(),
+          value: v.number(),
         })
       )
     ),
